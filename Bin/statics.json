@@ -1,0 +1,11 @@
+{
+    "tanks_col" : 5,
+    "tanks_row" : 2,
+    "PATHS" : {
+        "INPUT" : "Input",
+        "OUTPUT" : "Output",
+        "BIN" : "Bin",
+        "LIBS" : "Libs",
+        "HISTORY" : "History"
+    }
+}
