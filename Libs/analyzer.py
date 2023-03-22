@@ -7,9 +7,14 @@ from pathlib import Path
 import json
 from statistics import mean
 
-from Libs.misc import *
+ROUND_UP = 4
 
+def dist_cal(x1, y1, x2, y2):
+    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
+def calculate_area(x1, y1, x2, y2, x3, y3):
+    area = 0.5 * abs(x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2))
+    return area
 
 class Test():
 
@@ -92,7 +97,7 @@ class Test():
 
         return summary_dict
 
-    
+     
     def BasicCalculation(self):
 
         conversion_rate = self.hyp["CONVERSION RATE"]
@@ -275,7 +280,7 @@ class NovelTankTest(Test):
         return self.summarize(output_dict, units)
 
 
-class ShoalingTest():
+class ShoalingTest(): # 15000 frames
 
     def __init__(self, input_df1, input_df2, input_df3):
 
@@ -302,10 +307,44 @@ class ShoalingTest():
                 raise Exception
             
 
+    def avg_distance_to_center(self, df):
+
+        cols = df.columns
+        distance_list = []
+        for idx, row in df.iterrows():
+            distance = abs(row[cols[1]] - self.hyp['CENTER'])/self.hyp['CONVERSION RATE']
+            distance_list.append(distance)
+        return round(mean(distance_list), ROUND_UP)
+    
+
     def average_distance(self, dfA, dfB):
 
+        A_cols = dfA.columns
+        B_cols = dfB.columns
+        distance_list = []
         for i in range(len(dfA)):
-            pass
+            distance = dist_cal(dfA.loc[i, A_cols[0]], dfA.loc[i, A_cols[1]], dfB.loc[i, B_cols[0]], dfB.loc[i, B_cols[1]])
+            distance = distance / self.hyp['CONVERSION RATE']
+            distance_list.append(distance)
+
+        return round(mean(distance_list), ROUND_UP), distance_list
+
+
+    def shoal_area(self):
+
+        #Calculate the shoal area per frame
+        shoal_area_list = []
+        for i in range(len(self.dfs[1])):
+            shoal_area = calculate_area(self.dfs[1].loc[i, 'X'], self.dfs[1].loc[i, 'Y'], self.dfs[2].loc[i, 'X'], self.dfs[2].loc[i, 'Y'], self.dfs[3].loc[i, 'X'], self.dfs[3].loc[i, 'Y'])
+            shoal_area_list.append(shoal_area)
+        unit = 'cm2'
+
+        return round(mean(shoal_area_list), ROUND_UP), shoal_area_list, unit
+
+
+    def calc(self):
+
+        
 
 
 class MirrorBitingTest(Test):
