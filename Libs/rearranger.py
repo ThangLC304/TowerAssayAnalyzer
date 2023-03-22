@@ -9,6 +9,8 @@ from misc import *
 import json
 import argparse
 import random
+from tqdm import tqdm
+import time
 
 class Arranger():
     def __init__(self):
@@ -18,10 +20,11 @@ class Arranger():
 
         self.tanks_col = self.statics['tanks_col']
         self.tanks_row = self.statics['tanks_row']
-        self.tanks_num = self.tanks_col * self.tanks_row
 
-        self.raw_df = self.get_raw_df()
-        self.im, video_path = self.get_image()
+        self.raw_df, self.tanks_list = self.get_raw_df()
+        self.tanks_num = len(self.tanks_list)
+        
+        self.im, video_path = self.get_image(source = 'image')
         self.name = Path(video_path).stem
 
         self.TL_num = self.tanks_num
@@ -57,27 +60,30 @@ class Arranger():
         default_dir = 'Input'
         txt_path = get_file_path(file_type, default_dir)
 
-        # Read the .txt file into a dataframe
-        raw_df = pd.read_csv(txt_path, sep = "\t")
+        raw_df, tanks_list = load_raw_df(txt_path)
+        raw_df, _ = clean_df(raw_df)
 
-        # Remove unnecessary columns
-        for col in raw_df.columns:
-            if "unnamed" in col.lower() or "prob" in col.lower():
-                raw_df.drop(col, axis=1, inplace=True)
-
-        return raw_df
+        return raw_df, tanks_list
     
 
-    def get_image(self):
+    def get_image(self, source = 'video'):
 
-        # Open dialog to choose the .mp4 file
-        file_type = [('Video File', '*.mp4')]
-        default_dir = 'Input'
-        video_path = get_file_path(file_type, default_dir)
+        if source == 'video':
+            # Open dialog to choose the .mp4 file
+            file_type = [('Video File', '*.mp4')]
+            default_dir = 'Input'
+            media_path = get_file_path(file_type, default_dir)
 
-        im = get_thumbnail(video_path)
+            im = get_thumbnail(media_path)
+        
+        if source == 'image':
+            file_type = [('Image File', '*.png')]
+            default_dir = 'Input'
+            media_path = get_file_path(file_type, default_dir)
 
-        return im, video_path
+            im = cv2.imread(media_path)
+
+        return im, media_path
     
 
     def fill_outer_columns(self):
@@ -218,36 +224,45 @@ class Arranger():
         cv2.destroyAllWindows()
 
 
-    def arrange(self, *arg):
-        if len(arg) == 1:
-            input_df = arg[0]
-        else:
+    def arrange(self, input_df = pd.DataFrame(), tracking = False, fill = True):
+        # if input_df is empty, use self.raw_df
+        if input_df.empty:
             input_df = self.raw_df
+        print(f'Rearranging... Please wait...')
 
         columns = input_df.columns
 
         result_df = pd.DataFrame(columns = columns)
-        for idx, row in input_df.iterrows():
-            for tank_num in range(1, self.tanks_num + 1):
-                x = row['x' + str(tank_num)]
-                y = row['y' + str(tank_num)]
-
+        # use tqdm to show progress bar of the loop
+        for idx, row in tqdm(input_df.iterrows(), total = input_df.shape[0]):
+            for tank_num in self.tanks_list:
+                x = row['X' + str(tank_num)]
+                y = row['Y' + str(tank_num)]
+                
+                # if any of x or y is nan, skip this row
+                if np.isnan(x) or np.isnan(y):
+                    continue
                 tank = in_which_tank(x, y, self.tanks_dict)
 
                 if tank != -1:
-                    result_df.loc[idx, 'x' + str(tank)] = x
-                    result_df.loc[idx, 'y' + str(tank)] = y
+                    result_df.loc[idx, 'X' + str(tank)] = x
+                    result_df.loc[idx, 'Y' + str(tank)] = y
+           
 
-        return result_df
+        # Check if result_df has nan values
+        result_df, filled_history = clean_df(result_df, fill = fill)
+
+        return result_df, filled_history
     
 
     def exporter(self, input_df, file_name):
         output_dir = self.paths['OUTPUT']
-        input_df.to_csv(output_dir + file_name + '.csv', index = False)
+        input_df.to_csv(os.path.join(output_dir, f'{file_name}.csv'), index = False)
+        print('Exported to ' + output_dir + file_name + '.csv')
 
 
-    def display_arranged(self, display_df, window_name = 'Tanks'):
-        display_coords(display_df, self.im, window_name = window_name)
+    def display_arranged(self, display_df, window_name = 'Tanks', mouse = True):
+        display_coords(display_df, self.im, window_name = window_name, tanks_list = self.tanks_list, mouse = mouse, tanks_dict = self.tanks_dict)
 
 
     # GENERATE RANDOM COORDINATES FOR TEST DATA
@@ -288,7 +303,9 @@ if __name__ == "__main__":
 
     # take arguments from command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', type = str, default = None, help = 'test or arrange')
+    parser.add_argument('--mode', type = str, default = None, help = 'test, arrange or debug')
+    parser.add_argument('--name', type = str, default = None, help = 'name of the output csv file')
+    parser.add_argument('--fill', type = bool, default = True, help = 'fill the missing values or not')
 
     args = parser.parse_args()
 
@@ -309,7 +326,7 @@ if __name__ == "__main__":
         tanks.display_arranged(mixed_df, window_name = 'Mixed-up Test Data')
 
         # arrange the test data
-        arranged_df = tanks.arrange(test_df)
+        arranged_df, _ = tanks.arrange(test_df)
 
         # display the arranged data
         tanks.display_arranged(arranged_df, window_name = 'Rearranged Mixed-up Test Data')
@@ -323,10 +340,41 @@ if __name__ == "__main__":
         tanks.predict_tanks()
 
         # arrange the test data
-        arranged_df = tanks.arrange()
+        arranged_df, filled_history = tanks.arrange(fill = args.fill)
+
+        print('Exported filled_history to .json file')
+        # indent = 4 for pretty print
+        json_path = r'C:\Code\ChungyuanProjects\TowerAssayAnalyzer\History\automate_filled_history.json'
+        with open(json_path, 'w') as f:
+            json.dump(filled_history, f, indent = 4)
+
+        # save the arranged data
+        if args.name != None:
+            file_name = args.name
+            print('Saving as ' + file_name + '.csv')
+        else:
+            file_name = 'arranged_' + tanks.name
+            print('No file name specified. Saving as ' + file_name + '.csv')
+        tanks.exporter(arranged_df, file_name)
 
         # display the arranged data
         tanks.display_arranged(arranged_df)
 
-        # save the arranged data
-        tanks.exporter(arranged_df, 'arranged')
+    # debug mode
+    elif args.mode == 'debug':
+        # initialize the class
+        tanks = Arranger()
+
+        # predict tanks
+        tanks.predict_tanks()
+
+        # arrange the test data
+        arranged_df, filled_history = tanks.arrange(fill = args.fill)
+
+        # print(filled_history)
+
+        # display the arranged data
+        draw_trajectories(arranged_df, tanks.im, tanks.tanks_list, tanks.tanks_dict, filled_history=filled_history)
+    
+
+        

@@ -9,6 +9,7 @@ __pycache__/
 # Input and Output
 Input/
 Output/
+*.ipynb
 
 # Distribution / packaging
 .Python

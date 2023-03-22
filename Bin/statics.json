@@ -7,5 +7,7 @@
         "BIN" : "Bin",
         "LIBS" : "Libs",
         "HISTORY" : "History"
-    }
+    },
+    "SPEED_1" : 1,
+    "SPEED_2" : 10
 }
