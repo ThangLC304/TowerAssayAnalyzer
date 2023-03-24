@@ -22,14 +22,15 @@ class NovelTankTest(Loader): # 3000 * 7
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, _ = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df)
 
         self.distance = self.distance_to(self.df, "CENTER")
         self.time, self.events = self.timing(self.df, "TOP", "X", smaller = True)
 
         self.others = {}
         self.others['distance in top'], self.others['top/bottom ratio'] = self.distance_in_top()
-        self.others['latency'] = self.latency_calculation()
+        self.others['distance top/bottom ratio'] = self.others['distance in top'] / self.basic["total distance"]
+        self.others['latency in frames'], self.others['latency in seconds'] = self.latency_calculation()
 
 
     def distance_in_top(self):
@@ -56,9 +57,8 @@ class NovelTankTest(Loader): # 3000 * 7
                 latency += 1
             else:
                 break
-        latency = latency / self.hyp["FPS"]
 
-        return latency
+        return latency, latency / self.hyp["FPS"]
 
 
 
@@ -75,7 +75,9 @@ class ShoalingTest(Loader):
         self.df[2] = input_df2
         self.df[3] = input_df3
 
-        self.basic[1], _ = self.BasicCalculation(self.df[1])
+        self.basic = {}
+
+        self.basic[1], self.units = self.BasicCalculation(self.df[1])
         self.basic[2], _ = self.BasicCalculation(self.df[2])
         self.basic[3], _ = self.BasicCalculation(self.df[3])
 
@@ -119,8 +121,13 @@ class ShoalingTest(Loader):
 
         #Calculate the shoal area per frame
         shoal_area_list = []
+
+        cols1 = self.df[1].columns
+        cols2 = self.df[2].columns
+        cols3 = self.df[3].columns
+
         for i in range(len(self.df[1])):
-            shoal_area = calculate_area(self.df[1].loc[i, 'X'], self.df[1].loc[i, 'Y'], self.df[2].loc[i, 'X'], self.df[2].loc[i, 'Y'], self.df[3].loc[i, 'X'], self.df[3].loc[i, 'Y'])
+            shoal_area = calculate_area(self.df[1].loc[i, cols1[0]], self.df[1].loc[i, cols1[1]], self.df[2].loc[i, cols2[0]], self.df[2].loc[i, cols2[1]], self.df[3].loc[i, cols3[0]], self.df[3].loc[i, cols3[1]])
             shoal_area = shoal_area / self.hyp['CONVERSION RATE']**2
             shoal_area_list.append(shoal_area)
 
@@ -130,8 +137,8 @@ class ShoalingTest(Loader):
     def distance_filter(self, df_num):
 
         others = [n for n in range(1, 4) if n != df_num]
-        distance_1 = self.average_distance(self.df[df_num], self.df[others[0]]) # converted
-        distance_2 = self.average_distance(self.df[df_num], self.df[others[1]]) # converted
+        distance_1 = self.distance_to_other(self.df[df_num], self.df[others[0]]).list # converted
+        distance_2 = self.distance_to_other(self.df[df_num], self.df[others[1]]).list # converted
         nearest_distance_list = []
         furthest_distance_list = []
 
@@ -152,40 +159,40 @@ class MirrorBitingTest(Loader):
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, _ = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df)
 
         self.time, self.events = self.timing(self.df, "MIRROR", "Y", smaller = True)
 
     
-    def mirror_timing(self):
+    # def mirror_timing(self):
 
-        mirror_biting = [] # N points
-        mirror_biting_events = {} # N points
+    #     mirror_biting = [] # N points
+    #     mirror_biting_events = {} # N points
 
-        for _, row in self.df.iterrows():
-            y = row[self.cols[1]]
+    #     for _, row in self.df.iterrows():
+    #         y = row[self.cols[1]]
 
-            # Calculate the mirror biting
-            if y < self.hyp["MIRROR"]:
-                mirror_biting.append(1)
-            else:
-                mirror_biting.append(0)
+    #         # Calculate the mirror biting
+    #         if y < self.hyp["MIRROR"]:
+    #             mirror_biting.append(1)
+    #         else:
+    #             mirror_biting.append(0)
 
-        for i in range(len(mirror_biting)):
-            if i == 0:
-                if mirror_biting[i] == 1:
-                    start_point = i
-                continue
-            if mirror_biting[i] == 1 and mirror_biting[i-1] == 0:
-                start_point = i
-            elif mirror_biting[i] == 0 and mirror_biting[i-1] == 1:
-                end_point = i
-                mirror_biting_events[(start_point, end_point-1)] = end_point - start_point
+    #     for i in range(len(mirror_biting)):
+    #         if i == 0:
+    #             if mirror_biting[i] == 1:
+    #                 start_point = i
+    #             continue
+    #         if mirror_biting[i] == 1 and mirror_biting[i-1] == 0:
+    #             start_point = i
+    #         elif mirror_biting[i] == 0 and mirror_biting[i-1] == 1:
+    #             end_point = i
+    #             mirror_biting_events[(start_point, end_point-1)] = end_point - start_point
 
-        # Convert values in mirror_biting_events to seconds
-        mirror_biting_events = {k: v/self.hyp["FPS"] for k, v in mirror_biting_events.items()}
+    #     # Convert values in mirror_biting_events to seconds
+    #     mirror_biting_events = {k: v/self.hyp["FPS"] for k, v in mirror_biting_events.items()}
 
-        return Time(mirror_biting), Events(mirror_biting_events, self.hyp["DURATION"])
+    #     return Time(mirror_biting), Events(mirror_biting_events, self.hyp["DURATION"])
     
 
 
@@ -198,7 +205,7 @@ class SocialInteractionTest(Loader):
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, _ = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df)
 
         self.distance = self.distance_to(self.df, "SEPARATOR", "Y")
         self.time, self.events = self.timing(self.df, "CONSPECIFIC", "Y", smaller = False)
@@ -258,7 +265,7 @@ class PredatorAvoidanceTest(Loader):
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, _ = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df)
 
         self.distance = self.distance_to(self.df, "SEPARATOR", "Y")
         self.time, self.events = self.timing(self.df, "PREDATOR", "Y", smaller = True)

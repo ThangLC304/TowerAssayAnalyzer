@@ -34,6 +34,9 @@ def trimmer(df, target_rows, mode):
         raise Exception('mode must be either head or tail')
     return df
 
+#def a function that uppercase first letter of each word in a string
+def upper_first(string):
+    return ' '.join([word[0].upper() + word[1:] for word in string.split()])
 
 
 class Loader():
@@ -94,10 +97,15 @@ class Loader():
 
     def BasicCalculation(self, input_df):
 
+        calculate_top_position = True
+
         conversion_rate = self.hyp["CONVERSION RATE"]
         fps = self.hyp["FPS"]
         duration = self.hyp["DURATION"]
-        TBS_line = self.hyp["TOP"]
+        try:
+            TBS_line = self.hyp["TOP"]
+        except KeyError:
+            calculate_top_position = False
 
         # get names of columns
         cols = input_df.columns
@@ -126,11 +134,12 @@ class Loader():
                 distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2) / conversion_rate
                 output_dict['distance'].append(distance)
 
-            # Calculate the location of the fish (top or bottom)
-            if x1 < TBS_line:
-                output_dict['locations'].append(1)
-            else:
-                output_dict['locations'].append(0)
+            if calculate_top_position:
+                # Calculate the location of the fish (top or bottom)
+                if x1 < TBS_line:
+                    output_dict['locations'].append(1)
+                else:
+                    output_dict['locations'].append(0)
 
 
         # Calculate the speed ( in cm/s ) each frame
@@ -216,9 +225,10 @@ class Loader():
 
         indicator = 1 if smaller else 0
         col_num = 0 if axis == 'X' else 1
+        cols = df.columns
 
         for _, row in df.iterrows():
-            coord = row[self.cols[col_num]]
+            coord = row[cols[col_num]]
 
             # Calculate the mirror biting
             if coord < self.hyp[TARGET]:
@@ -245,7 +255,7 @@ class Loader():
         # Convert values in mirror_biting_events to seconds
         interaction_events = {k: v/self.hyp["FPS"] for k, v in interaction_events.items()}
 
-        return Time(interaction), My_Events(interaction_events, self.hyp["DURATION"])
+        return Time(interaction), Events(interaction_events, self.hyp["DURATION"])
 
 
 class CustomDisplay():
@@ -280,11 +290,11 @@ class Time(CustomDisplay):
         self.percentage = self.duration / len(self.list) * 100
         self.not_duration = len(self.list) - self.duration
         self.not_percentage = 100 - self.percentage
-        self.unit = 'seconds'
+        self.unit = 's'
 
     
 
-class My_Events(CustomDisplay):
+class Events(CustomDisplay):
 
     def __init__(self, event_dict, duration):
 
@@ -292,7 +302,7 @@ class My_Events(CustomDisplay):
         self.count = len(self.dict)
         self.longest = max(self.dict.values())
         self.percentage = self.longest / duration * 100
-        self.unit = 'seconds'
+        self.unit = 's'
 
 
 
