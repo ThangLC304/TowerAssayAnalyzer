@@ -11,6 +11,10 @@ Input/
 Output/
 *.ipynb
 
+#all file start with test
+test*
+example*
+
 # Distribution / packaging
 .Python
 build/

@@ -23,11 +23,11 @@ SELECTED_TEST = 'Select Test'
 ROUND_UP = 4
 
 COLORS = {
-    'background': '#333',
+    'background': '#6666CD',
     'foreground': '#fff',
-    'button_bg': 'light blue',
+    'button_bg': '#F0F0F8',
     'button_fg': 'black',
-    'combo_bg': 'light blue',
+    'combo_bg': '#F0F0F8',
     'combo_fg': 'black',
 }
 
@@ -50,7 +50,7 @@ button_config = {
     'bg': COLORS['button_bg'],
     'fg': COLORS['button_fg'],
     'font': ('Helvetica', 12, 'bold'),
-    'width': max([len(text) for text in BUTTON_TEXTS.values()]),
+    'width': 18,
     'activebackground': COLORS['button_fg'],
     'activeforeground': COLORS['button_bg'],
     'borderwidth': 10,
@@ -230,7 +230,8 @@ root.geometry("1200x500")
 root.title("Tower Assay Analyzer")
 
 # Load the image and create a PhotoImage object
-image = Image.open("Bin/landing.png")
+# image = Image.open("Bin/landing.png")
+image = Image.open("Bin/zebrafish02.jpg")
 # image = image.resize((500, 500), Image.Resampling.LANCZOS)
 # resize to height = 500, width keeping the aspect ratio
 image = image.resize((int(image.size[0] * 500 / image.size[1]), 500), Image.Resampling.LANCZOS)
