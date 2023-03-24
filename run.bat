@@ -5,21 +5,28 @@ set venv_name=TAN_env
 REM set TAN_dir to directory of this file
 set "TAN_dir=%~dp0"
 
-REM check if anaconda or miniconda is installed, C:\ProgramData\Anaconda3\Scripts\conda.exe
-if not exist C:\ProgramData\Anaconda3\Scripts\conda.exe (
-    echo Anaconda or Miniconda is not installed
-    echo Please install Anaconda or Miniconda
-    echo Exiting...
-    pause
-    exit
+if not exist C:\ProgramData\Anaconda3\envs\%venv_name% (
+    if not exist %UserProfile%\.conda\envs\%venv_name% (
+        echo %venv_name% does not exist
+    ) else (
+        set venv_path=%UserProfile%\.conda\envs\%venv_name%
+        echo %venv_name% exists at %venv_path%
+    )
 ) else (
-    echo Anaconda or Miniconda is installed
-    set conda_path=C:\ProgramData\Anaconda3
+    set venv_path=C:\ProgramData\Anaconda3\envs\%venv_name%
+    echo %venv_name% exists at %venv_path%
 )
 
+if not exist C:\ProgramData\Anaconda3\Scripts\activate.bat (
+    echo Anaconda not installed
+) else (
+    set conda_path=C:\ProgramData\Anaconda3\Scripts\activate.bat
+    echo Anaconda installed at %conda_path%
+)
+
+
 echo Activating virtual environment...
-echo Accessing virtual environment at path: %conda_path%\envs\%venv_name%
-call %conda_path%\Scripts\activate.bat %conda_path%\envs\%venv_name%
+call %conda_path% %venv_path%
 echo Virtual environment (%venv_name%) activated
 
 echo Run program

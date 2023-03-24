@@ -23,8 +23,8 @@ SELECTED_TEST = 'Select Test'
 ROUND_UP = 4
 
 COLORS = {
-    'background': '#6666CD',
-    'foreground': '#fff',
+    'background': 'white',
+    'foreground': 'black',
     'button_bg': '#F0F0F8',
     'button_fg': 'black',
     'combo_bg': '#F0F0F8',
@@ -50,10 +50,11 @@ button_config = {
     'bg': COLORS['button_bg'],
     'fg': COLORS['button_fg'],
     'font': ('Helvetica', 12, 'bold'),
-    'width': 18,
+    'width': 16,
+    'justify': 'center',
     'activebackground': COLORS['button_fg'],
     'activeforeground': COLORS['button_bg'],
-    'borderwidth': 10,
+    'borderwidth': 5,
     'padx': 10,
     'pady': 20,
 }
@@ -86,7 +87,7 @@ def display_in(result_dict, target, wg_padx, wg_pady):
     result_canvas3 = tk.Canvas(target, width=80, height=400, bg=COLORS["background"])
     result_canvas3.grid(row=0, column=2, padx=wg_padx, pady=wg_pady)
 
-    text_color = "white"
+    text_color = COLORS["foreground"]
     text_height = 30
 
     for i, content in enumerate(result_dict.values()):
@@ -184,9 +185,9 @@ def load_json(event):
     # Create input widgets for each key in the hyp_dict
     for i, key in enumerate(hyp_dict.keys()):
         pdY = 30 if i == 0 else 10
-        category_label = tk.Label(hyp_input_canvas, text=key, font=("Helvetica", 15), fg="white", bg=COLORS["background"])
+        category_label = tk.Label(hyp_input_canvas, text=key, font=("Helvetica", 15), fg=COLORS["foreground"], bg=COLORS["background"])
         category_label.grid(row=i+1, column=0, padx=10, pady=pdY)
-        value_entry = tk.Entry(hyp_input_canvas, font=("Helvetica", 10), bg="white")
+        value_entry = tk.Entry(hyp_input_canvas, font=("Helvetica", 12), bg="white")
         value_entry.insert(0, str(hyp_dict[key]))
         value_entry.grid(row=i+1, column=1, padx=10, pady=pdY)
 
@@ -256,11 +257,12 @@ canvas2 = tk.Canvas(root, width=800, height=500, bg=COLORS["background"])
 canvas2.pack(side="right", fill="both", expand=True)
 
 # Create the top sub-canvas for the application name and logo
-top_canvas = tk.Canvas(canvas2, width=800, height=120, bg="blue")
+top_canvas = tk.Canvas(canvas2, width=800, height=120, bg=COLORS["background"])
 top_canvas.pack(side="top", fill="x")
 
 # Add the application name and logo to the top sub-canvas
-top_canvas.create_text(300, 60, text="Tower Assay Analyzer", font=("Helvetica", 30), fill="white")
+text_color = "#003D9E"
+top_canvas.create_text(300, 60, text="Tower Assay Analyzer", font=("Helvetica", 30), fill=text_color)
 top_canvas.create_image(700, 60, image=logo_image)
 
 # Create the bottom sub-canvas
@@ -283,16 +285,19 @@ task_dropdown.grid(row=0, column=0, padx=10, pady=20)
 
 # Create the buttons
 button1 = tk.Button(bottom_left_canvas, text=BUTTON_TEXTS["select_file"], command=load_files)
-button1.configure(button_config)
 button1.grid(row=1, column=0)
+button1.configure(button_config)
+
 
 button2 = tk.Button(bottom_left_canvas, text=BUTTON_TEXTS["execute"], command=execute_calculation)
-button2.configure(button_config)
 button2.grid(row=2, column=0)
+button2.configure(button_config)
+
 
 button3 = tk.Button(bottom_left_canvas, text=BUTTON_TEXTS["quit"], command=quit_program)
-button3.configure(button_config)
 button3.grid(row=3, column=0)
+button3.configure(button_config)
+
 
 
 # Create the right sub-canvas for the widget to display and change hyperparameters
@@ -302,7 +307,7 @@ bottom_right_canvas.pack(side="right", fill="both", expand=True)
 # Create a canvas to hold the hyperparameter title, and add it to the right sub-canvas, the title is always in middle
 hyp_title_canvas = tk.Canvas(bottom_right_canvas, width=500, height=50, bg=COLORS["background"])
 hyp_title_canvas.pack(side="top", fill="x")
-hyp_title_canvas.create_text(250, 25, text="Hyperparameters", font=("Helvetica", 20), fill="white")
+hyp_title_canvas.create_text(250, 25, text="Hyperparameters", font=("Helvetica", 20), fill="black")
 
 # Create a canvas to hold the input widgets
 hyp_input_canvas = tk.Canvas(bottom_right_canvas, width=500, height=250, bg=COLORS["background"])
