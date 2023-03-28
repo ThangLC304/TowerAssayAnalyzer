@@ -22,7 +22,7 @@ if exist "%conda_path%\envs\%venv_name%" (
 
 REM activate TAN environment
 echo Activating virtual environment... at %conda_path%\envs\%venv_name%
-call %conda_path%\Scripts\activate.bat %conda_path%\envs\%venv_name%
+call %conda_path%\Scripts\activate.bat %venv_name%
 
 echo Virtual environment (%venv_name%) activated
 

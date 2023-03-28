@@ -27,14 +27,12 @@ if exist "%UserProfile%\anaconda3\Scripts\conda.exe" (
   set "conda_path=%UserProfile%\miniconda3"
 )
 
-for /f "tokens=*" %%a in ('%conda_path%\Scripts\conda env list') do (
-  for /f "tokens=1" %%b in ("%%a") do (
-    if /i "%%b"=="%venv_name%" (
-      echo %venv_name% already exists
-    ) else (
-      echo %venv_name% not found
-      echo Creating virtual environment with Python %python_version%...
-      call %conda_path%\Scripts\conda create -n %venv_name% python==%python_version% -y
+if exist "%conda_path%\envs\%venv_name%" (
+    echo %venv_name% already exists
+) else (
+    echo %venv_name% not found
+    echo Creating virtual environment with Python %python_version%...
+    call %conda_path%\Scripts\conda create -n %venv_name% python==%python_version% -y
     )
   )
 )
@@ -42,7 +40,7 @@ for /f "tokens=*" %%a in ('%conda_path%\Scripts\conda env list') do (
 
 REM activate TAN environment
 echo Activating virtual environment... at %conda_path%\envs\%venv_name%
-call %conda_path%\Scripts\activate.bat %conda_path%\envs\%venv_name%
+call %conda_path%\Scripts\activate.bat %venv_name%
 
 
 REM go to TAN directory, pip install -r -requirements.txt
