@@ -17,6 +17,8 @@ if not exist "%UserProfile%\miniconda3" (
     echo Installing Miniconda...
     start /wait "" "%miniconda_installer%" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%UserProfile%\miniconda3
   )
+) else (
+    echo Anaconda or Miniconda already installed
 )
 
 if exist "%UserProfile%\anaconda3" (
@@ -25,31 +27,13 @@ if exist "%UserProfile%\anaconda3" (
   set "conda_path=%UserProfile%\miniconda3\Scripts"
 )
 
+echo Creating virtual environment with Python %python_version%...
+call %conda_path%\conda create -n %venv_name% python=%python_version% -y
+
 REM activate TAN environment
 echo Activating virtual environment...
 call %conda_path%\activate.bat %conda_path%\..\envs\%venv_name%
 
-@REM REM check if git is installed
-@REM where git > nul 2>nul
-@REM if errorlevel 1 (
-@REM     echo Installing git
-@REM     C:\ProgramData\Anaconda3\\Scripts\conda.exe install -y -n %venv_name% git
-@REM     echo git installed
-@REM ) else (
-@REM     echo git already installed
-@REM )
-
-@REM REM check if TAN_dir existed, if yes, remove
-@REM if exist %TAN_dir% (
-@REM     echo Removing old TAN directory
-@REM     rmdir /s /q %TAN_dir%
-@REM     echo Old TAN directory removed
-@REM )
-
-@REM REM clone TAN from github
-@REM echo Cloning TAN from github
-@REM set "TAN_repo=https://github.com/ThangLC304/TowerAssayAnalyzer"
-@REM git clone %TAN_repo% %TAN_dir%
 
 REM go to TAN directory, pip install -r -requirements.txt
 echo Installing TAN requirements
