@@ -1,6 +1,6 @@
 @echo off
 
-set venv_name=TAN_env
+set venv_name=myenv
 
 REM set TAN_dir to directory of this file
 set "TAN_dir=%~dp0"
@@ -31,5 +31,3 @@ echo Virtual environment (%venv_name%) activated
 
 echo Run program
 python main.py
-
-pause

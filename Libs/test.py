@@ -3,9 +3,9 @@ import time
 import cv2
 import argparse
 
-im_path = r'C:\Code\ChungyuanProjects\TowerAssayAnalyzer\Input\C - Mirror Biting Test.png'
-txt_path = r'C:\Code\ChungyuanProjects\TowerAssayAnalyzer\Output\arranged_C - Mirror Biting Test - full.csv'
-# txt_path = r'C:\Code\ChungyuanProjects\TowerAssayAnalyzer\Output\raw_df_withgap.csv'
+im_path = r'D:\Code\TowerAssayAnalyzer\Input\C - Mirror Biting Test.png'
+# txt_path = r'D:\Code\TowerAssayAnalyzer\Output\arranged_C - Mirror Biting Test - full.csv'
+txt_path = r'D:\Code\TowerAssayAnalyzer\Output\raw_df_withgap.csv'
 
 # Load the image
 def main(mode = 'single', time_wait = 10, time_start = 0, frame_step = 50, tracked_tank = 0):

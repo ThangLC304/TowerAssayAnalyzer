@@ -4,6 +4,9 @@ import json
 from tkinter import ttk
 from PIL import Image, ImageTk
 from Libs.executor import *
+from pathlib import Path
+from Libs.misc import create_messagebox
+import openpyxl
 
 # Predefined Constants #
 
@@ -65,6 +68,7 @@ button_config = {
 
 
 def notify(task):
+    
     print()
     print("="*50)
     print(f"Executing {task} Test, please wait...")
@@ -75,6 +79,40 @@ def notify(task):
 def load_files():
     global file_path
     file_path = tk.filedialog.askopenfilename(initialdir="./input", title="Select files", filetypes=[("Text Files", "*.txt")])
+
+
+def excel_export(result_dict, name = None):
+
+    # Export the result to an excel file
+    Input_path = Path(file_path)
+
+    # Set the output file name
+    if name == None:
+        Ori_Output_path = Input_path.parent / (Input_path.stem + "_result.xlsx")
+    else:
+        Ori_Output_path = Input_path.parent / (Input_path.stem + "_" + name + "_result.xlsx")
+    
+    # Check if the file already exists, if so, rename current file, adding a number to the end of the file name
+    Output_path = Ori_Output_path
+    suffix_num = 1
+    while Output_path.exists():
+        Output_path = Input_path.parent / (Ori_Output_path.stem + "_" + str(suffix_num) + '.xlsx')
+        suffix_num += 1
+    
+    # Export the result to an excel file
+    df = pd.DataFrame.from_dict(result_dict, orient='index', columns=['Categories', 'Values', 'Units'])
+    df.to_excel(Output_path, index=False)
+    
+    # open the file to change column width to fit the content
+    wb = openpyxl.load_workbook(Output_path)
+    ws = wb.active
+    ws.column_dimensions['A'].width = 40
+    ws.column_dimensions['B'].width = 20
+    ws.column_dimensions['C'].width = 20
+    wb.save(Output_path)
+
+    # Display a messagebox to notify the user
+    create_messagebox(root, "Exported", Input_path.parent)
 
 
 def display_in(result_dict, target, wg_padx, wg_pady):
@@ -142,6 +180,7 @@ def execute_calculation():
         result_window.title(task_selected)
 
         display_in(display_dict, result_window, wg_padx, wg_pady)
+        excel_export(display_dict)
 
     else:
 
@@ -160,6 +199,7 @@ def execute_calculation():
             tab_control.add(tab, text=tab_names[i], padding=3)
 
             display_in(display_dict[tab_names[i]], tab, wg_padx, wg_pady)
+            excel_export(display_dict[tab_names[i]], name = tab_names[i])
 
         tab_control.pack(expand=1, fill="both")
 

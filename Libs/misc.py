@@ -446,7 +446,7 @@ def draw_prep(mode = 'multiple', im_path = None, txt_path = None, sep = ","):
 
         print('Exported filled_history to .json file')
         # indent = 4 for pretty print
-        json_path = r'C:\Code\ChungyuanProjects\TowerAssayAnalyzer\History\manual_filled_history.json'
+        json_path = r'D:\Code\TowerAssayAnalyzer\History\manual_filled_history.json'
         with open(json_path, 'w') as f:
             json.dump(filled_history, f, indent = 4)
 
@@ -459,3 +459,25 @@ def draw_prep(mode = 'multiple', im_path = None, txt_path = None, sep = ","):
 def draw_trajectories(final_df, im, tanks_list, until = 3000, mouse = False, wait = 0, filled_history = {}, draw_nan = False):
     final_df = final_df.iloc[:until, :]
     display_coords(final_df, im, window_name = "Display trajectories", mouse = mouse, tanks_list = tanks_list, wait = wait, filled_history = filled_history, draw_nan = draw_nan)
+
+
+def open_dir(output_dir):
+    os.startfile(output_dir)
+
+def create_messagebox(root, title, output_dir):
+
+    message = f'The summary stats are exported to {output_dir}'
+    # pop-up a message to notify that the file has been exported
+    messagebox = tk.Toplevel(root)
+    messagebox.title(title)
+    # flexibly set the size of messagebox
+    messagebox.geometry('+{}+{}'.format(root.winfo_x() + 500, root.winfo_y() + 250))
+    messagebox.configure(bg="white")
+    label = tk.Label(messagebox, text=message, font=('Arial', 16, 'bold'))
+    label.grid(row=0, column=0, padx=10, pady=20)
+    go_button = tk.Button(messagebox, text='Go to Output directory', font=('Arial', 16, 'bold'), command=lambda: open_dir(output_dir))
+    go_button.grid(row=1, column=0, padx=10, pady=20)
+    go_button.configure(bg = 'dark green', fg = 'white')
+    # change the messagebox size to fit the label
+    messagebox.update()
+    messagebox.after(3000, messagebox.destroy)
