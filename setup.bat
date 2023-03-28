@@ -1,8 +1,8 @@
 @echo off
-set miniconda_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
-set miniconda_installer="%~dp0Miniconda3-latest-Windows-x86_64.exe"
-set python_version="3.9.13"
-set venv_name="TAN_env"
+set "miniconda_url=https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
+set "miniconda_installer=%~dp0Miniconda3-latest-Windows-x86_64.exe"
+set "python_version=3.9.13"
+set "venv_name=TAN_env"
 
 REM set TAN_dir to current directory
 set "TAN_dir=%~dp0"
@@ -21,18 +21,28 @@ if not exist "%UserProfile%\miniconda3" (
     echo Anaconda or Miniconda already installed
 )
 
-if exist "%UserProfile%\anaconda3" (
-  set "conda_path=%UserProfile%\anaconda3\Scripts"
+if exist "%UserProfile%\anaconda3\Scripts\conda.exe" (
+  set "conda_path=%UserProfile%\anaconda3"
 ) else (
-  set "conda_path=%UserProfile%\miniconda3\Scripts"
+  set "conda_path=%UserProfile%\miniconda3"
 )
 
-echo Creating virtual environment with Python %python_version%...
-call %conda_path%\conda create -n %venv_name% python=%python_version% -y
+for /f "tokens=*" %%a in ('%conda_path%\Scripts\conda env list') do (
+  for /f "tokens=1" %%b in ("%%a") do (
+    if /i "%%b"=="%venv_name%" (
+      echo %venv_name% already exists
+    ) else (
+      echo %venv_name% not found
+      echo Creating virtual environment with Python %python_version%...
+      call %conda_path%\Scripts\conda create -n %venv_name% python==%python_version% -y
+    )
+  )
+)
+
 
 REM activate TAN environment
-echo Activating virtual environment...
-call %conda_path%\activate.bat %conda_path%\..\envs\%venv_name%
+echo Activating virtual environment... at %conda_path%\envs\%venv_name%
+call %conda_path%\Scripts\activate.bat %conda_path%\envs\%venv_name%
 
 
 REM go to TAN directory, pip install -r -requirements.txt
