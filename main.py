@@ -6,20 +6,18 @@ from PIL import Image, ImageTk
 from Libs.executor import *
 from pathlib import Path
 from Libs.misc import create_messagebox
+from Libs.batchprocess import MY_DIR
+from Libs.autoanalyzer import autoanalyzer
 import openpyxl
 
 # Predefined Constants #
-
 ROOT = os.path.dirname(os.path.realpath(__file__))
 
-test_options = ['Novel Tank', 'Shoaling', 'Mirror Biting', 'Social Interaction', 'Predator Avoidance']
-task_json_dict = {
-        "Novel Tank": "noveltank",
-        "Shoaling": "shoaling",
-        "Mirror Biting": "mirror",
-        "Social Interaction": "social",
-        "Predator Avoidance": "predator"
-    }
+ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
+
+tests = ['Novel Tank', 'Shoaling', 'Mirror Biting', 'Social Interaction', 'Predator Avoidance']
+keywords = [x.split(' ')[0].lower() for x in tests]
+task_json_dict = {tests[i]: keywords[i] for i in range(len(tests))}    
 
 SELECTED_TEST = 'Select Test'
 
@@ -37,6 +35,7 @@ COLORS = {
 BUTTON_TEXTS = {
     'select_file': 'Select File',
     'execute': 'Execute Calculation',
+    'auto': 'Auto Analyzer',
     'quit': 'Quit',
 }
 
@@ -79,6 +78,10 @@ def notify(task):
 def load_files():
     global file_path
     file_path = tk.filedialog.askopenfilename(initialdir="./input", title="Select files", filetypes=[("Text Files", "*.txt")])
+    file_path = Path(file_path)
+
+
+
 
 
 def excel_export(result_dict, name = None):
@@ -149,8 +152,20 @@ def execute_calculation():
         pass
     elif task_selected == "Novel Tank":
         notify(task_selected)
-        display_dict = noveltank_exec(file_path)
-        SINGLE = True
+        json_path = f"Bin/hyp_{task_json_dict[task_selected]}.json"
+        with open(json_path) as f:
+            hyp_dict = json.load(f)
+        ntt_segment = int(hyp_dict["SEGMENT DURATION"])
+        ntt_segment_num = int(int(hyp_dict["DURATION"])/ntt_segment)
+        if ntt_segment == 0:
+            display_dict = noveltank_exec(file_path)[1]
+            SINGLE = True
+        else:
+            display_dict = {}
+            for i in range(ntt_segment_num):
+                segment_list = noveltank_exec(file_path, segment=i)
+                display_dict[segment_list[0]] = segment_list[1]
+            SINGLE = False
     elif task_selected == "Shoaling":
         notify(task_selected)
         display_dict = shoaling_exec(file_path)
@@ -205,7 +220,8 @@ def execute_calculation():
 
 
 # Create a function to load the JSON file when a task is selected from the Task dropdown menu
-def load_json(event):
+def load_json(event=None):
+    save_json
 
     # Clear the canvas before loading the JSON file
     for widget in hyp_input_canvas.winfo_children():
@@ -224,16 +240,17 @@ def load_json(event):
     
     # Create input widgets for each key in the hyp_dict
     for i, key in enumerate(hyp_dict.keys()):
-        pdY = 30 if i == 0 else 10
+        pdX, pdY = 10, 10
         category_label = tk.Label(hyp_input_canvas, text=key, font=("Helvetica", 15), fg=COLORS["foreground"], bg=COLORS["background"])
-        category_label.grid(row=i+1, column=0, padx=10, pady=pdY)
+        category_label.grid(row=i+1, column=0, padx=pdX, pady=pdY)
         value_entry = tk.Entry(hyp_input_canvas, font=("Helvetica", 12), bg="white")
         value_entry.insert(0, str(hyp_dict[key]))
-        value_entry.grid(row=i+1, column=1, padx=10, pady=pdY)
+        value_entry.grid(row=i+1, column=1, padx=pdX, pady=pdY)
+        if key == "SEGMENT DURATION":
+            warning_label = tk.Label(hyp_input_canvas, text="Put 0 if no segmentation needed", font=("Helvetica", 11), fg=COLORS["foreground"], bg=COLORS["background"])
+            warning_label.grid(row=i+1, column=2, padx=pdX, pady=pdY)
 
-
-def save_json(event):
-
+def save_json(event=None):
     # Get the selected task
     task_selected = task_variable.get()
     if task_selected == "Select Task":
@@ -249,7 +266,9 @@ def save_json(event):
 
         # Get the new values from the input widgets
         for i, key in enumerate(hyp_dict.keys()):
-            hyp_dict[key] = hyp_input_canvas.grid_slaves(row=i+1, column=1)[0].get()
+            current_display = hyp_input_canvas.grid_slaves(row=i+1, column=1)[0].get()
+            print(current_display)
+            hyp_dict[key] = float(current_display)
 
         # Save the new values to the JSON file
         with open(json_path, 'w') as f:
@@ -257,6 +276,18 @@ def save_json(event):
 
         print(f"Hyperparameters for {task_selected} saved to {json_path}")
 
+
+def auto_analyze():
+    
+    # Ask to open directory of project
+    PROJECT_DIR = tk.filedialog.askdirectory()
+    print("Selected directory:", PROJECT_DIR)
+    PROJECT_DIR = Path(PROJECT_DIR)
+
+    total_time = autoanalyzer(PROJECT_DIR, BATCHNUM = 1)
+
+    # Display a messagebox to notify the user
+    create_messagebox(root, "Batch Analysis Completed", f"Total time taken: {total_time} seconds", button=False)
 
 def quit_program():
     root.quit()
@@ -334,11 +365,14 @@ button2.grid(row=2, column=0)
 button2.configure(button_config)
 
 
-button3 = tk.Button(bottom_left_canvas, text=BUTTON_TEXTS["quit"], command=quit_program)
+button3 = tk.Button(bottom_left_canvas, text=BUTTON_TEXTS["auto"], command=auto_analyze)
 button3.grid(row=3, column=0)
 button3.configure(button_config)
 
 
+button4 = tk.Button(bottom_left_canvas, text=BUTTON_TEXTS["quit"], command=quit_program)
+button4.grid(row=4, column=0)
+button4.configure(button_config)
 
 # Create the right sub-canvas for the widget to display and change hyperparameters
 bottom_right_canvas = tk.Canvas(bottom_canvas, width=500, height=300, bg=COLORS["background"])
@@ -349,6 +383,9 @@ hyp_title_canvas = tk.Canvas(bottom_right_canvas, width=500, height=50, bg=COLOR
 hyp_title_canvas.pack(side="top", fill="x")
 hyp_title_canvas.create_text(250, 25, text="Hyperparameters", font=("Helvetica", 20), fill="black")
 
+button_save = tk.Button(hyp_title_canvas, text='Save it')
+button_save.pack(side="right", padx=10, pady=15)
+
 # Create a canvas to hold the input widgets
 hyp_input_canvas = tk.Canvas(bottom_right_canvas, width=500, height=250, bg=COLORS["background"])
 hyp_input_canvas.pack(side="top", fill="both", expand=True)
@@ -357,7 +394,7 @@ hyp_input_canvas.pack(side="top", fill="both", expand=True)
 # Bind the buttons to functions
 task_dropdown.bind("<<ComboboxSelected>>", load_json)
 button2.bind("<Button-1>", save_json)
-
+button_save.bind("<Button-1>", save_json)
 
 
 root.mainloop()

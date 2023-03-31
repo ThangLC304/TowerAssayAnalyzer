@@ -43,6 +43,13 @@ def get_file_path(type, initialdir, mode = 'single'):
 def load_raw_df(txt_path, sep = "\t"):
     # Read the .txt file into a dataframe
     raw_df = pd.read_csv(txt_path, sep = sep)
+    
+    # partial_path = Path(*Path(txt_path).parts[-3:]) if len(Path(txt_path).parts) > 3 else Path(txt_path) 
+    
+    # if len(raw_df) > 0:
+    #     print(f'Loaded raw data from ".\{partial_path}"')
+    # else:
+    #     print(f'No data loaded from ".\{partial_path}"')
 
     # Remove unnecessary columns
     tanks_list = []
@@ -54,7 +61,10 @@ def load_raw_df(txt_path, sep = "\t"):
             tank_num = re.findall(r'\d+', col)
             tank_num = int(tank_num[0])
             tanks_list.append(tank_num)
+    # print('Tanks found: ', tanks_list)
+
     return raw_df, tanks_list
+
 
 def get_image(source = 'video'):
 
@@ -397,6 +407,15 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startcol=None, startro
         print('In file: ', os.path.basename(filename))
         print('Appended to column: ', startcol,', row: ', startrow)
     
+    # remove df headers if they exist
+    if startrow != 0:
+        # take the first row
+        first_row = df.iloc[0].astype(str)
+        # check if any cell in the first row contains a letter
+        has_letter = first_row.str.contains('[a-zA-Z]').any()
+        if has_letter:
+            df = df.iloc[1:, :]
+
     # write the dataframe to the existing sheet
     df.to_excel(writer, sheet_name, startcol=startcol, startrow=startrow, **to_excel_kwargs)
 
@@ -464,7 +483,7 @@ def draw_trajectories(final_df, im, tanks_list, until = 3000, mouse = False, wai
 def open_dir(output_dir):
     os.startfile(output_dir)
 
-def create_messagebox(root, title, output_dir):
+def create_messagebox(root, title, output_dir, button=True):
 
     message = f'The summary stats are exported to {output_dir}'
     # pop-up a message to notify that the file has been exported
@@ -475,9 +494,91 @@ def create_messagebox(root, title, output_dir):
     messagebox.configure(bg="white")
     label = tk.Label(messagebox, text=message, font=('Arial', 16, 'bold'))
     label.grid(row=0, column=0, padx=10, pady=20)
-    go_button = tk.Button(messagebox, text='Go to Output directory', font=('Arial', 16, 'bold'), command=lambda: open_dir(output_dir))
-    go_button.grid(row=1, column=0, padx=10, pady=20)
-    go_button.configure(bg = 'dark green', fg = 'white')
+    if button:
+        go_button = tk.Button(messagebox, text='Go to Output directory', font=('Arial', 16, 'bold'), command=lambda: open_dir(output_dir))
+        go_button.grid(row=1, column=0, padx=10, pady=20)
+        go_button.configure(bg = 'dark green', fg = 'white')
     # change the messagebox size to fit the label
     messagebox.update()
     messagebox.after(3000, messagebox.destroy)
+
+
+def adjust_column_widths(excel_file):
+    # Open the Excel file
+    wb = openpyxl.load_workbook(excel_file)
+    
+    # Loop through each sheet in the workbook
+    for sheet_name in wb.sheetnames:
+        # Select the sheet
+        sheet = wb[sheet_name]
+        
+        # Loop through each column in the sheet
+        for col in sheet.columns:
+            # Set the width of the column to 17.00 (160 pixels)
+            sheet.column_dimensions[col[0].column_letter].width = 17.00
+        
+        # Enable text wrapping for the header row
+        for cell in sheet[1]:
+            cell.alignment = openpyxl.styles.Alignment(wrapText=True, horizontal='center', vertical='center')
+    
+    # Save the workbook
+    wb.save(excel_file)
+
+
+def get_sheet_names(excel_path):
+    wb = openpyxl.load_workbook(excel_path)
+    return wb.sheetnames
+
+
+def merge_cells(file_path, col_name = 'Shoaling Area', cell_step=3, inplace = True):
+    # Load the Excel workbook
+    workbook = openpyxl.load_workbook(filename=file_path)
+
+    for worksheet in workbook.worksheets:
+        # Find the column index for the "Shoaling Area" header
+        shoaling_area_col = None
+        for col_idx in range(1, worksheet.max_column+1):
+            header = worksheet.cell(row=1, column=col_idx).value
+            if header and col_name in header:
+                shoaling_area_col = col_idx
+                break
+
+        if shoaling_area_col is None:
+            print("Column not found.")
+        else:
+            # Merge every next 3 rows of the Shoaling Area column
+            for row_idx in range(2, worksheet.max_row+1, cell_step):
+                value = worksheet.cell(row=row_idx, column=shoaling_area_col).value
+                print(value)
+                if value is not None:
+                    # Merge the current row with the next 2 rows
+                    worksheet.merge_cells(start_row=row_idx, start_column=shoaling_area_col, end_row=row_idx+2, end_column=shoaling_area_col)
+                
+                # align the merged cell, horizontal and vertical center
+                worksheet.cell(row=row_idx, column=shoaling_area_col).alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+            
+    # define output_path
+    if inplace == False:
+        output_path = file_path[:-5] + '_merged.xlsx'        
+    else:
+        output_path = file_path    
+
+    # Save the modified workbook
+    workbook.save(filename=output_path)
+
+def sort_paths_by_parent(paths):
+
+    def sort_key(path):
+        name_parts = path.parent.name.split('-')
+        if len(name_parts) >= 2:
+            try:
+                primary_key = int(name_parts[0].strip())
+            except ValueError:
+                primary_key = int(name_parts[0].strip())
+            secondary_key = int(name_parts[1].strip())
+        else:
+            primary_key = int(name_parts[0].strip())
+            secondary_key = 0
+        return (primary_key, secondary_key)
+    
+    return sorted(paths, key=sort_key)

@@ -9,13 +9,18 @@ basic_requirements = ['total distance', 'average speed',
 
 class NovelTank_Display(NovelTankTest):
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, segment = -1):
 
-        super().__init__(input_df)
+        super().__init__(input_df, segment)
 
         self.rows = {}
         for i, req in enumerate(basic_requirements):
             self.rows[i] = [upper_first(req), self.basic[req], self.units[req]]
+
+        try:
+            average_entry = self.time.duration/self.events.count
+        except:
+            average_entry = 0
 
         self.display = [
             ['Average distance to center', self.distance.avg, self.distance.unit],
@@ -26,18 +31,34 @@ class NovelTank_Display(NovelTankTest):
             ['Distance traveled top/bottom ratio', self.others['distance top/bottom ratio'], ''],
             ['Latency in frames', self.others['latency in frames'], 'frames'],
             ['Latency in seconds', self.others['latency in seconds'], 'seconds'],
+            ['Number of entries', self.events.count, ''],
+            ['Average entry', average_entry, 'seconds']
         ]
 
         for j in range(i, len(self.display)+i):
             self.rows[j] = self.display[j-i]
 
 
-def noveltank_exec(txt_path):
+    
+
+def noveltank_exec(txt_path, seg_num = 1, wait = 5):
+
+    # wait time between each record session is 5 minutes
 
     df, _ = load_raw_df(txt_path)
     df, _ = clean_df(df, fill=True)
-    test = NovelTank_Display(df)
-    return test.rows
+    result_dict = {}
+    
+
+    result_dict['whole'] = NovelTank_Display(df, segment = -1).rows
+
+    if seg_num > 1:
+        for segment in range(seg_num):
+            test = NovelTank_Display(df, segment = segment)
+            result_dict[f"{segment*wait}-{segment*wait+1} MIN"] = test.rows
+
+    return result_dict
+        
 
 
 
@@ -82,6 +103,7 @@ def shoaling_exec(txt_path):
     whole_df, _ = load_raw_df(txt_path)
     whole_df, _ = clean_df(whole_df, fill=True)
     df1, df2, df3 = whole_df.iloc[:, :2], whole_df.iloc[:, 2:4], whole_df.iloc[:, 4:]
+    # print('Splitted into 3 dataframes', df1.shape, df2.shape, df3.shape, '')
     test = Shoaling_Display(df1, df2, df3)
     result_dict = {}
     result_dict['Fish A'] = test.basicdisplay[1]
@@ -103,7 +125,7 @@ class MirrorBiting_Display(MirrorBitingTest):
             self.rows[i] = [upper_first(req), self.basic[req], self.units[req]]
 
         self.display = [
-            ['Mirror biting time', self.time.percentage, self.time.unit],
+            ['Mirror biting time', self.time.percentage, '%'],
             ['Longest time mirror biting', self.events.longest, self.events.unit],
             ['Longest time mirror biting %', self.events.percentage, '%'],
         ]

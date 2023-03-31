@@ -1,7 +1,7 @@
 {
-    "FPS": "50",
-    "DURATION": "300",
-    "CONVERSION RATE": "13.038",
-    "PREDATOR": "526",
-    "SEPARATOR": "586"
+    "FPS": 50.0,
+    "DURATION": 300.0,
+    "CONVERSION RATE": 13.2778,
+    "PREDATOR": 536.0,
+    "SEPARATOR": 597.0
 }

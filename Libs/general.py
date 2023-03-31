@@ -6,6 +6,21 @@ import math
 from pathlib import Path
 import json
 from statistics import mean
+from word2number import w2n
+import re
+
+def ordinal_to_number(ordinal):
+    ordinal = ordinal.lower().strip()
+    if ordinal[-2:] == "st":
+        return w2n(ordinal[:-2])
+    elif ordinal[-2:] == "nd":
+        return w2n(ordinal[:-2])
+    elif ordinal[-2:] == "rd":
+        return w2n(ordinal[:-2])
+    elif ordinal[-2:] == "th":
+        return w2n(ordinal[:-2])
+    else:
+        return None
 
 
 ROUND_UP = 4
@@ -97,6 +112,13 @@ class Loader():
 
     def BasicCalculation(self, input_df):
 
+        # reset index
+        input_df = input_df.reset_index(drop=True)
+        
+        # print('First five row:', input_df[0:5])
+        # print('Last five row', input_df[-5:])
+        
+
         calculate_top_position = True
 
         conversion_rate = self.hyp["CONVERSION RATE"]
@@ -128,11 +150,13 @@ class Loader():
             x1 = input_df.loc[index, cols[0]]
             y1 = input_df.loc[index, cols[1]]
 
-            if index != len(input_df) - 1:
-                x2 = input_df.loc[index+1, cols[0]]
-                y2 = input_df.loc[index+1, cols[1]]
-                distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2) / conversion_rate
-                output_dict['distance'].append(distance)
+            if index >= len(input_df) -1:
+                break
+
+            x2 = input_df.loc[index+1, cols[0]]
+            y2 = input_df.loc[index+1, cols[1]]
+            distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2) / conversion_rate
+            output_dict['distance'].append(distance)
 
             if calculate_top_position:
                 # Calculate the location of the fish (top or bottom)
@@ -140,8 +164,8 @@ class Loader():
                     output_dict['locations'].append(1)
                 else:
                     output_dict['locations'].append(0)
-
-
+        # print('Key = distance, length = ', len(output_dict['distance']))
+        
         # Calculate the speed ( in cm/s ) each frame
         # N-1 points
         output_dict['speed'] = [x*fps for x in output_dict['distance']]
@@ -255,6 +279,10 @@ class Loader():
         # Convert values in mirror_biting_events to seconds
         interaction_events = {k: v/self.hyp["FPS"] for k, v in interaction_events.items()}
 
+        # print('Number of interaction events:', len(interaction_events))
+        if len(df) > 0 and len(interaction_events) == 0:
+            interaction_events['-1'] = '-1'
+
         return Time(interaction), Events(interaction_events, self.hyp["DURATION"])
 
 
@@ -287,6 +315,7 @@ class Time(CustomDisplay):
 
         self.list = time_list
         self.duration = sum(self.list)
+        # print(f'Duration: {self.duration} / {len(self.list)}')
         self.percentage = self.duration / len(self.list) * 100
         self.not_duration = len(self.list) - self.duration
         self.not_percentage = 100 - self.percentage
@@ -299,9 +328,16 @@ class Events(CustomDisplay):
     def __init__(self, event_dict, duration):
 
         self.dict = event_dict
-        self.count = len(self.dict)
-        self.longest = max(self.dict.values())
-        self.percentage = self.longest / duration * 100
+
+        if '-1' in event_dict.keys():
+            self.count = 0
+            self.longest = 0
+            self.percentage = 0
+        else:
+            self.count = len(self.dict)
+            self.longest = max(self.dict.values())
+            self.percentage = self.longest / duration * 100
+
         self.unit = 's'
 
 
@@ -354,6 +390,10 @@ class Speed(CustomDisplay):
 
         temp_list = self.list + other.list
         return Speed(temp_list, self.hyp)
+    
+
+
+
     
 
 

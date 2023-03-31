@@ -16,11 +16,16 @@ ROUND_UP = 4
 
 class NovelTankTest(Loader): # 3000 * 7
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, segment = -1):
 
-        super().__init__(testtype='noveltank')
+        super().__init__(testtype='novel')
 
-        self.df = input_df
+        if segment == -1:
+            self.df = input_df
+        else:
+            self.df = self.segmentate(input_df, segment)
+            # print(f"With segment = {segment}, df length is: {len(self.df)}")
+
         self.cols = self.df.columns
         self.basic, self.units = self.BasicCalculation(self.df)
 
@@ -32,6 +37,23 @@ class NovelTankTest(Loader): # 3000 * 7
         self.others['distance top/bottom ratio'] = self.others['distance in top'] / self.basic["total distance"]
         self.others['latency in frames'], self.others['latency in seconds'] = self.latency_calculation()
 
+
+    def segmentate(self, input_df, segment):
+
+        try:
+            segment_duration = int(self.hyp["SEGMENT DURATION"])
+        except:
+            segment_duration = 0
+
+        if segment_duration == 0:
+            return input_df
+        
+        start_frame = segment * segment_duration * self.hyp["FPS"]
+        end_frame = (segment + 1) * segment_duration * self.hyp["FPS"]
+        # print(f"DF segmented from {start_frame} to {end_frame}")
+        
+        return input_df[start_frame:end_frame]
+        
 
     def distance_in_top(self):
         
