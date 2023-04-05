@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TowerAssayAnalyzer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+    <div class="content-wrapper"> 
+        <header>
+            <img class="logo" src="static/logoimage.png" alt="TowerAssayAnalyzer logo">
+            <h1>TowerAssayAnalyzer</h1>
+        </header>
+
+        <div class="container">
+            <form method="post" class="form">
+                <button class="primary-button" type="submit" name="action" value="create_project">Create New Project</button>
+                <button class="primary-button" type="submit" name="action" value="load_project">Load Previous Project</button>
+                <br>
+                <label class="label" for="tasks">Select Analyze Task:</label>
+                <select class="drop-down" id="tasks" name="selected_task">
+                    <option value="novel">Novel Tank Test</option>
+                    <option value="shoaling">Shoaling Test</option>
+                    <option value="mirror">Mirror Biting Test</option>
+                    <option value="social">Social Interaction Test</option>
+                    <option value="predator">Predator Avoidance Test</option>
+                </select>
+                <button class="analyze-button" type="submit" name="action" value="analyze_task">Analyze Task</button>
+            </form>
+
+            <div class="right-wrapper">
+                <div class="project">
+                    <div class="project-name">
+                        <h2>Project Name: </h2>
+                        <button class="save-button" type="button" onclick="saveProject()">Save Project</button>
+                    </div>
+                    <div class="treatments-names">
+                        <p>Treatment A: Control</p>
+                    </div>
+                </div>
+                <div class="parameters">
+                    <h2>Parameters</h2>
+                    {{ boxes_html|safe }}
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('tasks').addEventListener('change', function() {
+                var selected_task = this.value;
+                var xhttp = new XMLHttpRequest();
+            
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.querySelector('.parameters').innerHTML = '<h2>Parameters</h2>' + this.responseText;
+                    }
+                };
+            
+                xhttp.open('GET', '/get_parameters?selected_task=' + selected_task, true);
+                xhttp.send();
+            });
+        </script>
+
+    </div>
+
+    <div class="modal" id="newProjectModal">
+        <div class="modal-content">
+            <h2>Create New Project</h2>
+            <form id="newProjectForm" method="post">
+                <label for="project_name">Project Name:</label>
+                <input type="text" id="project_name" name="project_name" required>
+                
+                <div id="treatments">
+                    <div class="treatment-wrapper">
+                        <label for="treatment_A">Treatment A:</label>
+                        <input type="text" id="treatment_A" name="treatment_A" value="Control" readonly>
+                    </div>
+                    
+                    <div class="treatment-wrapper">
+                        <label for="treatment_B">Treatment B:</label>
+                        <input type="text" id="treatment_B" name="treatment_B">
+                    </div>
+                    <div class="concentration-wrapper">
+                        <label for="concentration_B">Concentration:</label>
+                        <input type="text" id="concentration_B" name="concentration_B">
+                        <select id="unit_B" name="unit_B">
+                            <option value="ppm">ppm</option>
+                            <option value="ppb">ppb</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="button" class="add-treatment-button">Add</button>
+                
+                <button type="submit" class="confirm-button">Confirm</button>
+                <button type="button" class="cancel-button">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
+
+    <script>
+
+        async function saveProject() {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                const projectHandle = await dirHandle.getDirectoryHandle(projectName, { create: true });
+            
+                // Save the project data to the created directory
+                // You may need to modify this part according to your project structure
+                const fileHandle = await projectHandle.getFileHandle('project_data.txt', { create: true });
+                const writableStream = await fileHandle.createWritable();
+                await writableStream.write('Your project data here');
+                await writableStream.close();
+            
+            } catch (error) {
+                console.error('Error while saving the project:', error);
+            }
+        }
+
+        function displayProjectName(projectName) {
+            var projectDiv = document.querySelector('.project-name');
+            // added project name to the string of <h2> tag inside projectDiv
+            projectDiv.innerHTML = '<h2>Project Name: ' + projectName + '</h2><button class="save-button" type="button" onclick="saveProject()">Save Project</button>';
+        }
+
+        function displayValidTreatments() {
+            var treatments = document.querySelectorAll('.treatment-wrapper');
+            var treatmentsNamesDiv = document.querySelector('.treatments-names');
+
+            treatments.forEach(function(treatment, index) {
+                var treatmentName = treatment.querySelector('input[type="text"]').value;
+                var concentration = treatment.querySelector('.concentration input[type="text"]').value;
+                var unit = treatment.querySelector('.concentration select').value;
+
+                if (treatmentName && concentration && unit) {
+                    var treatmentText = 'Treatment ' + String.fromCharCode(65 + index) + ' - ' + treatmentName + ' ' + concentration + ' ' + unit;
+                    var treatmentElement = document.createElement('p');
+                    treatmentElement.textContent = treatmentText;
+                    treatmentsNamesDiv.appendChild(treatmentElement);
+                }
+            });
+
+            var projectDiv = document.querySelector('.project');
+            projectDiv.appendChild(treatmentsNamesDiv);
+        }
+
+        // Create new project modal handling
+        document.getElementById('newProjectForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var projectName = document.getElementById('project_name').value;
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    closeModal();
+                    displayProjectName(projectName);
+                    displayValidTreatments();
+                    document.querySelector('.project .primary-button[type="button"]').style.display = 'inline-block';
+                }
+            };
+
+            xhttp.open('POST', '/create_project', true);
+            xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhttp.send('project_name=' + encodeURIComponent(projectName));
+        });
+        
+        document.querySelector('.primary-button[value="create_project"]').addEventListener('click', function(event) {
+            event.preventDefault();
+            openModal();
+        });
+
+        
+        document.querySelector('.cancel-button').addEventListener('click', function() {
+            closeModal();
+        });
+        
+        function openModal() {
+            document.getElementById('newProjectModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('newProjectModal').style.display = 'none';
+        }
+        
+
+        // Add treatment button handling
+
+        const addButton = document.querySelector('.add-treatment-button');
+        let nextTreatmentIndex = 3; // Start from Treatment C
+
+        addButton.addEventListener('click', () => {
+            const treatmentWrapper = document.createElement('div');
+            treatmentWrapper.classList.add('treatment-wrapper');
+
+            const treatmentLabel = document.createElement('label');
+            const treatmentId = 'treatment_' + String.fromCharCode(64 + nextTreatmentIndex); // Convert index to A, B, C, etc.
+            treatmentLabel.setAttribute('for', treatmentId);
+            treatmentLabel.textContent = 'Treatment ' + String.fromCharCode(64 + nextTreatmentIndex) + ':';
+
+            const treatmentInput = document.createElement('input');
+            treatmentInput.setAttribute('type', 'text');
+            treatmentInput.setAttribute('id', treatmentId);
+            treatmentInput.setAttribute('name', treatmentId);
+
+            treatmentWrapper.appendChild(treatmentLabel);
+            treatmentWrapper.appendChild(treatmentInput);
+
+            const concentrationWrapper = document.createElement('div');
+            concentrationWrapper.classList.add('concentration-wrapper');
+
+            const concentrationLabel = document.createElement('label');
+            const concentrationId = 'concentration_' + String.fromCharCode(64 + nextTreatmentIndex);
+            concentrationLabel.setAttribute('for', concentrationId);
+            concentrationLabel.textContent = 'Concentration:';
+
+            const concentrationInput = document.createElement('input');
+            concentrationInput.setAttribute('type', 'text');
+            concentrationInput.setAttribute('id', concentrationId);
+            concentrationInput.setAttribute('name', concentrationId);
+
+            const unitSelect = document.createElement('select');
+            const unitId = 'unit_' + String.fromCharCode(64 + nextTreatmentIndex);
+            unitSelect.setAttribute('id', unitId);
+            unitSelect.setAttribute('name', unitId);
+
+            const ppmOption = document.createElement('option');
+            ppmOption.setAttribute('value', 'ppm');
+            ppmOption.textContent = 'ppm';
+
+            const ppbOption = document.createElement('option');
+            ppbOption.setAttribute('value', 'ppb');
+            ppbOption.textContent = 'ppb';
+
+            unitSelect.appendChild(ppmOption);
+            unitSelect.appendChild(ppbOption);
+
+            concentrationWrapper.appendChild(concentrationLabel);
+            concentrationWrapper.appendChild(concentrationInput);
+            concentrationWrapper.appendChild(unitSelect);
+
+            const treatmentsDiv = document.getElementById('treatments');
+            treatmentsDiv.appendChild(treatmentWrapper);
+            treatmentsDiv.appendChild(concentrationWrapper);
+
+            nextTreatmentIndex++;
+        });
+
+
+    </script>
+    
+</body>
+</html>
