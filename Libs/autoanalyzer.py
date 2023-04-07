@@ -36,6 +36,8 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM):
 
     TREATMENTS = find_treatments(PROJECT_DIR)
 
+    PARAMETERS_PATH = PROJECT_DIR / 'static'
+
     # Get all immediate subdirectories of PROJECT_DIR
     subdirectories = [x for x in PROJECT_DIR.glob("*/") if x.is_dir()]
     TESTS = {}
@@ -61,7 +63,9 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM):
         print(fish_ids)
         SEGMENTED_DATA = False    
         if test_num == 0:
-            with open(f'./Bin/hyp_{keywords[test_num]}.json', 'r') as f:
+            json_name = f"hyp_{keywords[test_num]}.json"
+            json_path = PARAMETERS_PATH / json_name
+            with open(json_path, 'r') as f:
                 hyp = json.load(f)
             try:
                 seg_num = int(int(hyp["DURATION"]) / int(hyp["SEGMENT DURATION"]))

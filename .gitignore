@@ -9,11 +9,13 @@ __pycache__/
 # Input and Output
 Input/
 Output/
-*.ipynb
 
 #all file start with test
 test*
 example*
+old*
+*.ipynb
+local/*
 
 # Distribution / packaging
 .Python

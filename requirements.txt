@@ -7,3 +7,6 @@ openpyxl
 tqdm
 opencv-python
 word2number
+shutil
+pathlib
+customtkinter

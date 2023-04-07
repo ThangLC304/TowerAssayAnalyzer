@@ -1,0 +1,29 @@
+{
+    "Parent" : [
+        "01 - Novel Tank Test", 
+        "02 - Shoaling Test", 
+        "03 - Mirror Biting Test", 
+        "04 - Social Interaction Test", 
+        "05 - Predator Test"
+        ],
+    "Child-Control" : [
+        "01 - Novel Tank Test\\A - Control ({} Batch)", 
+        "02 - Shoaling Test\\A - Control ({} Batch)", 
+        "03 - Mirror Biting Test\\A - Control ({} Batch)", 
+        "04 - Social Interaction Test\\A - Control ({} Batch)", 
+        "05 - Predator Test\\A - Control ({} Batch)"
+        ],
+    "Child-Treatment" : [
+        "01 - Novel Tank Test\\B - {} {} ({} Batch)", 
+        "01 - Novel Tank Test\\C - {} {} ({} Batch)", 
+        "02 - Shoaling Test\\B - {} {} ({} Batch)",
+        "02 - Shoaling Test\\C - {} {} ({} Batch)",
+        "03 - Mirror Biting Test\\B - {} {} ({} Batch)", 
+        "03 - Mirror Biting Test\\C - {} {} ({} Batch)", 
+        "04 - Social Interaction Test\\B - {} {} ({} Batch)", 
+        "04 - Social Interaction Test\\C - {} {} ({} Batch)", 
+        "05 - Predator Test\\B - {} {} ({} Batch)", 
+        "05 - Predator Test\\C - {} {} ({} Batch)"
+    ]
+}
+    
