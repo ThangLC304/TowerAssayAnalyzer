@@ -1,27 +1,4 @@
 {
-    "Melamine": {
-        "TREATMENTS": {
-            "Treatment A": [
-                "Control",
-                0,
-                "",
-                9
-            ],
-            "Treatment B": [
-                "Melamine",
-                0.1,
-                "ppm",
-                10
-            ],
-            "Treatment C": [
-                "Melamine",
-                10.0,
-                "ppm",
-                10
-            ]
-        },
-        "DIRECTORY": "Melamine"
-    },
     "MelamineTest": {
         "TREATMENTS": {
             "Treatment A": [

@@ -32,7 +32,7 @@ def find_treatments(mother_dir):
 
     return result_dict
 
-def autoanalyzer(PROJECT_DIR, BATCHNUM):
+def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK):
 
     TREATMENTS = find_treatments(PROJECT_DIR)
 
@@ -98,6 +98,8 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM):
             # Extract data according to input
             print("Extracting data...")
             self.test_result = extract_data(self.test_num, batch_num, cond)
+
+            # print("Test result:", self.test_result)
 
             self.dfs = {}
 
@@ -343,7 +345,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM):
 
         def __repr__(self):
             return self.dfs.__repr__()
-
+        
     print()
     print('='*50)
     print(f"START ANALYZING {BATCHNUM} ...")
@@ -352,39 +354,51 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM):
     time00 = time.time()
 
     # =========================================================
+    TESTLIST = ['Novel Tank Test', 
+                'Shoaling Test', 
+                'Mirror Biting Test',
+                'Social Interaction Test',
+                'Predator Test']
 
-    print('Analyzing Novel Tank Test...')
-    time0 = time.time()
 
-    for cond in TREATMENTS.keys():
-        _ = NovelBatch(batch_num=BATCHNUM, cond=cond) 
+    if TASK == TESTLIST[0]:
+
+        print('Analyzing Novel Tank Test...')
+        time0 = time.time()
+
+        for cond in TREATMENTS.keys():
+            _ = NovelBatch(batch_num=BATCHNUM, cond=cond) 
+            print()
+
+
+        time1 = time.time()
+        print(f'... time taken: {time1 - time0} seconds')
+        print('='*50)
         print()
 
+    # =========================================================
 
-    time1 = time.time()
-    print(f'... time taken: {time1 - time0} seconds')
-    print('='*50)
-    print()
+    elif TASK == TESTLIST[1]:
+        print('Analyzing Shoaling Test...')
+        time0 = time.time()
+
+        time0 = time.time()
+
+        for cond in TREATMENTS.keys():
+            _ = ShoalingBatch(batch_num=BATCHNUM, cond=cond)
+
+        time1 = time.time()
+
+        print(f'... time taken: {time1 - time0} seconds')
+        print('='*50)
+        print()
 
     # =========================================================
 
-    print('Analyzing Shoaling Test...')
-    time0 = time.time()
+    else:
+        num = TESTLIST.index(TASK)
 
-    time0 = time.time()
-
-    for cond in TREATMENTS.keys():
-        _ = ShoalingBatch(batch_num=BATCHNUM, cond=cond)
-
-    time1 = time.time()
-
-    print(f'... time taken: {time1 - time0} seconds')
-    print('='*50)
-    print()
-
-    # =========================================================
-
-    for num in range(2, 5):
+    # for num in range(2, 5):
         print(f'Analyzing {tests[num]} Test...')
         time0 = time.time()
 

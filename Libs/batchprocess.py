@@ -7,17 +7,21 @@ import time
 from tqdm import tqdm
 
 tests = ['Novel Tank', 'Shoaling', 'Mirror Biting', 'Social Interaction', 'Predator Avoidance']
+keywords = [x.split(' ')[0].lower() for x in tests]
 test_execs = [noveltank_exec, shoaling_exec, mirrorbiting_exec, socialinteraction_exec, predatoravoidance_exec]
 
 class MY_CONDITION():
 
-    def __init__(self, test_name, condition, condition_path, no_gap):
+    def __init__(self, test_name, condition, condition_path, no_gap, hyp):
         
         self.test_name = test_name
 
         self.condition = condition
 
         self.no_gap = no_gap
+
+        self.hyp = hyp
+
         self.trajectory_format = self.set_trajectory_type()
 
         self.targets = self.find_targets(condition_path)
@@ -99,9 +103,10 @@ class MY_CONDITION():
             if target == target_name:
                 # print(' Matched !', end = '\n')
                 if test_index == 0:
-                    results = test_exec(target_path, seg_num = seg_num)
+                    results = test_exec(target_path, project_hyp = self.hyp, seg_num = seg_num)
+                    # test_exec("1", "../PROJECT/{num} - Test/{char} - Treatment ({ordinal} Batch)/{target}/.txt")
                 else:
-                    results = test_exec(target_path)
+                    results = test_exec(target_path, project_hyp = self.hyp)
                 return results # in format [key, value], not {key: value} for easy retrieval
 
 
@@ -119,17 +124,20 @@ class MY_CONDITION():
 
 class MY_BATCH():
 
-    def __init__(self, test_name, batch_num, batch_paths, no_gap):
+    def __init__(self, test_name, batch_num, batch_paths, no_gap, hyp):
 
         self.test_name = test_name
+
 
         self.num = batch_num
 
         self.conditions = self.extract_conditions(batch_paths)
 
+        self.hyp = hyp
+
         self.condition = {}
         for condition, cond_path in self.conditions.items():
-            self.condition[condition] = MY_CONDITION(self.test_name, condition, cond_path, no_gap = no_gap)
+            self.condition[condition] = MY_CONDITION(self.test_name, condition, cond_path, no_gap = no_gap, hyp = self.hyp)
 
 
     def extract_conditions(self, batch_paths):
@@ -163,13 +171,39 @@ class MY_DIR():
 
     def __init__(self, name, dir_path, no_gap = False):
 
+        project_dir = Path(dir_path).parent
+        static_dir = project_dir / 'static'
+        hyp_name = f"hyp_{name.split(' ')[0].lower()}.json"
+        hyp_path = static_dir / hyp_name
+        if hyp_path.exists():
+            self.hyp = self.HypLoader(hyp_path)
+        else:
+            self.hyp = {}
+
         self.test_name = name
         self.test_dir = dir_path
         self.batches = self.find_batches() # batches[1] = 1st Batch results paths
         self.batches_num = len(self.batches)
         self.batch = {}
         for i in range(self.batches_num):
-            self.batch[i+1] = MY_BATCH(self.test_name, i+1, self.batches[i+1], no_gap = no_gap)
+            self.batch[i+1] = MY_BATCH(self.test_name, i+1, self.batches[i+1], no_gap = no_gap, hyp = self.hyp)
+
+
+    def HypLoader(self, hyp_path):
+
+        with open(hyp_path, 'r') as file:
+            data = json.load(file)
+        
+        # convert values to int or float
+        for key, value in data.items():
+            if key == "CONVERSION RATE":
+                data[key] = float(value)
+            elif key in ["FPS", "DURATION", "SEGMENT DURATION"]:
+                data[key] = int(value)
+            else:
+                for fish_num, fish_data in value.items():
+                    data[key][fish_num] = int(fish_data)
+        return data
 
 
     def find_batches(self):

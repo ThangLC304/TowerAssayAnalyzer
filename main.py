@@ -12,6 +12,14 @@ customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 
+#[TODO] Add parameters for each tank                                            # DONE
+#[TODO] Add GUI to input parameters for each tank                               # DONE
+#[TODO] Add Note for Control (DMSO x%)
+#[TODO] Automatically save parameters each time the task is changed             # DONE
+#[TODO] Analyzer button will analyze the task being selected                    # DONE
+#[TODO] The Cancel button currently create the project at cwd()                 # DONE
+#[TODO] Let user select the range of frames within data to be analyzed
+
 ROOT = Path(__file__).parent
 ORI_HYP_PATH = ROOT / "Bin"
 HISTORY_PATH = "History/projects.json"
@@ -121,9 +129,72 @@ class ProjectDetailFrame(customtkinter.CTkFrame):
             child.destroy()
 
 
+import os
+import json
+import tkinter as tk
+
+class Parameter:
+    def __init__(self, master, project_name, selected_task, value_group):
+        self.master = master
+        self.task = selected_task
+        self.group = value_group
+        self.json_name = f"hyp_{self.task}.json"
+
+        project_dir = get_directory(project_name)
+        self.path = os.path.join(project_dir, "static", self.json_name)
+
+        if project_name == "":
+            label = customtkinter.CTkLabel(self, text="No project selected")
+            label.grid(row=0, column=0, padx=5, pady=5)
+        else:
+            self.load_json()
+
+    def load_json(self):
+
+        self.clear()
+
+        with open(self.path, 'r') as f:
+            ori_dict = json.load(f)
+
+        if self.group == "single":
+            display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
+        else:
+            display_dict = ori_dict[self.group]
+
+        for row, (key, value) in enumerate(display_dict.items()):
+            key_label = customtkinter.CTkLabel(self, text=key)
+            key_label.grid(row=row, column=0, padx=5, pady=5)
+
+            value_entry = customtkinter.CTkEntry(self)
+            value_entry.insert(0, value)
+            value_entry.grid(row=row, column=1, padx=5, pady=5)
+
+    def clear(self):
+        for child in self.winfo_children():
+            child.destroy()
+
+
+    def save_json(self):
+        save_dict = {}
+        for idx, child in enumerate(self.master.winfo_children()):
+            if isinstance(child, tk.Entry):
+                key = self.master.winfo_children()[idx-1].cget("text")
+                save_dict[key] = child.get()
+
+        with open(self.path, 'r') as f:
+            ori_dict = json.load(f)
+
+        for key, value in save_dict.items():
+            if key in ori_dict:
+                ori_dict[key] = value
+
+        with open(self.path, 'w') as f:
+            json.dump(ori_dict, f, indent=4)
+
+
 class Parameters(customtkinter.CTkFrame):
 
-    def __init__(self, master, project_name, selected_task, *args, **kwargs):
+    def __init__(self, master, project_name, selected_task, nested_key, *args, **kwargs):
         
         super().__init__(master, *args, **kwargs)
 
@@ -134,12 +205,12 @@ class Parameters(customtkinter.CTkFrame):
             label = customtkinter.CTkLabel(self, text="No project selected")
             label.grid(row=0, column=0, padx=5, pady=5)
         else:
-            self.load_parameters()
+            self.load_parameters(nested_key = nested_key)
 
         self.entries = {}
 
-    def load_parameters(self, project_name=None, selected_task=None):
-        
+    def load_parameters(self, project_name=None, selected_task=None, nested_key=0):
+
         self.entries = {}
 
         self.clear()
@@ -153,7 +224,6 @@ class Parameters(customtkinter.CTkFrame):
         self.selected_task = self.selected_task.split()[0].lower()
         hyp_name = f"hyp_{self.selected_task}.json"
 
-        
         if project_name == "":
             self.hyp_path = ORI_HYP_PATH / hyp_name
         else:
@@ -161,9 +231,27 @@ class Parameters(customtkinter.CTkFrame):
             self.hyp_path = Path(project_dir) / "static" / hyp_name
 
         with open(self.hyp_path, "r") as file:
-            hyp_data = json.load(file)
+            ori_dict = json.load(file)
 
-        for row, (key, value) in enumerate(hyp_data.items()):
+        # find the nested keys
+        nested_keys = []
+        for key, value in ori_dict.items():
+            if isinstance(value, dict):
+                nested_keys.append(key)
+
+        if nested_key == 0:
+            display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
+        else:
+            try:
+                nested_key = nested_keys[nested_key-1]
+            except IndexError:
+                label = customtkinter.CTkLabel(self, text="No more nested keys")
+                label.grid(row=0, column=0, padx=5, pady=5) 
+                return "None"
+            
+            display_dict = ori_dict[nested_key]
+
+        for row, (key, value) in enumerate(display_dict.items()):
             key_label = customtkinter.CTkLabel(self, text=key)
             key_label.grid(row=row, column=0, padx=5, pady=5)
 
@@ -171,7 +259,15 @@ class Parameters(customtkinter.CTkFrame):
             value_entry.insert(0, value)
             value_entry.grid(row=row, column=1, padx=5, pady=5)
 
-            self.entries[key] = value_entry
+            try:
+                _ = int(key)
+                entry_key = f"{nested_key}_{key}"
+            except ValueError:
+                entry_key = key
+
+            self.entries[entry_key] = value_entry
+
+        return nested_key
 
     def clear(self):
         for child in self.winfo_children():
@@ -190,12 +286,21 @@ class Parameters(customtkinter.CTkFrame):
 
         # Get the values from the entries
         updated_values = {key: entry.get() for key, entry in self.entries.items()}
-        parameters_data = {}
+        
+        # load the original data
+        with open(hyp_path, "r") as file:
+            parameters_data = json.load(file)
 
         # Update the values in the dictionary with the new values
         for key, value in updated_values.items():
             try:
-                parameters_data[key] = float(value)
+                if "_" not in key:
+                    parameters_data[key] = float(value)
+                else:
+                    nested_key, nested_key_value = key.split("_")
+                    if nested_key not in parameters_data:
+                        parameters_data[nested_key] = {}
+                    parameters_data[nested_key][nested_key_value] = float(value)
             except ValueError:
                 print(f"Invalid input for {key}: {value}. Skipping.")
 
@@ -221,10 +326,11 @@ class App(customtkinter.CTk):
                     'Mirror Biting Test',
                     'Social Interaction Test',
                     'Predator Test']
+        self.PREVIOUS_TEST = ""
 
         # configure window
         self.title("Tower Assay Analyzer")
-        self.geometry(f"{870}x{650}")
+        self.geometry(f"{1350}x{690}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=0) 
@@ -283,39 +389,22 @@ class App(customtkinter.CTk):
 
         ### COLUMN 1 ###
 
-        self.project_container()
+        container_1 = customtkinter.CTkFrame(self)
+        container_1.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
-        self.project_detail_container = ProjectDetailFrame(self, self.CURRENT_PROJECT, width = 400)
-        self.project_detail_container.grid(row=1, column = 1, columnspan=2, padx=20, pady=20, sticky="nsew")
-
-        ### COLUMN 2 ###
-
-        self.parameters_container()
-
-
-
-    ### COL 1 ROW 0 ###
-
-    def project_container(self):
-
-        ### COLUMN 1 ###
-
-        container = customtkinter.CTkFrame(self)
-        container.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-
-        container.grid_rowconfigure(0, weight=0)
-        container.grid_rowconfigure(1, weight=1)
-        container.grid_columnconfigure(0, weight=0)
+        container_1.grid_rowconfigure(0, weight=0)
+        container_1.grid_rowconfigure(1, weight=1)
+        container_1.grid_columnconfigure(0, weight=0)
 
         # Top part
-        top_part = customtkinter.CTkFrame(container)
-        top_part.grid(row=0, column=0, sticky="nsew")
+        container_2_top = customtkinter.CTkFrame(container_1)
+        container_2_top.grid(row=0, column=0, sticky="nsew")
 
-        project_previews_label = customtkinter.CTkLabel(top_part, text="Project List", font=customtkinter.CTkFont(size=20, weight="bold"))
+        project_previews_label = customtkinter.CTkLabel(container_2_top, text="Project List", font=customtkinter.CTkFont(size=20, weight="bold"))
         project_previews_label.grid(row=0, column=0)
 
         # Bottom part
-        bottom_part = customtkinter.CTkFrame(container)
+        bottom_part = customtkinter.CTkFrame(container_1)
         bottom_part.grid(row=1, column=0, sticky="nsew")
 
         bottom_part.grid_rowconfigure(0, weight=1)
@@ -330,76 +419,111 @@ class App(customtkinter.CTk):
         # Initial refresh to populate the list
         self.refresh_projects()
 
-
-
-    ### COL 2 ROW 0 ###
-
-    # Function to handle when a new test is selected
-    def on_test_selected(self, selected_test):
-
-        self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
-
-        self.LoadedProject.configure(text=self.CURRENT_PROJECT)
-
-    def parameters_container(self):
+        self.project_detail_container = ProjectDetailFrame(self, self.CURRENT_PROJECT, width = 400)
+        self.project_detail_container.grid(row=1, column = 1, columnspan=3, padx=20, pady=20, sticky="nsew")
 
         ### COLUMN 2 ###
 
         # Create a canvas to hold the project parameters
 
-        container = customtkinter.CTkFrame(self, width = 400)
-        container.grid(row=0, column=2, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        container_2 = customtkinter.CTkFrame(self, width = 400)
+        container_2.grid(row=0, column=2, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         # Top part is a dropdown menu to select type of test
 
 
-        top_part = customtkinter.CTkFrame(container)
-        top_part.grid(row=0, column=0, columnspan=3, sticky="nsew")
+        container_2_top = customtkinter.CTkFrame(container_2)
+        container_2_top.grid(row=0, column=0, columnspan=3, sticky="nsew")
 
-        Header = customtkinter.CTkLabel(top_part, text="Loaded Project:", anchor="w", font=customtkinter.CTkFont(size=15, weight="bold"))
+        Header = customtkinter.CTkLabel(container_2_top, text="Loaded Project:", anchor="w", font=customtkinter.CTkFont(size=15, weight="bold"))
         Header.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
-
-        self.LoadedProject = customtkinter.CTkLabel(top_part, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.LoadedProject = customtkinter.CTkLabel(container_2_top, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.LoadedProject.grid(row=0, column=1, columnspan=2, padx=20, pady=(20, 10), sticky="nsew")
         
-        self.TestOptions = customtkinter.CTkOptionMenu(container, dynamic_resizing=False, 
+        self.TestOptions = customtkinter.CTkOptionMenu(container_2, dynamic_resizing=False, 
                                                   width=210, values=self.TESTLIST)
         self.TestOptions.grid(row=1, column=0, columnspan = 2, padx=20, pady=(20, 10), sticky="nsew")
 
-        self.save_button = customtkinter.CTkButton(container, text="Save", width = 50,
+        self.save_button = customtkinter.CTkButton(container_2, text="Save", width = 50,
                                                    command=self.save_parameters)
         self.save_button.grid(row=1, column=2, padx=20, pady=20, sticky="nsew")
 
-        self.parameters_frame = Parameters(container, self.CURRENT_PROJECT, self.TESTLIST[0])
+        self.parameters_frame = Parameters(container_2, self.CURRENT_PROJECT, self.TESTLIST[0], 0)
         self.parameters_frame.grid(row=2, columnspan=3, padx=20, pady=(10, 20), sticky="nsew")
-        
+
+        # write a notification to the user to say 
+        # Line 1: "Please click save in each Task selected before changing to next Task."
+        # Line 2: "Changing to a new Task will not automatically save any changes made to the previous Task."
+        ### COLUMN 3+ ###
+
+        container_3 = customtkinter.CTkFrame(self, width = 400)
+        container_3.grid(row=0, column=5, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
+        self.nested_key_1_header = customtkinter.CTkLabel(container_3, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.nested_key_1_header.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
+        self.nested_key_1_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 1)
+        self.nested_key_1_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(10, 20), sticky="nsew")
+
+        self.nested_key_2_header = customtkinter.CTkLabel(container_3, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.nested_key_2_header.grid(row=0, column=2, padx=20, pady=(20, 10), sticky="nsew")
+        self.nested_key_2_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 2)
+        self.nested_key_2_frame.grid(row=1, column=2, columnspan = 2, padx=20, pady=(10, 20), sticky="nsew")
+
         self.TestOptions.configure(command=self.on_test_selected)
 
         # Load the first test by default
-        self.on_test_selected(self.TESTLIST[0])
+        self.on_test_selected(load_type = "first_load")
 
-        
 
-    def save_parameters(self):
 
-        # Get the selected test type
-        selected_test = self.TestOptions.get()
+    ### COL 2 ROW 0 ###
+
+    # Function to handle when a new test is selected
+    def on_test_selected(self, selected_test=None, load_type="not_first_load"):
+        assert load_type in ["not_first_load", "first_load"]
+
+        if load_type == "first_load":
+            selected_test = self.TESTLIST[0]
+        else:
+            self.save_parameters(mode = "previous")
+
+        self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, nested_key = 0)
+        nested_key_1 = self.nested_key_1_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, nested_key = 1)
+        nested_key_2 = self.nested_key_2_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, nested_key = 2)
+
+        self.LoadedProject.configure(text=self.CURRENT_PROJECT)
+        self.nested_key_1_header.configure(text=nested_key_1)
+        self.nested_key_2_header.configure(text=nested_key_2)
+
+        self.PREVIOUS_TEST = selected_test
+
+
+    def save_parameters(self, mode = "current"):
+        assert mode in ["current", "previous"]
+
+        if mode == "current":
+            # Get the selected test type
+            selected_test = self.TestOptions.get()
+        else:
+            selected_test = self.PREVIOUS_TEST
 
         # Save the parameters
         self.parameters_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
+        self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
+        self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
 
     
-    def load_parameter(self, event):
+    # def load_parameter(self, event):
 
-        # Get the selected test type
-        selected_test = event.widget.get()
-        print(selected_test)
+    #     # Get the selected test type
+    #     selected_test = event.widget.get()
+    #     print(selected_test)
 
-        # Clear the existing parameters
-        self.project_detail_container.clear()
+    #     # Clear the existing parameters
+    #     self.project_detail_container.clear()
 
-        # Load the new parameters
-        self.project_detail_container.load_project_details(self.CURRENT_PROJECT, selected_test)
+    #     # Load the new parameters
+    #     self.project_detail_container.load_project_details(self.CURRENT_PROJECT, selected_test)
 
 
 
@@ -694,6 +818,10 @@ class App(customtkinter.CTk):
                     json.dump(existing_data, file, indent=2)
                 input_window.destroy()  # Move this line inside the except block
 
+        def cancel_button_command():
+            self.PROJECT_CREATED = False
+            input_window.destroy()
+
 
         input_window = tkinter.Toplevel(self)
 
@@ -758,7 +886,7 @@ class App(customtkinter.CTk):
 
         # Cancel button
         cancel_button = customtkinter.CTkButton(bottom_canvas, text="CANCEL", 
-                                                command=input_window.destroy)
+                                                command=cancel_button_command)
         cancel_button.grid(row=1, column=1, padx=5, pady=5)
 
         input_window.wait_window()
@@ -774,7 +902,10 @@ class App(customtkinter.CTk):
         
         project_dir = Path(get_directory(self.CURRENT_PROJECT))
 
-        total_time = autoanalyzer(project_dir, BATCHNUM = 1)
+        # get selected task
+        task = self.TestOptions.get()
+
+        total_time = autoanalyzer(project_dir, 1, task)
 
         tkinter.messagebox.showinfo("Analysis Complete", f"Analysis complete. Total time taken: {total_time} seconds")
 

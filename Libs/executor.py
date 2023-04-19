@@ -5,20 +5,34 @@ from Libs.misc import load_raw_df, clean_df
 
 basic_requirements = ['total distance', 'average speed', 
                       'freezing percentage', 'swimming percentage', 'rapid movement percentage'] 
-                    
+
+def get_fish_num(txt_path):
+
+    fish_num = Path(txt_path).parent.name
+    # if " " or "-" or "_" in fish_num:
+    # take only the number before the first space, dash or underscore
+    if " " in fish_num:
+        fish_num = fish_num.split(' ')[0].strip()
+    elif "-" in fish_num:
+        fish_num = fish_num.split('-')[0].strip()
+    elif "_" in fish_num:
+        fish_num = fish_num.split('_')[0].strip()
+    
+    return fish_num
+
 
 class NovelTank_Display(NovelTankTest):
 
-    def __init__(self, input_df, segment = -1):
+    def __init__(self, input_df, project_hyp, fish_num, segment = -1):
 
-        super().__init__(input_df, segment)
+        super().__init__(input_df, project_hyp, fish_num, segment)
 
         self.rows = {}
         for i, req in enumerate(basic_requirements):
             self.rows[i] = [upper_first(req), self.basic[req], self.units[req]]
 
         try:
-            average_entry = self.time.duration/self.events.count
+            average_entry = self.time.duration/self.events.count/self.hyp["FPS"]
         except:
             average_entry = 0
 
@@ -31,30 +45,33 @@ class NovelTank_Display(NovelTankTest):
             ['Distance traveled top/bottom ratio', self.others['distance top/bottom ratio'], ''],
             ['Latency in frames', self.others['latency in frames'], 'frames'],
             ['Latency in seconds', self.others['latency in seconds'], 'seconds'],
-            ['Number of entries', self.events.count, ''],
-            ['Average entry', average_entry, 'seconds']
+            ['Number of entries', self.others['entry number'], ''],
+            ['Average entry', self.others['average entry'], 'seconds']
         ]
 
-        for j in range(i, len(self.display)+i):
-            self.rows[j] = self.display[j-i]
-
+        # add self.display to self.rows
+        for i, row in enumerate(self.display):
+            self.rows[i+len(basic_requirements)] = row
 
     
 
-def noveltank_exec(txt_path, seg_num = 1, wait = 5):
+def noveltank_exec(txt_path, project_hyp, seg_num = 1, wait = 5):
 
     # wait time between each record session is 5 minutes
+
+    # FISH_NUM IS NEWLY ADDED TO THE FUNCTION TO BE USED AS KEY FOR HYPERPARAMETER DICT
+    fish_num = get_fish_num(txt_path)
 
     df, _ = load_raw_df(txt_path)
     df, _ = clean_df(df, fill=True)
     result_dict = {}
     
 
-    result_dict['whole'] = NovelTank_Display(df, segment = -1).rows
+    result_dict['whole'] = NovelTank_Display(df, project_hyp = project_hyp, fish_num=fish_num, segment = -1).rows
 
     if seg_num > 1:
         for segment in range(seg_num):
-            test = NovelTank_Display(df, segment = segment)
+            test = NovelTank_Display(df, project_hyp = project_hyp, fish_num=fish_num, segment = segment)
             result_dict[f"{segment*wait}-{segment*wait+1} MIN"] = test.rows
 
     return result_dict
@@ -64,9 +81,9 @@ def noveltank_exec(txt_path, seg_num = 1, wait = 5):
 
 class Shoaling_Display(ShoalingTest):
 
-    def __init__(self, input_df1, input_df2, input_df3):
+    def __init__(self, input_df1, input_df2, input_df3, project_hyp, fish_num):
 
-        super().__init__(input_df1, input_df2, input_df3)
+        super().__init__(input_df1, input_df2, input_df3, project_hyp, fish_num)
 
         self.basicdisplay = {}
 
@@ -75,10 +92,10 @@ class Shoaling_Display(ShoalingTest):
             for i, req in enumerate(basic_requirements):
                 self.basicdisplay[df_num][i] = [upper_first(req), self.basic[df_num][req], self.units[req]]
 
-            temp_time, _ = self.timing(self.df[df_num], "TOP", "X", smaller = True)
+            temp_time, _ = self.timing(self.df[df_num], "TOP", fish_num, "X", smaller = True)
             self.basicdisplay[df_num][i+1] = ['Time in top', temp_time.percentage, temp_time.unit]
 
-            distance_to_center = self.distance_to(self.df[df_num], "CENTER")
+            distance_to_center = self.distance_to(self.df[df_num], "CENTER", fish_num)
             self.basicdisplay[df_num][i+2] = ['Average distance to center', distance_to_center.avg, distance_to_center.unit]
 
             near, far = self.distance_filter(df_num)
@@ -98,13 +115,16 @@ class Shoaling_Display(ShoalingTest):
         }
 
 
-def shoaling_exec(txt_path):
+def shoaling_exec(txt_path, project_hyp):
+
+    # FISH_NUM IS NEWLY ADDED TO THE FUNCTION TO BE USED AS KEY FOR HYPERPARAMETER DICT
+    fish_num = get_fish_num(txt_path)
 
     whole_df, _ = load_raw_df(txt_path)
     whole_df, _ = clean_df(whole_df, fill=True)
     df1, df2, df3 = whole_df.iloc[:, :2], whole_df.iloc[:, 2:4], whole_df.iloc[:, 4:]
     # print('Splitted into 3 dataframes', df1.shape, df2.shape, df3.shape, '')
-    test = Shoaling_Display(df1, df2, df3)
+    test = Shoaling_Display(df1, df2, df3, project_hyp, fish_num)
     result_dict = {}
     result_dict['Fish A'] = test.basicdisplay[1]
     result_dict['Fish B'] = test.basicdisplay[2]
@@ -116,9 +136,9 @@ def shoaling_exec(txt_path):
 
 class MirrorBiting_Display(MirrorBitingTest):
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, project_hyp, fish_num):
 
-        super().__init__(input_df)
+        super().__init__(input_df, project_hyp, fish_num)
 
         self.rows = {}
         for i, req in enumerate(basic_requirements):
@@ -130,23 +150,28 @@ class MirrorBiting_Display(MirrorBitingTest):
             ['Longest time mirror biting %', self.events.percentage, '%'],
         ]
 
-        for j in range(i, len(self.display)+i):
-            self.rows[j] = self.display[j-i]
+        # add self.display to self.rows
+        for i, row in enumerate(self.display):
+            self.rows[i+len(basic_requirements)] = row
 
 
-def mirrorbiting_exec(txt_path):
+def mirrorbiting_exec(txt_path, project_hyp):
+
+    # FISH_NUM IS NEWLY ADDED TO THE FUNCTION TO BE USED AS KEY FOR HYPERPARAMETER DICT
+    fish_num = get_fish_num(txt_path)
+
     df, _ = load_raw_df(txt_path)
     df, _ = clean_df(df, fill=True)
-    test = MirrorBiting_Display(df)
+    test = MirrorBiting_Display(df, project_hyp, fish_num)
     return test.rows
 
 
 
 class SocialInteraction_Display(SocialInteractionTest):
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, project_hyp, fish_num):
 
-        super().__init__(input_df)
+        super().__init__(input_df, project_hyp, fish_num)
 
         self.rows = {}
         for i, req in enumerate(basic_requirements):
@@ -159,23 +184,28 @@ class SocialInteraction_Display(SocialInteractionTest):
             ['Average distance to separator', self.distance.avg, self.distance.unit],
         ]
 
-        for j in range(i, len(self.display)+i):
-            self.rows[j] = self.display[j-i]
+        # add self.display to self.rows
+        for i, row in enumerate(self.display):
+            self.rows[i+len(basic_requirements)] = row
 
 
-def socialinteraction_exec(txt_path):
+def socialinteraction_exec(txt_path, project_hyp):
+
+    # FISH_NUM IS NEWLY ADDED TO THE FUNCTION TO BE USED AS KEY FOR HYPERPARAMETER DICT
+    fish_num = get_fish_num(txt_path)
+
     df, _ = load_raw_df(txt_path)
     df, _ = clean_df(df, fill=True)
-    test = SocialInteraction_Display(df)
+    test = SocialInteraction_Display(df, project_hyp, fish_num)
     return test.rows
 
 
 
 class PredatorAvoidance_Display(PredatorAvoidanceTest):
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, project_hyp, fish_num):
 
-        super().__init__(input_df)
+        super().__init__(input_df, project_hyp, fish_num)
 
         self.rows = {}
         for i, req in enumerate(basic_requirements):
@@ -190,12 +220,17 @@ class PredatorAvoidance_Display(PredatorAvoidanceTest):
             ['Average distance to predator', self.distance.avg, self.distance.unit],
         ]
 
-        for j in range(i, len(self.display)+i):
-            self.rows[j] = self.display[j-i]
+        # add self.display to self.rows
+        for i, row in enumerate(self.display):
+            self.rows[i+len(basic_requirements)] = row
 
 
-def predatoravoidance_exec(txt_path):
+def predatoravoidance_exec(txt_path, project_hyp):
+
+    # FISH_NUM IS NEWLY ADDED TO THE FUNCTION TO BE USED AS KEY FOR HYPERPARAMETER DICT
+    fish_num = get_fish_num(txt_path)
+
     df, _ = load_raw_df(txt_path)
     df, _ = clean_df(df, fill=True)
-    test = PredatorAvoidance_Display(df)
+    test = PredatorAvoidance_Display(df, project_hyp, fish_num)
     return test.rows

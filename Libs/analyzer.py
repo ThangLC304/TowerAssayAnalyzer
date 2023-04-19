@@ -16,9 +16,12 @@ ROUND_UP = 4
 
 class NovelTankTest(Loader): # 3000 * 7
 
-    def __init__(self, input_df, segment = -1):
+    def __init__(self, input_df, project_hyp, fish_num, segment = -1):
 
-        super().__init__(testtype='novel')
+        super().__init__(testtype='novel', project_hyp=project_hyp)
+
+        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        input_df = input_df[:total_frames]
 
         if segment == -1:
             self.df = input_df
@@ -27,15 +30,25 @@ class NovelTankTest(Loader): # 3000 * 7
             # print(f"With segment = {segment}, df length is: {len(self.df)}")
 
         self.cols = self.df.columns
-        self.basic, self.units = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
-        self.distance = self.distance_to(self.df, "CENTER")
-        self.time, self.events = self.timing(self.df, "TOP", "X", smaller = True)
+        self.distance = self.distance_to(self.df, "CENTER", fish_num)
+        self.time, self.events = self.timing(self.df, "TOP",  fish_num, "X", smaller = True)
 
         self.others = {}
-        self.others['distance in top'], self.others['top/bottom ratio'] = self.distance_in_top()
-        self.others['distance top/bottom ratio'] = self.others['distance in top'] / self.basic["total distance"]
-        self.others['latency in frames'], self.others['latency in seconds'] = self.latency_calculation()
+        # self.others['distance in top'], self.others['top/bottom ratio'] = self.distance_in_top()
+        self.others['distance in top'] = self.distance_in_top()
+        try:
+            self.others['top/bottom ratio'] = self.time.duration / self.time.not_duration
+        except ZeroDivisionError:
+            self.others['top/bottom ratio'] = 999
+        self.others['distance top/bottom ratio'] = self.others['distance in top'] / (self.basic["total distance"] - self.others['distance in top'])
+        self.others['latency in frames'], self.others['latency in seconds'] = self.calculate_latency()
+        self.others['entry number'] = self.events.count
+        try:
+            self.others['average entry'] = self.time.duration / self.events.count / self.hyp["FPS"]
+        except:
+            self.others['average entry'] = 0
 
 
     def segmentate(self, input_df, segment):
@@ -57,7 +70,7 @@ class NovelTankTest(Loader): # 3000 * 7
 
     def distance_in_top(self):
         
-        distance_list = self.distance.list
+        distance_list = self.basic['distance']
         in_top_list = self.time.list
 
         distance_in_top = 0
@@ -66,30 +79,31 @@ class NovelTankTest(Loader): # 3000 * 7
             if in_top_list[i] == 1:
                 distance_in_top += distance_list[i]
 
-        top_bottom_ratio = distance_in_top / self.basic["total distance"]
+        return distance_in_top
 
-        return distance_in_top, top_bottom_ratio
-    
+    def calculate_latency(self):
 
-    def latency_calculation(self):
+        try:
+            latency = int(list(self.events.dict.keys())[0][0])+1
+        except IndexError:
+            latency = self.time.not_duration
+        if latency == 0:
+            latency = 1
 
-        latency = 1
-        for instance in self.time.list[1:]:
-            if instance == 0:
-                latency += 1
-            else:
-                break
-
-        return latency, latency / self.hyp["FPS"]
-
+        return latency, latency/self.hyp["FPS"]
 
 
 ### DONE ###
 class ShoalingTest(Loader):
 
-    def __init__(self, input_df1, input_df2, input_df3):
+    def __init__(self, input_df1, input_df2, input_df3, project_hyp, fish_num):
 
-        super().__init__(testtype='shoaling')
+        super().__init__(testtype='shoaling', project_hyp=project_hyp)
+
+        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        input_df1 = input_df1[:total_frames]
+        input_df2 = input_df2[:total_frames]
+        input_df3 = input_df3[:total_frames]
 
         self.df = {}
 
@@ -99,9 +113,9 @@ class ShoalingTest(Loader):
 
         self.basic = {}
 
-        self.basic[1], self.units = self.BasicCalculation(self.df[1])
-        self.basic[2], _ = self.BasicCalculation(self.df[2])
-        self.basic[3], _ = self.BasicCalculation(self.df[3])
+        self.basic[1], self.units = self.BasicCalculation(self.df[1], fish_num)
+        self.basic[2], _ = self.BasicCalculation(self.df[2], fish_num)
+        self.basic[3], _ = self.BasicCalculation(self.df[3], fish_num)
 
         self.equalize_mode = 'head'
         self.frames = self.df_shape_check()
@@ -120,7 +134,7 @@ class ShoalingTest(Loader):
             if len(self.df[i]) > min_length:
                 print(f'The {ORDINAL[i-1]} dataframe has {len(self.df[i])} rows, more than the lowest one ({ORDINAL[lowest_one-1]}).')
                 if self.equalize_mode == 'head':
-                    self.df[i] = trimmer(self.df[i], target_rows = min_length, mode = equalize_mode)
+                    self.df[i] = trimmer(self.df[i], target_rows = min_length, mode = self.equalize_mode)
         
         return min_length    
 
@@ -175,15 +189,18 @@ class ShoalingTest(Loader):
 ### DONE ###
 class MirrorBitingTest(Loader):
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, project_hyp, fish_num):
 
-        super().__init__(testtype='mirror')
+        super().__init__(testtype='mirror', project_hyp=project_hyp)
+
+        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        input_df = input_df[:total_frames]
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, self.units = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
-        self.time, self.events = self.timing(self.df, "MIRROR", "Y", smaller = True)
+        self.time, self.events = self.timing(self.df, "MIRROR", fish_num, "Y", smaller = True)
 
     
     # def mirror_timing(self):
@@ -221,86 +238,92 @@ class MirrorBitingTest(Loader):
 ### DONE ###
 class SocialInteractionTest(Loader):
 
-    def __init__(self, input_df):
+    def __init__(self, input_df, project_hyp, fish_num):
 
-        super().__init__(testtype='social')
+        super().__init__(testtype='social', project_hyp=project_hyp)
+
+        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        input_df = input_df[:total_frames]
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, self.units = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
-        self.distance = self.distance_to(self.df, "SEPARATOR", "Y")
-        self.time, self.events = self.timing(self.df, "CONSPECIFIC", "Y", smaller = False)
+        self.distance = self.distance_to(self.df, "SEPARATOR", fish_num, "Y")
+        self.time, self.events = self.timing(self.df, "CONSPECIFIC", fish_num, "Y", smaller = False)
 
 
-    def social_timing(self):
+    # def social_timing(self):
 
-        social_interaction = [] # N points
-        social_interaction_events = {} # N points
+    #     social_interaction = [] # N points
+    #     social_interaction_events = {} # N points
 
-        for _, row in self.df.iterrows():
-            y = row[self.cols[1]]
+    #     for _, row in self.df.iterrows():
+    #         y = row[self.cols[1]]
 
-            # Calculate the social interaction
-            if y > self.hyp["CONSPECIFIC"]:
-                social_interaction.append(1)
-            else:
-                social_interaction.append(0)
+    #         # Calculate the social interaction
+    #         if y > self.hyp["CONSPECIFIC"]:
+    #             social_interaction.append(1)
+    #         else:
+    #             social_interaction.append(0)
 
-        for i in range(len(social_interaction)):
-            if i == 0:
-                if social_interaction[i] == 1:
-                    start_point = i
-                continue
-            if social_interaction[i] == 1 and social_interaction[i-1] == 0:
-                start_point = i
-            elif social_interaction[i] == 0 and social_interaction[i-1] == 1:
-                end_point = i
-                social_interaction_events[(start_point, end_point-1)] = end_point - start_point
+    #     for i in range(len(social_interaction)):
+    #         if i == 0:
+    #             if social_interaction[i] == 1:
+    #                 start_point = i
+    #             continue
+    #         if social_interaction[i] == 1 and social_interaction[i-1] == 0:
+    #             start_point = i
+    #         elif social_interaction[i] == 0 and social_interaction[i-1] == 1:
+    #             end_point = i
+    #             social_interaction_events[(start_point, end_point-1)] = end_point - start_point
 
-        # Convert values in social_interaction_events to seconds
-        social_interaction_events = {k: v/self.hyp["FPS"] for k, v in social_interaction_events.items()}
+    #     # Convert values in social_interaction_events to seconds
+    #     social_interaction_events = {k: v/self.hyp["FPS"] for k, v in social_interaction_events.items()}
 
-        return Time(social_interaction), Events(social_interaction_events, self.hyp["DURATION"])
+    #     return Time(social_interaction), Events(social_interaction_events, self.hyp["DURATION"])
     
 
-    def distance_to_separator(self):
+    # def distance_to_separator(self):
 
-        distance_list = []
+    #     distance_list = []
 
-        for _, row in self.df.iterrows():
-            y = row[self.cols[1]]
-            distance = abs(y - self.hyp["SEPARATOR"])
-            distance = distance / self.hyp['CONVERSION RATE']
-            distance_list.append(distance)
+    #     for _, row in self.df.iterrows():
+    #         y = row[self.cols[1]]
+    #         distance = abs(y - self.hyp["SEPARATOR"])
+    #         distance = distance / self.hyp['CONVERSION RATE']
+    #         distance_list.append(distance)
 
-        return Distance(distance_list)
+    #     return Distance(distance_list)
 
 
 
 ### DONE ###
 class PredatorAvoidanceTest(Loader):
     
-    def __init__(self, input_df):
+    def __init__(self, input_df, project_hyp, fish_num):
 
-        super().__init__(testtype='predator')
+        super().__init__(testtype='predator', project_hyp=project_hyp)
+        
+        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        input_df = input_df[:total_frames]
 
         self.df = input_df
         self.cols = self.df.columns
-        self.basic, self.units = self.BasicCalculation(self.df)
+        self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
-        self.distance = self.distance_to(self.df, "SEPARATOR", "Y")
-        self.time, self.events = self.timing(self.df, "PREDATOR", "Y", smaller = True)
+        self.distance = self.distance_to(self.df, "SEPARATOR", fish_num, "Y")
+        self.time, self.events = self.timing(self.df, "PREDATOR", fish_num, "Y", smaller = True)
 
 
-    def distance_to_separator(self):
+    # def distance_to_separator(self):
 
-        distance_list = []
+    #     distance_list = []
 
-        for _, row in self.df.iterrows():
-            y = row[self.cols[1]]
-            distance = abs(y - self.hyp["SEPARATOR"])
-            distance = distance / self.hyp['CONVERSION RATE']
-            distance_list.append(distance)
+    #     for _, row in self.df.iterrows():
+    #         y = row[self.cols[1]]
+    #         distance = abs(y - self.hyp["SEPARATOR"])
+    #         distance = distance / self.hyp['CONVERSION RATE']
+    #         distance_list.append(distance)
 
-        return Distance(distance_list)
+    #     return Distance(distance_list)

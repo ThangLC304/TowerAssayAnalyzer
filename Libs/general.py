@@ -56,13 +56,16 @@ def upper_first(string):
 
 class Loader():
     
-    def __init__(self, testtype):
+    def __init__(self, testtype, project_hyp):
 
         self.root_dir = self.GetRoot()
         self.statics = self.StaticLoader()
         self.paths = self.PathsLoader()
         self.hyp_path = self.HypPathLoader(testtype)
-        self.hyp = self.HypLoader(self.hyp_path)
+        if project_hyp == {}:
+            self.hyp = self.DefaultHypLoader(self.hyp_path)
+        else:
+            self.hyp = project_hyp
 
 
     def GetRoot(self):
@@ -96,7 +99,7 @@ class Loader():
         return hyp_path
 
 
-    def HypLoader(self, hyp_path):
+    def DefaultHypLoader(self, hyp_path):
 
         with open(hyp_path, 'r') as file:
             data = json.load(file)
@@ -105,12 +108,15 @@ class Loader():
         for key, value in data.items():
             if key == "CONVERSION RATE":
                 data[key] = float(value)
-            else:
+            elif key in ["FPS", "DURATION", "SEGMENT DURATION"]:
                 data[key] = int(value)
+            else:
+                for fish_num, fish_data in value.items():
+                    data[key][fish_num] = int(fish_data)
         return data
     
 
-    def BasicCalculation(self, input_df):
+    def BasicCalculation(self, input_df, fish_num):
 
         # reset index
         input_df = input_df.reset_index(drop=True)
@@ -125,7 +131,7 @@ class Loader():
         fps = self.hyp["FPS"]
         duration = self.hyp["DURATION"]
         try:
-            TBS_line = self.hyp["TOP"]
+            TBS_line = self.hyp["TOP"][fish_num]
         except KeyError:
             calculate_top_position = False
 
@@ -220,27 +226,35 @@ class Loader():
     
 
 
-    def distance_to(self, df, TARGET, axis = 'Y'):
+    def distance_to(self, df, TARGET, fish_num, axis = 'Y'):
 
         assert axis in ['X', 'Y'], 'axis must be X or Y'
 
         try:
-            _ = self.hyp[TARGET]
+            marks = self.hyp[TARGET]
         except KeyError:
-            raise Exception(f'{TARGET} is not defined in this test type')
+            raise Exception(f'{TARGET} is not defined in this test type ')
+        
+        try:
+            mark = marks[fish_num]
+        except KeyError:
+            try:
+                mark = marks[fish_num]
+            except KeyError:
+                raise Exception(f'{fish_num} is not defined in this test type ')
         
         cols = df.columns
         col_num = 0 if axis == 'X' else 1
         distance_list = []
 
         for idx, row in df.iterrows():
-            distance = abs(row[cols[col_num]] - self.hyp[TARGET])/self.hyp['CONVERSION RATE']
+            distance = abs(row[cols[col_num]] - mark)/self.hyp['CONVERSION RATE']
             distance_list.append(distance)
 
-        return Distance(distance_list)
+        return Distance(distance_list, mark=mark)
 
 
-    def timing(self, df, TARGET, axis = 'X', smaller = True):
+    def timing(self, df, TARGET, fish_num, axis = 'X', smaller = True):
 
         assert axis in ['X', 'Y'], 'axis must be X or Y'
 
@@ -251,13 +265,26 @@ class Loader():
         col_num = 0 if axis == 'X' else 1
         cols = df.columns
 
+        try:
+            marks = self.hyp[TARGET]
+        except KeyError:
+            raise Exception(f'{TARGET} is not defined in this test type ')
+        
+        try:
+            mark = marks[fish_num]
+        except KeyError:
+            try:
+                mark = marks[fish_num]
+            except KeyError:
+                raise Exception(f'{fish_num} is not defined in this test type ')
+
         for _, row in df.iterrows():
             coord = row[cols[col_num]]
 
             # Calculate the mirror biting
-            if coord < self.hyp[TARGET]:
+            if coord < mark:
                 interaction.append(indicator)
-            elif coord > self.hyp[TARGET]:
+            elif coord > mark:
                 interaction.append(1-indicator)
             else:
                 if smaller:
@@ -265,16 +292,40 @@ class Loader():
                 else:
                     interaction.append(indicator)
 
-        for i in range(len(interaction)):
-            if i == 0:
-                if interaction[i] == 1:
-                    start_point = i
-                continue
-            if interaction[i] == 1 and interaction[i-1] == 0:
-                start_point = i
-            elif interaction[i] == 0 and interaction[i-1] == 1:
-                end_point = i
-                interaction_events[(start_point, end_point-1)] = end_point - start_point
+        def consecutive_ones(binary_list):
+            result = {}
+            start, end = None, None
+
+            for i in range(len(binary_list)):
+                if binary_list[i] == 1:
+                    if start is None:
+                        start = i
+                    end = i
+                elif start is not None:
+                    result[(start, end)] = end - start + 1
+                    start, end = None, None
+
+            if start is not None:
+                result[(start, end)] = end - start + 1
+
+            return result
+
+        interaction_events = consecutive_ones(interaction)
+
+        # for i in range(len(interaction)):
+        #     if i == 0:
+        #         if interaction[i] == 1:
+        #             start_point = i
+        #         continue
+        #     if interaction[i] == 1 and interaction[i-1] == 0:
+        #         start_point = i
+        #     elif i == len(interaction)-1:
+        #         if interaction[i] == 1:
+        #             end_point = i
+        #             interaction_events[(start_point, end_point)] = end_point - start_point + 1
+        #     elif interaction[i] == 0 and interaction[i-1] == 1:
+        #         end_point = i-1
+        #         interaction_events[(start_point, end_point)] = end_point - start_point + 1
 
         # Convert values in mirror_biting_events to seconds
         interaction_events = {k: v/self.hyp["FPS"] for k, v in interaction_events.items()}
@@ -283,7 +334,7 @@ class Loader():
         if len(df) > 0 and len(interaction_events) == 0:
             interaction_events['-1'] = '-1'
 
-        return Time(interaction), Events(interaction_events, self.hyp["DURATION"])
+        return Time(interaction, mark = mark), Events(interaction_events, self.hyp["DURATION"], mark = mark)
 
 
 class CustomDisplay():
@@ -311,13 +362,15 @@ class CustomDisplay():
 
 class Time(CustomDisplay):
 
-    def __init__(self, time_list):
+    def __init__(self, time_list, mark):
 
-        self.list = time_list
-        self.duration = sum(self.list)
+        self.list = time_list  # [1, 1, 1, 0, 0, 0, 1, 0]
+        self.mark = mark
+
+        self.duration = sum(self.list)  # in frames
         # print(f'Duration: {self.duration} / {len(self.list)}')
         self.percentage = self.duration / len(self.list) * 100
-        self.not_duration = len(self.list) - self.duration
+        self.not_duration = len(self.list) - self.duration  # in frames
         self.not_percentage = 100 - self.percentage
         self.unit = 's'
 
@@ -325,14 +378,17 @@ class Time(CustomDisplay):
 
 class Events(CustomDisplay):
 
-    def __init__(self, event_dict, duration):
+    def __init__(self, event_dict, duration, mark):
 
         self.dict = event_dict
+        self.mark = mark
 
         if '-1' in event_dict.keys():
             self.count = 0
             self.longest = 0
             self.percentage = 0
+            # take out this key
+            self.dict.pop('-1')
         else:
             self.count = len(self.dict)
             self.longest = max(self.dict.values())
@@ -360,9 +416,11 @@ class Area(CustomDisplay):
 
 class Distance(CustomDisplay):
 
-    def __init__(self, distance_list):
+    def __init__(self, distance_list, mark=None):
 
         self.list = distance_list
+        self.mark = mark
+
         self.total = round(sum(self.list), ROUND_UP)
         self.avg = round(mean(self.list), ROUND_UP)
         self.unit = 'cm'
