@@ -20,7 +20,7 @@ class NovelTankTest(Loader): # 3000 * 7
 
         super().__init__(testtype='novel', project_hyp=project_hyp)
 
-        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         if segment == -1:
@@ -100,7 +100,7 @@ class ShoalingTest(Loader):
 
         super().__init__(testtype='shoaling', project_hyp=project_hyp)
 
-        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
         input_df1 = input_df1[:total_frames]
         input_df2 = input_df2[:total_frames]
         input_df3 = input_df3[:total_frames]
@@ -193,7 +193,7 @@ class MirrorBitingTest(Loader):
 
         super().__init__(testtype='mirror', project_hyp=project_hyp)
 
-        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         self.df = input_df
@@ -242,7 +242,7 @@ class SocialInteractionTest(Loader):
 
         super().__init__(testtype='social', project_hyp=project_hyp)
 
-        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         self.df = input_df
@@ -305,7 +305,7 @@ class PredatorAvoidanceTest(Loader):
 
         super().__init__(testtype='predator', project_hyp=project_hyp)
         
-        total_frames = int(self.hyp["FPS"] * self.hyp["DURATION"])
+        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         self.df = input_df
