@@ -38,11 +38,19 @@ class NovelTankTest(Loader): # 3000 * 7
         self.others = {}
         # self.others['distance in top'], self.others['top/bottom ratio'] = self.distance_in_top()
         self.others['distance in top'] = self.distance_in_top()
+        
+        infinite_ratio = 999
+
         try:
             self.others['top/bottom ratio'] = self.time.duration / self.time.not_duration
         except ZeroDivisionError:
-            self.others['top/bottom ratio'] = 999
-        self.others['distance top/bottom ratio'] = self.others['distance in top'] / (self.basic["total distance"] - self.others['distance in top'])
+            self.others['top/bottom ratio'] = infinite_ratio
+
+        try:
+            self.others['distance top/bottom ratio'] = self.others['distance in top'] / (self.basic["total distance"] - self.others['distance in top'])
+        except ZeroDivisionError:
+            self.others['distance top/bottom ratio'] = infinite_ratio
+
         self.others['latency in frames'], self.others['latency in seconds'] = self.calculate_latency()
         self.others['entry number'] = self.events.count
         try:

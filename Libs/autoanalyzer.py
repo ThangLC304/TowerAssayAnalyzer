@@ -32,7 +32,7 @@ def find_treatments(mother_dir):
 
     return result_dict
 
-def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK):
+def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
 
     TREATMENTS = find_treatments(PROJECT_DIR)
 
@@ -368,8 +368,15 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK):
         print('Analyzing Novel Tank Test...')
         time0 = time.time()
 
+        i = 0
         for cond in TREATMENTS.keys():
             _ = NovelBatch(batch_num=BATCHNUM, cond=cond) 
+
+            progress = (i + 1) / len(TREATMENTS) * 100
+            PROGRESS_BAR['value'] = progress
+            PROGRESS_BAR.update()
+            i += 1
+
             print()
 
 
@@ -386,8 +393,16 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK):
 
         time0 = time.time()
 
+        i = 0
         for cond in TREATMENTS.keys():
             _ = ShoalingBatch(batch_num=BATCHNUM, cond=cond)
+
+            progress = (i + 1) / len(TREATMENTS) * 100
+            PROGRESS_BAR['value'] = progress
+            PROGRESS_BAR.update()
+            i += 1
+
+            print()
 
         time1 = time.time()
 
@@ -404,8 +419,16 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK):
         print(f'Analyzing {tests[num]} Test...')
         time0 = time.time()
 
+        i = 0
         for cond in TREATMENTS.keys():
             _ = NormalBatch(test_num=num, batch_num=BATCHNUM, cond=cond)
+
+            progress = (i + 1) / len(TREATMENTS) * 100
+            PROGRESS_BAR['value'] = progress
+            PROGRESS_BAR.update()
+            i += 1
+
+            print()
 
         time1 = time.time()
 

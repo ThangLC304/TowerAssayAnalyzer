@@ -7,6 +7,8 @@ from pathlib import Path
 import shutil
 import os
 
+import threading
+
 from Libs.autoanalyzer import autoanalyzer
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -25,11 +27,11 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] Add a (left/right) option to RIGHT side of nested parameters                # DONE
 #[TODO] Add a small button to LEFT side of nested parameters to delete              #
 #[TODO] Add a batch selector                                                        #
-#[TODO] A bug when just created a project then create another one then cancel       #
-#[TODO] Adding more than 2 treatments causing display bug                           # 
+# [BUG] A bug when just created a project then create another one then cancel       #
+# [BUG] Adding more than 2 treatments causing display bug                           # FIXED
 #[TODO] The conspecific is actually can be calculated by separator & zone_width
 # which means need to add Zone_Width to parameter
-# Also, the current Mirror paramter is actually the Mirror_Zone parameter           #
+# Also, the current Mirror parameter is actually the Mirror_Zone parameter          #
 #[TODO] Note can be edit directly by user, even after the Project creating step     #
 
 
@@ -432,7 +434,7 @@ class App(customtkinter.CTk):
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=20)
 
         self.sidebar_button_4 = customtkinter.CTkButton(self.sidebar_frame, text="Analyze", 
-                                                        command=self.analyze_project)
+                                                        command=self.analyze_project_THREADED)
         self.sidebar_button_4.configure(**button_config)
         self.sidebar_button_4.grid(row=4, column=0, padx=20, pady=20)
 
@@ -1027,6 +1029,19 @@ class App(customtkinter.CTk):
     
     ### ANALYZE BUTTON ###
 
+    def create_progress_window(self):
+        progress_window = tkinter.Toplevel(self)
+        progress_window.title("Analysis Progress")
+        progress_window.geometry("300x100")
+
+        progress_label = tkinter.Label(progress_window, text="Analyzing...", font=('Helvetica', 12))
+        progress_label.pack(pady=(10, 0))
+
+        progress_bar = ttk.Progressbar(progress_window, mode='determinate', length=200)
+        progress_bar.pack(pady=(10, 20))
+
+        return progress_bar
+
     def analyze_project(self):
 
         if self.CURRENT_PROJECT == "":
@@ -1038,9 +1053,17 @@ class App(customtkinter.CTk):
         # get selected task
         task = self.TestOptions.get()
 
-        total_time = autoanalyzer(project_dir, 1, task)
 
+        progress_bar = self.create_progress_window()
+        total_time = autoanalyzer(project_dir, 1, task, progress_bar)
+
+        progress_bar.master.destroy()  # Close the progress window
         tkinter.messagebox.showinfo("Analysis Complete", f"Analysis complete. Total time taken: {total_time} seconds")
+
+    def analyze_project_THREADED(self):
+
+        analyze_thread = threading.Thread(target=self.analyze_project)
+        analyze_thread.start()
 
 
     ### IMPORT BUTTON ###
