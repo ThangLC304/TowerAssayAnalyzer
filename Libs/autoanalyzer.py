@@ -68,7 +68,9 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK):
             with open(json_path, 'r') as f:
                 hyp = json.load(f)
             try:
-                seg_num = int(int(hyp["DURATION"]) / int(hyp["SEGMENT DURATION"]))
+                temp_duration = int(float(hyp["DURATION"]))
+                temp_segment_duration = int(float(hyp["SEGMENT DURATION"]))
+                seg_num = int(temp_duration/temp_segment_duration)
                 SEGMENTED_DATA = True
             except:
                 SEGMENTED_DATA = False

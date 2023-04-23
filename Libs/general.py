@@ -109,10 +109,14 @@ class Loader():
             if key == "CONVERSION RATE":
                 data[key] = float(value)
             elif key in ["FPS", "DURATION", "SEGMENT DURATION"]:
-                data[key] = int(value)
+                data[key] = int(round(float(value)))
             else:
                 for fish_num, fish_data in value.items():
-                    data[key][fish_num] = int(fish_data)
+                    if isinstance(fish_data, list):
+                        for i, item in enumerate(fish_data):
+                            fish_data[i] = int(round(float(item)))
+                    else:
+                        data[key][fish_num] = int(round(float(fish_data)))
         return data
     
 
@@ -238,11 +242,16 @@ class Loader():
         try:
             mark = marks[fish_num]
         except KeyError:
-            try:
-                mark = marks[fish_num]
-            except KeyError:
-                raise Exception(f'{fish_num} is not defined in this test type ')
+            raise Exception(f'{fish_num} is not defined in this test type ')
         
+        if isinstance(mark, list):
+            mark = mark[0]
+        else:
+            try:
+                mark = float(mark)
+            except ValueError:
+                raise Exception(f'JSON DATA STRUCTURE ERROR: {mark} is not a valid')
+
         cols = df.columns
         col_num = 0 if axis == 'X' else 1
         distance_list = []
@@ -270,13 +279,33 @@ class Loader():
         except KeyError:
             raise Exception(f'{TARGET} is not defined in this test type ')
         
-        try:
-            mark = marks[fish_num]
-        except KeyError:
+        side = None
+
+        mark = marks[fish_num]
+        # "1" : ["536.0", 0]
+        
+        if isinstance(mark, list):
+            side = mark[1]
+            # 0
+            mark = mark[0]
+            # "536.0"
             try:
-                mark = marks[fish_num]
-            except KeyError:
-                raise Exception(f'{fish_num} is not defined in this test type ')
+                side = int(side)
+            except ValueError:
+                try:
+                    side = int(round(float(side)))
+                except ValueError:
+                    raise Exception(f'JSON Data Structure Error: {side} is not a boolean value')
+      
+        try:
+            mark = float(mark)
+            # 536.0
+        except ValueError:
+            raise Exception(f'JSON DATA STRUCTURE ERROR: {mark} is not a valid')
+    
+        if side is not None:
+            if side == 1:
+                indicator = 1 - indicator
 
         for _, row in df.iterrows():
             coord = row[cols[col_num]]

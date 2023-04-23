@@ -1,5 +1,6 @@
 import tkinter
 import tkinter.messagebox
+import tkinter.ttk as ttk
 import customtkinter
 import json
 from pathlib import Path
@@ -12,13 +13,25 @@ customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 
-#[TODO] Add parameters for each tank                                            # DONE
-#[TODO] Add GUI to input parameters for each tank                               # DONE
-#[TODO] Add Note for Control (DMSO x%)
-#[TODO] Automatically save parameters each time the task is changed             # DONE
-#[TODO] Analyzer button will analyze the task being selected                    # DONE
-#[TODO] The Cancel button currently create the project at cwd()                 # DONE
-#[TODO] Let user select the range of frames within data to be analyzed
+#[TODO] Add parameters for each tank                                                # DONE
+#[TODO] Add GUI to input parameters for each tank                                   # DONE
+#[TODO] Add a Note row for WindowInput Control (DMSO x%)                            #
+#[TODO] Automatically save parameters each time the task is changed                 # DONE
+#[TODO] Analyzer button will analyze the task being selected                        # DONE
+#[TODO] The Cancel button currently create the project at cwd()                     # DONE
+#[TODO] Let user select the range of frames within data to be analyzed              #
+#[TODO] The number of the nested parameters should be dynamic                       # DONE
+#[TODO] The mirror position of the tanks -> need to change the comparing conditions # DONE
+#[TODO] Add a (left/right) option to RIGHT side of nested parameters                # DONE
+#[TODO] Add a small button to LEFT side of nested parameters to delete              #
+#[TODO] Add a batch selector                                                        #
+#[TODO] A bug when just created a project then create another one then cancel       #
+#[TODO] Adding more than 2 treatments causing display bug                           # 
+#[TODO] The conspecific is actually can be calculated by separator & zone_width
+# which means need to add Zone_Width to parameter
+# Also, the current Mirror paramter is actually the Mirror_Zone parameter           #
+#[TODO] Note can be edit directly by user, even after the Project creating step     #
+
 
 ROOT = Path(__file__).parent
 ORI_HYP_PATH = ROOT / "Bin"
@@ -36,6 +49,45 @@ def get_directory(project_name):
     project_dir = projects_data[project_name]["DIRECTORY"]
 
     return project_dir
+
+class ToolTip(object):
+
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+
+    def showtip(self, text):
+        "Display text in tooltip window"
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 57
+        y = y + cy + self.widget.winfo_rooty() +27
+        self.tipwindow = tw = tkinter.Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = tkinter.Label(tw, text=self.text, justify=tkinter.LEFT,
+                      background="#ffffe0", relief=tkinter.SOLID, borderwidth=1,
+                      font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
+def CreateToolTip(widget, text):
+    toolTip = ToolTip(widget)
+    def enter(event):
+        toolTip.showtip(text)
+    def leave(event):
+        toolTip.hidetip()
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)
 
 
 class ScrollableProjectList(customtkinter.CTkScrollableFrame):
@@ -77,14 +129,28 @@ class ProjectDetailFrame(customtkinter.CTkFrame):
 
         super().__init__(master, **kwargs)
 
-        self.grid_columnconfigure(0, weight=1)
+        # # Create tree view
+        # self.tree = ttk.Treeview(self, height = 5, show = "headings")
+        # self.tree.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
         
+
+        # If project name is not empty, load the project details, 
+        # otherwise, display "No project selected"
         self.project_name = project_name
         if self.project_name != "":
             self.load_project_details()
         else:
             label = customtkinter.CTkLabel(self, text="No project selected")
             label.grid(row=0, column=0, padx=5, pady=5)
+
+    def update_grid_weight(self):
+        rows, cols = self.grid_size()
+
+        for row in range(rows):
+            self.grid_rowconfigure(row, weight=1)
+
+        for col in range(cols):
+            self.grid_columnconfigure(col, weight=1)
 
     def load_project_details(self, project_name=None):
 
@@ -105,91 +171,50 @@ class ProjectDetailFrame(customtkinter.CTkFrame):
 
         print(project_data)
 
-        headers = ["Treatment", "Dose", "Dose Unit", "Fish Number"]
+        headers = ["Treatment", "Dose", "Dose Unit", "Fish Number", "Note"]
+
+        # scroll = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        # scroll.grid(row=0, column=1, sticky="ns")  # Changed from scroll.pack to scroll.grid
+
+        # self.tree.configure(yscrollcommand=scroll.set)
+
+        # for i, header in enumerate(headers):
+        #     self.tree.heading(i, text=header)
+        #     self.tree.column(i, width=100, anchor='center')
+
+        # for details in project_data.values():
+        #     treatment_name, dose, dose_unit, fish_number, note = details
+
+        #     dose = dose if dose != 0 else ""
+        #     dose_unit = dose_unit if dose_unit != "" else ""
+        #     fish_number = fish_number if fish_number != 0 else ""
+
+        #     labels = [treatment_name, dose, dose_unit, fish_number, note]
+
+        #     self.tree.insert("", "end", values=labels)
 
         for i, header in enumerate(headers):
             label = customtkinter.CTkLabel(self, text=header, font=customtkinter.CTkFont(weight="bold"))
             label.grid(row=0, column=i, padx=5, pady=5)
 
         for row, (treatment, details) in enumerate(project_data.items(), start=1):
-            treatment_name, dose, dose_unit, fish_number = details
+            treatment_name, dose, dose_unit, fish_number, note = details
 
             dose = dose if dose != 0 else ""
             dose_unit = dose_unit if dose_unit != "" else ""
             fish_number = fish_number if fish_number != 0 else ""
 
-            labels = [treatment_name, dose, dose_unit, fish_number]
+            labels = [treatment_name, dose, dose_unit, fish_number, note]
 
             for col, label_text in enumerate(labels):
                 label = customtkinter.CTkLabel(self, text=label_text)
                 label.grid(row=row, column=col, padx=5, pady=5)
 
-    def clear(self):
-        for child in self.winfo_children():
-            child.destroy()
-
-
-import os
-import json
-import tkinter as tk
-
-class Parameter:
-    def __init__(self, master, project_name, selected_task, value_group):
-        self.master = master
-        self.task = selected_task
-        self.group = value_group
-        self.json_name = f"hyp_{self.task}.json"
-
-        project_dir = get_directory(project_name)
-        self.path = os.path.join(project_dir, "static", self.json_name)
-
-        if project_name == "":
-            label = customtkinter.CTkLabel(self, text="No project selected")
-            label.grid(row=0, column=0, padx=5, pady=5)
-        else:
-            self.load_json()
-
-    def load_json(self):
-
-        self.clear()
-
-        with open(self.path, 'r') as f:
-            ori_dict = json.load(f)
-
-        if self.group == "single":
-            display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
-        else:
-            display_dict = ori_dict[self.group]
-
-        for row, (key, value) in enumerate(display_dict.items()):
-            key_label = customtkinter.CTkLabel(self, text=key)
-            key_label.grid(row=row, column=0, padx=5, pady=5)
-
-            value_entry = customtkinter.CTkEntry(self)
-            value_entry.insert(0, value)
-            value_entry.grid(row=row, column=1, padx=5, pady=5)
+        self.update_grid_weight()
 
     def clear(self):
         for child in self.winfo_children():
             child.destroy()
-
-
-    def save_json(self):
-        save_dict = {}
-        for idx, child in enumerate(self.master.winfo_children()):
-            if isinstance(child, tk.Entry):
-                key = self.master.winfo_children()[idx-1].cget("text")
-                save_dict[key] = child.get()
-
-        with open(self.path, 'r') as f:
-            ori_dict = json.load(f)
-
-        for key, value in save_dict.items():
-            if key in ori_dict:
-                ori_dict[key] = value
-
-        with open(self.path, 'w') as f:
-            json.dump(ori_dict, f, indent=4)
 
 
 class Parameters(customtkinter.CTkFrame):
@@ -244,6 +269,8 @@ class Parameters(customtkinter.CTkFrame):
         else:
             try:
                 nested_key = nested_keys[nested_key-1]
+                
+
             except IndexError:
                 label = customtkinter.CTkLabel(self, text="No more nested keys")
                 label.grid(row=0, column=0, padx=5, pady=5) 
@@ -251,13 +278,28 @@ class Parameters(customtkinter.CTkFrame):
             
             display_dict = ori_dict[nested_key]
 
+            
+
         for row, (key, value) in enumerate(display_dict.items()):
             key_label = customtkinter.CTkLabel(self, text=key)
-            key_label.grid(row=row, column=0, padx=5, pady=5)
+            key_label.grid(row=row+1, column=0, padx=5, pady=5)
+
+            # if value is a list
+            if isinstance(value, list):
+                LR_switch = customtkinter.CTkSwitch(self, text=None)
+                LR_switch.grid(row=row+1, column=2, padx=(5,0), pady=5)
+                if int(value[1]) == 1:
+                    LR_switch.select()
+
+                display_value = value[0]
+                headers = ["Tank", "Value", "Left/Right"]
+            else:
+                display_value = value
+                headers = ["Tank", "Value"]
 
             value_entry = customtkinter.CTkEntry(self)
-            value_entry.insert(0, value)
-            value_entry.grid(row=row, column=1, padx=5, pady=5)
+            value_entry.insert(0, display_value)
+            value_entry.grid(row=row+1, column=1, padx=5, pady=5)
 
             try:
                 _ = int(key)
@@ -265,7 +307,15 @@ class Parameters(customtkinter.CTkFrame):
             except ValueError:
                 entry_key = key
 
-            self.entries[entry_key] = value_entry
+            if isinstance(value, list):
+                self.entries[entry_key] = [value_entry, LR_switch]
+            else:
+                self.entries[entry_key] = value_entry
+
+        # make a header
+            for i, header in enumerate(headers):
+                label = customtkinter.CTkLabel(self, text=header, font=customtkinter.CTkFont(weight="bold"))
+                label.grid(row=0, column=i, padx=5, pady=5)
 
         return nested_key
 
@@ -275,6 +325,22 @@ class Parameters(customtkinter.CTkFrame):
 
     def save_parameters(self, project_name, selected_task):
 
+        def get_entry(entry_dict):
+            out_dict = {}
+            for key, value in entry_dict.items():
+                try:
+                    if isinstance(value, list):
+                        v = [value[0].get(), value[1].get()]
+                    else:
+                        v = value.get()
+                except AttributeError:
+                    print(f"AttributeError: {key} is not a tkinter entry")
+                    print(f"Value: ", v)
+                    print(f"Value type: ", type(v))
+                    continue
+                out_dict[key] = v
+            return out_dict
+        
         selected_task = self.selected_task.split()[0].lower()
         hyp_name = f"hyp_{selected_task}.json"
 
@@ -285,7 +351,7 @@ class Parameters(customtkinter.CTkFrame):
             hyp_path = Path(project_dir) / "static" / hyp_name
 
         # Get the values from the entries
-        updated_values = {key: entry.get() for key, entry in self.entries.items()}
+        updated_values = get_entry(self.entries)
         
         # load the original data
         with open(hyp_path, "r") as file:
@@ -295,12 +361,13 @@ class Parameters(customtkinter.CTkFrame):
         for key, value in updated_values.items():
             try:
                 if "_" not in key:
-                    parameters_data[key] = float(value)
+                    parameters_data[key] = value
                 else:
                     nested_key, nested_key_value = key.split("_")
                     if nested_key not in parameters_data:
                         parameters_data[nested_key] = {}
-                    parameters_data[nested_key][nested_key_value] = float(value)
+                    parameters_data[nested_key][nested_key_value] = value
+
             except ValueError:
                 print(f"Invalid input for {key}: {value}. Skipping.")
 
@@ -330,7 +397,7 @@ class App(customtkinter.CTk):
 
         # configure window
         self.title("Tower Assay Analyzer")
-        self.geometry(f"{1350}x{690}")
+        self.geometry(f"{1440}x{690}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=0) 
@@ -487,6 +554,8 @@ class App(customtkinter.CTk):
         else:
             self.save_parameters(mode = "previous")
 
+        print("Current Project: ", self.CURRENT_PROJECT)
+
         self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, nested_key = 0)
         nested_key_1 = self.nested_key_1_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, nested_key = 1)
         nested_key_2 = self.nested_key_2_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, nested_key = 2)
@@ -511,6 +580,7 @@ class App(customtkinter.CTk):
         self.parameters_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
         self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
         self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test)
+
 
     
     # def load_parameter(self, event):
@@ -588,19 +658,7 @@ class App(customtkinter.CTk):
 
         self.refresh_projects_detail()
 
-        self.on_test_selected(self.TESTLIST[0])
-
-
-        # # Load parameters to self.CURRENT_PARAMETERS
-        
-        # project_dir = get_directory(selected_project)
-
-        # for hyp_name in self.TESTLIST:
-        #     hyp_path = Path(project_dir) / "static" / f"hyp_{hyp_name}.json"
-        #     with open(hyp_path, "r") as file:
-        #         hyp_data = json.load(file)
-        #     self.CURRENT_PARAMETERS[hyp_name] = hyp_data
-
+        self.on_test_selected(load_type = "first_load")
 
 
     ### CREATE PROJECT BUTTON FUNCTION ###
@@ -676,6 +734,9 @@ class App(customtkinter.CTk):
             else:
                 normal_parents.append(path)
 
+        shoaling_tank_count = 0
+        other_tank_count = 0
+
         for k, v in treatments.items():
             char = k.split()[1]
             if char == "A":
@@ -689,10 +750,15 @@ class App(customtkinter.CTk):
                 tail = f"{char} - {v[1]} {v[2]} ({batch} Batch)"
 
             fish_num = int(v[3])
+            if fish_num > other_tank_count:
+                other_tank_count = fish_num
             all_paths[f"Child-{char}"] = [f"{parent}\\{tail}" for parent in all_paths['Parent']]
             for i in range(1, fish_num+1):
                 all_paths[f"Child-{char}"].extend([f"{parent}\\{tail}\\{i}" for parent in normal_parents])
+            
             fish_group = fish_num // 3
+            if fish_group > shoaling_tank_count:
+                shoaling_tank_count = fish_group
             for i in range(1, fish_group+1):
                 all_paths[f"Child-{char}"].extend([f"{parent}\\{tail}\\{i}" for parent in group_parents])
 
@@ -700,10 +766,11 @@ class App(customtkinter.CTk):
             for path in v:
                 os.makedirs(os.path.join(project_dir, path))
 
+        return shoaling_tank_count, other_tank_count
 
     def save_project(self):
-        selected_project = self.scrollable_frame.get_selected_project()
-        self.CURRENT_PROJECT = selected_project
+        # selected_project = self.scrollable_frame.get_selected_project()
+        # self.CURRENT_PROJECT = selected_project
 
         save_dir = tkinter.filedialog.askdirectory()
         save_dir = Path(save_dir)
@@ -711,8 +778,9 @@ class App(customtkinter.CTk):
         project_dir = save_dir / self.CURRENT_PROJECT
         # project_dir.mkdir(parents=True, exist_ok=True)
 
-        # [TODO] Add new batch
-        self.directories_maker(project_dir, 1)
+        shoaling_tank_count, other_tank_count = self.directories_maker(project_dir, 1)
+        print(f"shoaling_tank_count: {shoaling_tank_count}")
+        print(f"other_tank_count: {other_tank_count}")
 
         with open(HISTORY_PATH, "r") as file:
             projects_data = json.load(file)
@@ -733,18 +801,58 @@ class App(customtkinter.CTk):
         for file in ori_static_path.glob("hyp_*.json"):
             shutil.copy(file, project_static_path)
 
+        for file in project_static_path.glob("hyp_*.json"):
+            # if not .json, skip
+            if not file.suffix == ".json":
+                continue
+            
+            if "shoaling" in file.name:
+                desired_key_num = shoaling_tank_count
+            else:
+                desired_key_num = other_tank_count
+
+            with open(file, "r") as f:
+                data = json.load(f)
+            for value in data.values():
+                if not isinstance(value, dict):
+                    continue
+
+                if len(value) < desired_key_num:
+                    print("Tank number is not enough, adding extra tanks")
+                    # check type of value.values(), if it is a list, new_value = [0,0], else new_value = 0
+                    if type(list(value.values())[0]) == list:
+                        default_value = [0,0]
+                    else:
+                        default_value = 0
+                    while len(value) < desired_key_num:
+                        temp_key = chr(len(value)+65)
+                        print("Adding tank: ", temp_key, "with default value: ", default_value, "to file: ", file.name, "")
+                        value[temp_key] = default_value
+                elif len(value) > desired_key_num:
+                    print("Tank number is too much, removing extra tanks")
+                    while len(value) > desired_key_num:
+                        print("Removing tank")
+                        value.popitem()
+                else:
+                    pass
+
+            with open(file, "w") as f:
+                json.dump(data, f, indent=4)
+
 
     def project_input_window(self):
         treatment_widgets = []
 
+        bold_font = customtkinter.CTkFont(size = 15, weight="bold")
+
         def add_treatment():
-            treatment_row = len(treatment_widgets) + 6
+            treatment_row = len(treatment_widgets)*3 + r + 1
             treatment_name = f"Treatment {chr(ord('C') + len(treatment_widgets))}:"
 
-            treatment_label = customtkinter.CTkLabel(top_canvas, text=treatment_name)
-            treatment_label.grid(row=treatment_row, column=0, pady=5)
+            treatment_label = customtkinter.CTkLabel(top_canvas, text=treatment_name, font=bold_font)
+            treatment_label.grid(row=treatment_row, column=0, pady=(20, 5))
             treatment_entry = customtkinter.CTkEntry(top_canvas)
-            treatment_entry.grid(row=treatment_row, column=1, pady=5)
+            treatment_entry.grid(row=treatment_row, column=1, pady=(20, 5))
 
             dose_label = customtkinter.CTkLabel(top_canvas, text="Dose:")
             dose_label.grid(row=treatment_row + 1, column=0, pady=5)
@@ -764,18 +872,24 @@ class App(customtkinter.CTk):
             project_name = project_name_entry.get()
             self.CURRENT_PROJECT = project_name
             try:
+                note = treatment_a_entry.get()
+            except:
+                note = ""
+            try:
                 treatment_list = {
                     "Treatment A": [
                         "Control",
                         0,
                         "",
-                        int(fish_number_a_entry.get())
+                        int(fish_number_a_entry.get()),
+                        note
                     ],
                     "Treatment B": [
                         treatment_b_entry.get(),
                         float(dose_b_entry.get()),
                         unit_b_optionmenu.get(),
-                        int(fish_number_b_entry.get())
+                        int(fish_number_b_entry.get()),
+                        note
                     ]
                 }
             except Exception as e:
@@ -789,7 +903,8 @@ class App(customtkinter.CTk):
                     treatment_entry.get(),
                     float(dose_entry.get()),
                     unit_optionmenu.get(),
-                    int(fish_number_entry.get())
+                    int(fish_number_entry.get()),
+                    note
                 ]
 
             # Save values to projects.json
@@ -824,51 +939,67 @@ class App(customtkinter.CTk):
 
 
         input_window = tkinter.Toplevel(self)
+        # set window size
+        input_window.geometry("500x500")
 
         input_window.title("Project Input")
 
         # Top Canvas
-        top_canvas = customtkinter.CTkFrame(input_window)
+        top_canvas = customtkinter.CTkScrollableFrame(input_window, width = 380)
+        # expand the canvas to fill the window
+        input_window.rowconfigure(0, weight=1)
         top_canvas.grid(row=0, column=0, sticky="nsew")
 
+        r=0
         # Project name
-        project_name_label = customtkinter.CTkLabel(top_canvas, text="Project name:")
-        project_name_label.grid(row=0, column=0, pady=5)
+        project_name_label = customtkinter.CTkLabel(top_canvas, text="Project name:", font=bold_font)
+        project_name_label.grid(row=r, column=0, pady=5)
         project_name_entry = customtkinter.CTkEntry(top_canvas)
-        project_name_entry.grid(row=0, column=1, pady=5)
+        project_name_entry.grid(row=r, column=1, pady=5)
 
+        r+=1
         # Treatment A (Control)
-        treatment_a_label = customtkinter.CTkLabel(top_canvas, text="Treatment A:")
-        treatment_a_label.grid(row=1, column=0, pady=5)
-        treatment_a_value = customtkinter.CTkLabel(top_canvas, text="Control")
-        treatment_a_value.grid(row=1, column=1, pady=5)
+        treatment_a_label = customtkinter.CTkLabel(top_canvas, text="Treatment A:", font=bold_font)
+        treatment_a_label.grid(row=r, column=0, pady=5)
+        treatment_a_entry = customtkinter.CTkEntry(top_canvas)
+        treatment_a_entry.grid(row=r, column=1, pady=5)
 
+        hover_button = tkinter.Button(top_canvas, text="?")
+        hover_button.grid(row=r, column=2, pady=5)
+        CreateToolTip(hover_button, text = 'Control condition\n'
+                 'Leave blank if you used pure water\n'
+                 'The info you put here would be saved as Note\n'
+        )
+
+        r+=1
         # Fish number
         fish_number_a_label = customtkinter.CTkLabel(top_canvas, text="Fish Number:")
-        fish_number_a_label.grid(row=2, column=0, pady=5)
+        fish_number_a_label.grid(row=r, column=0, pady=5)
         fish_number_a_entry = customtkinter.CTkEntry(top_canvas)
-        fish_number_a_entry.grid(row=2, column=1, pady=5)
+        fish_number_a_entry.grid(row=r, column=1, pady=5)
         
-
+        r+=1
         # Treatment B
-        treatment_b_label = customtkinter.CTkLabel(top_canvas, text="Treatment B:")
-        treatment_b_label.grid(row=3, column=0, pady=5)
+        treatment_b_label = customtkinter.CTkLabel(top_canvas, text="Treatment B:", font=bold_font)
+        treatment_b_label.grid(row=r, column=0, pady=(20, 5))
         treatment_b_entry = customtkinter.CTkEntry(top_canvas)
-        treatment_b_entry.grid(row=3, column=1, pady=5)
+        treatment_b_entry.grid(row=r, column=1, pady=(20, 5))
 
+        r+=1
         # Dose
         dose_label = customtkinter.CTkLabel(top_canvas, text="Dose:")
-        dose_label.grid(row=4, column=0, pady=5)
+        dose_label.grid(row=r, column=0, pady=5)
         dose_b_entry = customtkinter.CTkEntry(top_canvas)
-        dose_b_entry.grid(row=4, column=1, pady=5)
+        dose_b_entry.grid(row=r, column=1, pady=5)
         unit_b_optionmenu = customtkinter.CTkOptionMenu(top_canvas, values=["ppm", "ppb"])
-        unit_b_optionmenu.grid(row=4, column=2, pady=5)
+        unit_b_optionmenu.grid(row=r, column=2, pady=5)
 
+        r+=1
         # Fish number
         fish_number_b_label = customtkinter.CTkLabel(top_canvas, text="Fish Number:")
-        fish_number_b_label.grid(row=5, column=0, pady=5)
+        fish_number_b_label.grid(row=r, column=0, pady=5)
         fish_number_b_entry = customtkinter.CTkEntry(top_canvas)
-        fish_number_b_entry.grid(row=5, column=1, pady=5)
+        fish_number_b_entry.grid(row=r, column=1, pady=5)
 
         # Bottom Canvas
         bottom_canvas = customtkinter.CTkFrame(input_window)
@@ -877,17 +1008,19 @@ class App(customtkinter.CTk):
         # Add button
         add_button = customtkinter.CTkButton(bottom_canvas, text="Add Treatment", 
                                              command=add_treatment)
-        add_button.grid(row=0, column=0, padx=5, pady=5)
+        add_button.grid(row=0, column=0, padx=5, pady=20)
 
         # Confirm button
         confirm_button = customtkinter.CTkButton(bottom_canvas, text="CONFIRM", 
+                                                 font = bold_font,
                                                  command=get_values)
-        confirm_button.grid(row=1, column=0, padx=5, pady=5)
+        confirm_button.grid(row=1, column=0, padx=5, pady=20)
 
         # Cancel button
         cancel_button = customtkinter.CTkButton(bottom_canvas, text="CANCEL", 
+                                                font = bold_font,
                                                 command=cancel_button_command)
-        cancel_button.grid(row=1, column=1, padx=5, pady=5)
+        cancel_button.grid(row=1, column=1, padx=5, pady=20)
 
         input_window.wait_window()
 
