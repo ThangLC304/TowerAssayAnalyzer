@@ -29,10 +29,10 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] Add a batch selector                                                        #
 # [BUG] A bug when just created a project then create another one then cancel       #
 # [BUG] Adding more than 2 treatments causing display bug                           # FIXED
-#[TODO] The conspecific is actually can be calculated by separator & zone_width
-# which means need to add Zone_Width to parameter
-# Also, the current Mirror parameter is actually the Mirror_Zone parameter          # DONE
+#[TODO] Change hyp format to only "MIRROR" & "SEPARATOR", " ZONE" is calculated     # DONE
 #[TODO] Note can be edit directly by user, even after the Project creating step     #
+#[TODO] Save before analyze                                                         #
+#[TODO] Different hyp set for Control and Treatment                                 # 
 
 
 ROOT = Path(__file__).parent
