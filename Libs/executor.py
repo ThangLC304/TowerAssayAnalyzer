@@ -146,8 +146,9 @@ class MirrorBiting_Display(MirrorBitingTest):
 
         self.display = [
             ['Mirror biting time', self.time.percentage, '%'],
-            ['Longest time mirror biting', self.events.longest, self.events.unit],
+            # ['Longest time mirror biting', self.events.longest, self.events.unit],
             ['Longest time mirror biting %', self.events.percentage, '%'],
+            ['Average distance to mirror', self.distance.avg, self.distance.unit],
         ]
 
         # add self.display to self.rows
@@ -179,7 +180,7 @@ class SocialInteraction_Display(SocialInteractionTest):
 
         self.display = [
             ['Interaction time', self.time.percentage, '%'],
-            ['Longest time in interaction', self.events.longest, self.events.unit],
+            # ['Longest time in interaction', self.events.longest, self.events.unit],
             ['Longest time in interaction %', self.events.percentage, '%'],
             ['Average distance to separator', self.distance.avg, self.distance.unit],
         ]
@@ -212,9 +213,9 @@ class PredatorAvoidance_Display(PredatorAvoidanceTest):
             self.rows[i] = [upper_first(req), self.basic[req], self.units[req]]
 
         self.display = [
-            ['Predator avoiding time', self.time.duration, self.time.unit],
+            # ['Predator avoiding time', self.time.duration, self.time.unit],
             ['Predator avoiding time %', self.time.percentage, '%'],
-            ['Predator approaching time', self.time.not_duration, self.time.unit],
+            # ['Predator approaching time', self.time.not_duration, self.time.unit],
             ['Predator approaching time %', self.time.not_percentage, '%'],
             ['Longest time approaching predator', self.events.longest, self.events.unit],
             ['Average distance to predator', self.distance.avg, self.distance.unit],

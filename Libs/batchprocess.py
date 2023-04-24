@@ -1,6 +1,6 @@
 from pathlib import Path
 from Libs.executor import *
-from Libs.misc import append_df_to_excel, adjust_column_widths, sort_paths_by_parent
+from Libs.misc import append_df_to_excel, adjust_column_widths, sort_paths_by_parent, hyploader
 import pandas as pd
 import json
 import time
@@ -191,22 +191,8 @@ class MY_DIR():
 
     def HypLoader(self, hyp_path):
 
-        with open(hyp_path, 'r') as file:
-            data = json.load(file)
+        data = hyploader(hyp_path)
         
-        # convert values to int or float
-        for key, value in data.items():
-            if key == "CONVERSION RATE":
-                data[key] = float(value)
-            elif key in ["FPS", "DURATION", "SEGMENT DURATION"]:
-                data[key] = int(round(float(value)))
-            else:
-                for fish_num, fish_data in value.items():
-                    if isinstance(fish_data, list):
-                        for i, item in enumerate(fish_data):
-                            fish_data[i] = int(round(float(item)))
-                    else:
-                        data[key][fish_num] = int(round(float(fish_data)))
         return data
 
 

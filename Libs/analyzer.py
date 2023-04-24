@@ -208,7 +208,8 @@ class MirrorBitingTest(Loader):
         self.cols = self.df.columns
         self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
-        self.time, self.events = self.timing(self.df, "MIRROR", fish_num, "Y", smaller = True)
+        self.distance = self.distance_to(self.df, "MIRROR", fish_num, "Y")
+        self.time, self.events = self.timing(self.df, "MIRROR ZONE", fish_num, "Y", smaller = True)
 
     
     # def mirror_timing(self):
@@ -258,7 +259,7 @@ class SocialInteractionTest(Loader):
         self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
         self.distance = self.distance_to(self.df, "SEPARATOR", fish_num, "Y")
-        self.time, self.events = self.timing(self.df, "CONSPECIFIC", fish_num, "Y", smaller = False)
+        self.time, self.events = self.timing(self.df, "SEPARATOR ZONE", fish_num, "Y", smaller = False)
 
 
     # def social_timing(self):
@@ -321,7 +322,7 @@ class PredatorAvoidanceTest(Loader):
         self.basic, self.units = self.BasicCalculation(self.df, fish_num)
 
         self.distance = self.distance_to(self.df, "SEPARATOR", fish_num, "Y")
-        self.time, self.events = self.timing(self.df, "PREDATOR", fish_num, "Y", smaller = True)
+        self.time, self.events = self.timing(self.df, "SEPARATOR ZONE", fish_num, "Y", smaller = True)
 
 
     # def distance_to_separator(self):

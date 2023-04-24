@@ -8,6 +8,7 @@ import json
 from statistics import mean
 from word2number import w2n
 import re
+from Libs.misc import hyploader
 
 def ordinal_to_number(ordinal):
     ordinal = ordinal.lower().strip()
@@ -101,22 +102,8 @@ class Loader():
 
     def DefaultHypLoader(self, hyp_path):
 
-        with open(hyp_path, 'r') as file:
-            data = json.load(file)
-        
-        # convert values to int or float
-        for key, value in data.items():
-            if key == "CONVERSION RATE":
-                data[key] = float(value)
-            elif key in ["FPS", "DURATION", "SEGMENT DURATION"]:
-                data[key] = int(round(float(value)))
-            else:
-                for fish_num, fish_data in value.items():
-                    if isinstance(fish_data, list):
-                        for i, item in enumerate(fish_data):
-                            fish_data[i] = int(round(float(item)))
-                    else:
-                        data[key][fish_num] = int(round(float(fish_data)))
+        data = hyploader(hyp_path)
+
         return data
     
 

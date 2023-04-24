@@ -582,3 +582,38 @@ def sort_paths_by_parent(paths):
         return (primary_key, secondary_key)
     
     return sorted(paths, key=sort_key)
+
+
+def hyploader(hyp_path):
+
+    with open(hyp_path, 'r') as file:
+        data = json.load(file)
+        
+    # convert values to int or float
+    for key, value in data.items():
+        if key == "CONVERSION RATE":
+            data[key] = float(value)
+        elif key in ["FPS", "DURATION", "SEGMENT DURATION", "ZONE WIDTH"]:
+            data[key] = int(float(value))
+        else:
+            for fish_num, fish_data in value.items():
+                if isinstance(fish_data, list):
+                    for i, item in enumerate(fish_data):
+                        fish_data[i] = int(float(item))
+                else:
+                    data[key][fish_num] = int(float(fish_data))
+
+    def zone_calculator(target_name, target_data):
+        zone_name = target_name + " ZONE"
+        target_data[zone_name] = {}
+        for fish_num, fish_data in target_data[target_name].items():
+            m = -1 if fish_data[1] == 0 else 1
+            target_data[zone_name][fish_num] = [fish_data[0] + m * target_data["ZONE WIDTH"] *  target_data["CONVERSION RATE"], fish_data[1]]
+
+        return target_data
+
+    for target in ["MIRROR", "SEPARATOR"]:
+        if target in data.keys():
+            data = zone_calculator(target, data)
+
+    return data
