@@ -399,7 +399,7 @@ class App(customtkinter.CTk):
 
         # configure window
         self.title("Tower Assay Analyzer")
-        self.geometry(f"{1440}x{690}")
+        self.geometry(f"{1440}x{790}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=0) 
@@ -416,45 +416,53 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Tower Assay Analyzer", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.logo_label.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10))
         
         self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Create Project", 
                                                         command=self.create_project)
         self.sidebar_button_1.configure(**button_config)
-        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=20)
+        self.sidebar_button_1.grid(row=1, column=0, columnspan=2, padx=20, pady=20)
 
         self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Load Project", 
                                                         command=self.load_project)
         self.sidebar_button_2.configure(**button_config)
-        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=20)
+        self.sidebar_button_2.grid(row=2, column=0, columnspan=2, padx=20, pady=20)
 
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, text="Delete Project", 
                                                         command=self.delete_project)
         self.sidebar_button_3.configure(**button_config)
-        self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=20)
+        self.sidebar_button_3.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
 
-        self.sidebar_button_4 = customtkinter.CTkButton(self.sidebar_frame, text="Analyze", 
-                                                        command=self.analyze_project_THREADED)
-        self.sidebar_button_4.configure(**button_config)
-        self.sidebar_button_4.grid(row=4, column=0, padx=20, pady=20)
+        self.batch_label = customtkinter.CTkLabel(self.sidebar_frame, text="Batch Number", font=customtkinter.CTkFont(size=16))
+        self.batch_label.grid(row=4, column=0, padx=5, pady=5)
+        self.batch_entry = customtkinter.CTkEntry(self.sidebar_frame, width=50, height=10)
+        self.batch_entry.grid(row=4, column=1, padx=5, pady=5)
+        # set default value = 1
+        self.batch_entry.insert(0, "1")
 
-        self.sidebar_button_5 = customtkinter.CTkButton(self.sidebar_frame, text="Import Trajectories", 
+        self.sidebar_button_4 = customtkinter.CTkButton(self.sidebar_frame, text="Import Trajectories", 
                                                         command=self.import_trajectories)
+        self.sidebar_button_4.configure(**button_config)
+        self.sidebar_button_4.grid(row=5, column=0, columnspan=2, padx=20, pady=20)
+
+        self.sidebar_button_5 = customtkinter.CTkButton(self.sidebar_frame, text="Analyze", 
+                                                        command=self.analyze_project_THREADED)
         self.sidebar_button_5.configure(**button_config)
-        self.sidebar_button_5.grid(row=5, column=0, padx=20, pady=20)
+        self.sidebar_button_5.grid(row=6, column=0, columnspan=2, padx=20, pady=20)
+
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_label.grid(row=7, column=0, columnspan=2, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)
         
-        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(10, 10))
+        self.appearance_mode_optionemenu.grid(row=8, column=0, columnspan=2, padx=20, pady=(10, 10))
         
         self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=8, column=0, padx=20, pady=(10, 0))
+        self.scaling_label.grid(row=9, column=0, columnspan=2, padx=20, pady=(10, 0))
         self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                                command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(row=9, column=0, padx=20, pady=(10, 20))
+        self.scaling_optionemenu.grid(row=10, column=0, columnspan=2, padx=20, pady=(10, 20))
 
         ### COLUMN 1 ###
 
@@ -1053,9 +1061,13 @@ class App(customtkinter.CTk):
         # get selected task
         task = self.TestOptions.get()
 
+        try:
+            BATCH_NUMBER = int(self.batch_entry.get())
+        except ValueError:
+            BATCH_NUMBER = 1
 
         progress_bar = self.create_progress_window()
-        total_time = autoanalyzer(project_dir, 1, task, progress_bar)
+        total_time = autoanalyzer(project_dir, BATCH_NUMBER, task, progress_bar)
 
         progress_bar.master.destroy()  # Close the progress window
         tkinter.messagebox.showinfo("Analysis Complete", f"Analysis complete. Total time taken: {total_time} seconds")
@@ -1089,18 +1101,71 @@ class App(customtkinter.CTk):
         # Find all .txt files within the project directory
         txt_files = ori_dir.glob("**/*.txt")
 
+        # change all paths in txt_files to fullpath
+        txt_paths = [txt_file.resolve() for txt_file in txt_files]
+
+        char_list = [chr(i) for i in range(65, 91)]
+
+        def check_grandparent_format(txt_path, batch_num):
+            # check if the grandparent folder of txt_path is in the format of "A - Control (1st Batch)"
+            # if yes, return True, else return False
+
+            grandparent = txt_path.parent.parent.name
+            sign = grandparent.split("-")[0].strip()
+            treatment = grandparent.split("-")[1].strip()
+            batch_ord = treatment.split("(")[1].split(" ")[0].strip()
+            # change ordinal to number, 1st -> 1
+            if batch_num != int(batch_ord[:-2]):
+                return None
+            if sign not in char_list:
+                # change it from number to letter, 1 -> A
+                sign = chr(int(sign) + 64)
+            
+            return f"{sign} - {treatment}"
+
+        def check_test(txt_path):
+            # check if any word in name_dict.keys() is in str(txt_path).lower()
+            # if yes then construct a name based on the found name
+            name_dict = {
+                "novel tank" : "01 - Novel Tank Test",
+                "shoaling" : "02 - Shoaling Test",
+                "mirror" : "03 - Mirror Test",
+                "social" : "04 - Social Interaction Test",
+                "predator" : "05 - Predator Test"
+            }
+
+            for key in name_dict.keys():
+                if key in str(txt_path).lower():
+                    return name_dict[key]
+
+        def get_project_path(txt_path, project_dir, batch_num):
+            gparents = check_grandparent_format(txt_path, batch_num)
+            if gparents == None:
+                return None
+            # if the txt_path contain "novel tank"
+            ancestors = Path(check_test(txt_path)) / Path(gparents)
+            # get the parent and name of txt_path
+            parent = txt_path.parent.name
+            file = txt_path.name
+            return project_dir / ancestors / parent / file
+
+        BATCH_NUMBER = int(self.batch_entry.get())
+
         # Loop through each .txt file and copy it to the new location
-        for txt_file in txt_files:
+        for txt_path in txt_files:
             # Construct the new path by replacing the project directory with the new base directory
-            new_path = project_dir.joinpath(*txt_file.parts[len(ori_dir.parts):])
+            new_path = get_project_path(txt_path, project_dir, BATCH_NUMBER)
+
+            if new_path == None:
+                continue
             
             # Create the new directory structure if it doesn't already exist
             new_path.parent.mkdir(parents=True, exist_ok=True)
             
             # Copy the file to the new location
-            shutil.copy(txt_file, new_path)
+            shutil.copy(txt_path, new_path)
             
-            print("Copied {} to {}".format(txt_file, new_path))
+            print("Copied {} to {}".format(txt_path, new_path))
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)

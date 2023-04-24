@@ -603,17 +603,19 @@ def hyploader(hyp_path):
                 else:
                     data[key][fish_num] = int(float(fish_data))
 
-    def zone_calculator(target_name, target_data):
+    def zone_calculator(target_name, target_data, reverse=False):
         zone_name = target_name + " ZONE"
         target_data[zone_name] = {}
+        n = 1 if reverse == False else -1
         for fish_num, fish_data in target_data[target_name].items():
             m = -1 if fish_data[1] == 0 else 1
-            target_data[zone_name][fish_num] = [fish_data[0] + m * target_data["ZONE WIDTH"] *  target_data["CONVERSION RATE"], fish_data[1]]
+            target_data[zone_name][fish_num] = [fish_data[0] + m * n * target_data["ZONE WIDTH"] *  target_data["CONVERSION RATE"], fish_data[1]]
 
         return target_data
 
-    for target in ["MIRROR", "SEPARATOR"]:
-        if target in data.keys():
-            data = zone_calculator(target, data)
+    if "MIRROR" in data.keys():
+        data = zone_calculator("MIRROR", data, reverse=True)
+    elif "SEPARATOR" in data.keys():
+        data = zone_calculator("SEPARATOR", data)
 
     return data

@@ -32,7 +32,7 @@ echo Activating virtual environment...
 echo Virtual environment (%venv_name%) activated
 
 echo Running program...
-python main.py
+%CONDA_PREFIX%\python.exe main.py
 
 if "%OS%"=="Windows_NT" pause
 else read -p "Press [Enter] key to continue..."
