@@ -31,7 +31,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 # [BUG] Adding more than 2 treatments causing display bug                           # FIXED
 #[TODO] The conspecific is actually can be calculated by separator & zone_width
 # which means need to add Zone_Width to parameter
-# Also, the current Mirror parameter is actually the Mirror_Zone parameter          #
+# Also, the current Mirror parameter is actually the Mirror_Zone parameter          # 
 #[TODO] Note can be edit directly by user, even after the Project creating step     #
 
 
