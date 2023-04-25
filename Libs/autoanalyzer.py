@@ -1,6 +1,6 @@
 from pathlib import Path
 from Libs.batchprocess import MY_DIR
-from Libs.misc import append_df_to_excel, adjust_column_widths, get_sheet_names, merge_cells
+from Libs.misc import append_df_to_excel, get_sheet_names, merge_cells, excel_polish
 import pandas as pd
 import json
 import time
@@ -16,9 +16,9 @@ def find_treatments(mother_dir):
     control_dirs = [path for path in mother_dir.glob("**/*Control*") if path.is_dir()]
 
     if control_dirs:
-        control_dir_path = control_dirs[0]
+        _ = control_dirs[0]
     else:
-        print("No Control directory found.")
+        raise Exception("No control directory found.")
 
     control_dir = Path(control_dirs[0])
     parent_dir = control_dir.parent
@@ -97,6 +97,9 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
             self.test_num = 0
             self.wait = wait
             
+            self.batch_num = batch_num
+            self.cond = cond
+
             # Extract data according to input
             print("Extracting data...")
             self.test_result = extract_data(self.test_num, batch_num, cond)
@@ -167,8 +170,12 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
                 # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
                 print("Sheet name " + segment + " exported to excel successfully.")
 
-            adjust_column_widths(excel_path)
             print(f"All sheets exported to {excel_name} successfully.")
+            excel_polish(excel_path, 
+                         batch_num=self.batch_num, 
+                         cell_step=10, 
+                         treatment = TREATMENTS[self.cond],
+                         inplace=True)
 
 
         def __repr__(self):
@@ -184,6 +191,8 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
             self.test_num = 1
 
             self.condition = cond
+
+            self.batch_num = batch_num
             
             # Extract data according to input
             print("Extracting data...")
@@ -265,8 +274,9 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
                 # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
             print("Sheet name " + TREATMENTS[self.condition] + " exported to excel successfully.")
 
-            adjust_column_widths(excel_path)
             merge_cells(excel_path, col_name='Shoaling Area', cell_step=3, inplace=True)
+            excel_polish(excel_path, batch_num=self.batch_num, cell_step=3, inplace=True)
+
 
 
         def __repr__(self):
@@ -283,6 +293,8 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
 
             self.condition = cond
             
+            self.batch_num = batch_num
+
             # Extract data according to input
             print("Extracting data...")
             self.test_result = extract_data(self.test_num, batch_num, cond)
@@ -342,7 +354,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR):
             # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
             print("Sheet name " + TREATMENTS[self.condition] + " exported to excel successfully.")
 
-            adjust_column_widths(excel_path)
+            excel_polish(excel_path, batch_num=self.batch_num, cell_step=10, inplace=True)
 
 
         def __repr__(self):

@@ -5,6 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import tkinter as tk
 from tkinter import ttk
 
+
 def plot_fish_movement(ax, set1, set2, theta, tank_x_size=None, tank_y_size=None, tank_z_size=None):
     x1, y1 = set1
     x_mirrored, y_mirrored = set2
@@ -39,6 +40,10 @@ def update_plot(val):
     plot_fish_movement(ax, set1, set2, theta)
     canvas.draw()
 
+def program_quit():
+    root.quit()
+    root.destroy()
+
 # Example data
 
 # Create random value for x_list with 50 values
@@ -70,7 +75,7 @@ slider.set(45)  # Set initial value
 slider.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
 # quit button
-quit_button = tk.Button(root, text="Quit", command=root.destroy)
+quit_button = tk.Button(root, text="Quit", command=program_quit)
 quit_button.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
 # Initialize the plot with the initial theta value

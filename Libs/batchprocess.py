@@ -1,6 +1,6 @@
 from pathlib import Path
 from Libs.executor import *
-from Libs.misc import append_df_to_excel, adjust_column_widths, sort_paths_by_parent, hyploader
+from Libs.misc import sort_paths_by_parent, hyploader
 import pandas as pd
 import json
 import time
@@ -137,8 +137,11 @@ class MY_BATCH():
 
         self.condition = {}
         for condition, cond_path in self.conditions.items():
-            self.condition[condition] = MY_CONDITION(self.test_name, condition, cond_path, no_gap = no_gap, hyp = self.hyp)
-
+            self.condition[condition] = MY_CONDITION(test_name = self.test_name, 
+                                                     condition = condition, 
+                                                     condition_path = cond_path, 
+                                                     no_gap = no_gap, 
+                                                     hyp = self.hyp)
 
     def extract_conditions(self, batch_paths):
 
@@ -186,8 +189,11 @@ class MY_DIR():
         self.batches_num = len(self.batches)
         self.batch = {}
         for i in range(self.batches_num):
-            self.batch[i+1] = MY_BATCH(self.test_name, i+1, self.batches[i+1], no_gap = no_gap, hyp = self.hyp)
-
+            self.batch[i+1] = MY_BATCH(test_name=self.test_name, 
+                                       batch_num = i+1, 
+                                       batch_paths = self.batches[i+1], 
+                                       no_gap = no_gap, 
+                                       hyp = self.hyp)
 
     def HypLoader(self, hyp_path):
 

@@ -503,28 +503,6 @@ def create_messagebox(root, title, output_dir, button=True):
     messagebox.after(3000, messagebox.destroy)
 
 
-def adjust_column_widths(excel_file):
-    # Open the Excel file
-    wb = openpyxl.load_workbook(excel_file)
-    
-    # Loop through each sheet in the workbook
-    for sheet_name in wb.sheetnames:
-        # Select the sheet
-        sheet = wb[sheet_name]
-        
-        # Loop through each column in the sheet
-        for col in sheet.columns:
-            # Set the width of the column to 17.00 (160 pixels)
-            sheet.column_dimensions[col[0].column_letter].width = 17.00
-        
-        # Enable text wrapping for the header row
-        for cell in sheet[1]:
-            cell.alignment = openpyxl.styles.Alignment(wrapText=True, horizontal='center', vertical='center')
-    
-    # Save the workbook
-    wb.save(excel_file)
-
-
 def get_sheet_names(excel_path):
     wb = openpyxl.load_workbook(excel_path)
     return wb.sheetnames
@@ -565,6 +543,104 @@ def merge_cells(file_path, col_name = 'Shoaling Area', cell_step=3, inplace = Tr
 
     # Save the modified workbook
     workbook.save(filename=output_path)
+
+def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=True):
+
+    print("Polishing excel file...")
+
+    # Load the Excel workbook
+    workbook = openpyxl.load_workbook(filename=file_path)
+
+
+    # Adjust the column widths
+    # Loop through each sheet in the workbook
+    for sheet_name in workbook.sheetnames:
+        # Select the sheet
+        sheet = workbook[sheet_name]
+        
+        # Loop through each column in the sheet
+        for col in sheet.columns:
+            # Set the width of the column to 17.00 (160 pixels)
+            sheet.column_dimensions[col[0].column_letter].width = 17.00
+        
+        # Enable text wrapping for the header row
+        for cell in sheet[1]:
+            cell.alignment = openpyxl.styles.Alignment(wrapText=True, horizontal='center', vertical='center')
+
+
+    # find column index with header = "Fish ID"
+    fish_id_col = None
+    for worksheet in workbook.worksheets:
+        for col_idx in range(1, worksheet.max_column+1):
+            header = worksheet.cell(row=1, column=col_idx).value
+            if header and "Fish ID" in header:
+                fish_id_col = col_idx
+                break
+
+    # find row index of cell with "Fish 1" in fish_id_col
+    fish1_rows = {}
+    for worksheet in workbook.worksheets:
+        fish1_rows[worksheet] = []
+
+        for row_idx in range(1, worksheet.max_row+1):
+            fish_id = worksheet.cell(row=row_idx, column=fish_id_col).value
+            if fish_id and fish_id == "Fish 1":
+                fish1_rows[worksheet].append(row_idx)
+
+    for worksheet in workbook.worksheets:
+        for i in range(1, len(fish1_rows[worksheet])):
+            current_step = fish1_rows[worksheet][i] - fish1_rows[worksheet][i-1]
+            if current_step < cell_step:
+                worksheet.insert_rows(fish1_rows[worksheet][i], cell_step - current_step)
+                # update fish1_rows
+                fish1_rows[worksheet][i:] = [row_idx + cell_step - current_step for row_idx in fish1_rows[worksheet][i:]]
+
+    
+    def find_end_row(l_row, c_step):
+        return (((l_row-2)//c_step)+1)*c_step+1
+
+    # batch_num is the first column
+    batch_num_col = 1
+    # from second row, merge the next 10 rows and put f"Batch {batch_num}" in the merged cell
+    for worksheet in workbook.worksheets:
+        last_row = worksheet.max_row
+        end_row = find_end_row(last_row, cell_step)
+        start_row = end_row - cell_step + 1
+        # merge the next {cell_step} rows
+        worksheet.merge_cells(start_row=start_row, start_column=batch_num_col, end_row=end_row, end_column=batch_num_col)
+        # put f"Batch {batch_num}" in the merged cell
+        worksheet.cell(row=start_row, column=batch_num_col).value = f"Batch {batch_num}"
+        # font 14, Calibri, Bold
+        worksheet.cell(row=start_row, column=batch_num_col).font = openpyxl.styles.Font(name='Calibri', size=14, bold=True)
+        worksheet.cell(row=start_row, column=batch_num_col).alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+
+            
+
+    if treatment is not None:
+        for worksheet in workbook.worksheets:
+            last_row = worksheet.max_row
+            end_row = find_end_row(last_row, cell_step)
+            start_row = end_row - cell_step + 1
+
+            # merge the next {cell_step} rows
+            worksheet.merge_cells(start_row=start_row, start_column=batch_num_col+1, end_row=end_row, end_column=batch_num_col+1)
+            # put treatment[i] in the merged cell
+            worksheet.cell(row=start_row, column=batch_num_col+1).value = treatment
+            # font 12, Calibri, Bold
+            worksheet.cell(row=start_row, column=batch_num_col+1).font = openpyxl.styles.Font(name='Calibri', size=12, bold=True)
+            worksheet.cell(row=start_row, column=batch_num_col+1).alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+    
+                
+    
+    # define output_path
+    if inplace == False:
+        output_path = file_path[:-5] + '_merged.xlsx'        
+    else:
+        output_path = file_path    
+
+    # Save the modified workbook
+    workbook.save(filename=output_path)
+
 
 def sort_paths_by_parent(paths):
 

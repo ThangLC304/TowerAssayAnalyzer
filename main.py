@@ -31,8 +31,9 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 # [BUG] Adding more than 2 treatments causing display bug                           # FIXED
 #[TODO] Change hyp format to only "MIRROR" & "SEPARATOR", " ZONE" is calculated     # DONE
 #[TODO] Note can be edit directly by user, even after the Project creating step     #
-#[TODO] Save before analyze                                                         #
+#[TODO] Save before analyze                                                         # DONE
 #[TODO] Different hyp set for Control and Treatment                                 # 
+#[TODO] Add batch and treatment name to the excel file                              # DONE
 
 
 ROOT = Path(__file__).parent
@@ -1056,6 +1057,9 @@ class App(customtkinter.CTk):
             tkinter.messagebox.showerror("Error", "Please select a project")
             return
         
+        # save the current parameters
+        self.save_parameters(mode='current')
+
         project_dir = Path(get_directory(self.CURRENT_PROJECT))
 
         # get selected task
@@ -1152,7 +1156,7 @@ class App(customtkinter.CTk):
         BATCH_NUMBER = int(self.batch_entry.get())
 
         # Loop through each .txt file and copy it to the new location
-        for txt_path in txt_files:
+        for txt_path in txt_paths:
             # Construct the new path by replacing the project directory with the new base directory
             new_path = get_project_path(txt_path, project_dir, BATCH_NUMBER)
 
