@@ -587,6 +587,7 @@ class App(customtkinter.CTk):
         container_2_mid = customtkinter.CTkFrame(container_2)
         container_2_mid.grid(row=1, column=0, columnspan=3, sticky="nsew")
 
+        
         self.BatchOptions = customtkinter.CTkOptionMenu(container_2_mid, dynamic_resizing=False,
                                                         width = 105, values=self.BATCHLIST)
         self.BatchOptions.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
@@ -607,8 +608,10 @@ class App(customtkinter.CTk):
                                                    command=self.save_parameters)
         self.save_button.grid(row=1, column=2, padx=20, pady=20, sticky="nsew")
 
+        # another option for selecting between Treatments
+
         self.parameters_frame = Parameters(container_2_mid, self.CURRENT_PROJECT, self.TESTLIST[0], 0)
-        self.parameters_frame.grid(row=2, columnspan=3, padx=20, pady=(10, 20), sticky="nsew")
+        self.parameters_frame.grid(row=3, columnspan=3, padx=20, pady=20, sticky="nsew")
 
         # Row 2
         container_2_bot = customtkinter.CTkFrame(container_2)
@@ -617,8 +620,7 @@ class App(customtkinter.CTk):
         # create a check box 
         self.InDetail = customtkinter.CTkCheckBox(container_2_bot)
         self.InDetail.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="nsew")
-        # self.InDetail.select()
-        print(self.InDetail.get())
+        self.InDetail.configure(text="Hyperparameters of each Treatment are different")
 
         ### COLUMN 3+ ###
 
@@ -640,8 +642,11 @@ class App(customtkinter.CTk):
         # Load the first test by default
         self.on_test_selected(load_type = "first_load")
 
-    # Batch related functions
+        # bind the event of self.InDetail to the function self.on_detail_selected
+        self.InDetail.bind("<ButtonRelease-1>", self.on_detail_selected)
 
+    def on_detail_selected(self, event):
+        pass
 
     def access_history(self, command_type, batch_name=None, edit_command=None):
 
@@ -717,6 +722,9 @@ class App(customtkinter.CTk):
 
         elif command_type == "load batch list":
             return batch_list, None
+        
+        elif command_type == "load treatment list":
+            return list(projects_data[cp][batch_name].keys()), None
         
         else:
             raise Exception("Invalid command type")

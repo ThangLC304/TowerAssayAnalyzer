@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 set "python_version=3.9.13"
 set "venv_name=TAN_env"
 
@@ -16,13 +18,30 @@ if "%OS%"=="Windows_NT" (
 
 REM if not exists anaconda or miniconda, install
 if "%OS%"=="Windows_NT" (
-  if not exist "%UserProfile%\miniconda3" (
-    if not exist "%UserProfile%\anaconda3" (
+  set "bat_found=0"
+
+  for %%p in (
+    "C:\ProgramData\miniconda3"
+    "C:\ProgramData\Anaconda3"
+    "C:\ProgramData\.conda"
+    "%UserProfile%\miniconda3"
+    "%UserProfile%\.conda"
+    "%UserProfile%\Anaconda3"
+  ) do (
+      if exist "%%~p\Scripts\activate.bat" (
+          set "conda_path=%%~p"
+          set "bat_found=1"
+      )
+  )
+
+  if !bat_found!==0 (
       echo Downloading Miniconda...
       powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile('%miniconda_url%', '%miniconda_installer%')"
 
       echo Installing Miniconda...
       start /wait "" "%miniconda_installer%" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%UserProfile%\miniconda3
+
+      set "conda_path=%UserProfile%\miniconda3"
     )
   ) else (
       echo Anaconda or Miniconda already installed
@@ -36,23 +55,15 @@ if "%OS%"=="Windows_NT" (
       echo Installing Miniconda...
       chmod +x %miniconda_installer%
       bash %miniconda_installer% -b -p $HOME/miniconda3
+
+      set "conda_path=$HOME/miniconda3"
+    ) else (
+      set "conda_path=$HOME/anaconda3"
     )
   ) else (
-      echo Anaconda or Miniconda already installed
-  )
-)
+      echo Miniconda already installed
 
-if "%OS%"=="Windows_NT" (
-  if exist "%UserProfile%\anaconda3\Scripts\conda.exe" (
-    set "conda_path=%UserProfile%\anaconda3"
-  ) else (
-    set "conda_path=%UserProfile%\miniconda3"
-  )
-) else (
-  if exist "$HOME/anaconda3/bin/conda" (
-    set "conda_path=$HOME/anaconda3"
-  ) else (
-    set "conda_path=$HOME/miniconda3"
+      set "conda_path=$HOME/miniconda3"
   )
 )
 
