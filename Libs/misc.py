@@ -507,6 +507,22 @@ def get_sheet_names(excel_path):
     wb = openpyxl.load_workbook(excel_path)
     return wb.sheetnames
 
+def count_batch(excel_path, row_per_batch):
+    workbook = openpyxl.load_workbook(excel_path)
+    
+    max_row_list = {}
+    # get the first sheet
+    for worksheet in workbook.worksheets:
+        max_row = worksheet.max_row
+        max_row_list[worksheet.title] = max_row
+
+    # check if all the sheets have the same number of rows
+
+    if len(set(max_row_list.values())) == 1 and (max_row_list[worksheet.title] - 1) % row_per_batch == 0:
+        return (max_row_list[worksheet.title] - 1) // row_per_batch
+    else:
+        return 0
+
 
 def merge_cells(file_path, col_name = 'Shoaling Area', cell_step=3, inplace = True):
     # Load the Excel workbook
@@ -527,7 +543,7 @@ def merge_cells(file_path, col_name = 'Shoaling Area', cell_step=3, inplace = Tr
             # Merge every next 3 rows of the Shoaling Area column
             for row_idx in range(2, worksheet.max_row+1, cell_step):
                 value = worksheet.cell(row=row_idx, column=shoaling_area_col).value
-                print(value)
+                # print(value)
                 if value is not None:
                     # Merge the current row with the next 2 rows
                     worksheet.merge_cells(start_row=row_idx, start_column=shoaling_area_col, end_row=row_idx+2, end_column=shoaling_area_col)
@@ -580,20 +596,20 @@ def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=T
     # find row index of cell with "Fish 1" in fish_id_col
     fish1_rows = {}
     for worksheet in workbook.worksheets:
-        fish1_rows[worksheet] = []
+        fish1_rows[worksheet.title] = []
 
         for row_idx in range(1, worksheet.max_row+1):
             fish_id = worksheet.cell(row=row_idx, column=fish_id_col).value
             if fish_id and fish_id == "Fish 1":
-                fish1_rows[worksheet].append(row_idx)
+                fish1_rows[worksheet.title].append(row_idx)
 
     for worksheet in workbook.worksheets:
-        for i in range(1, len(fish1_rows[worksheet])):
-            current_step = fish1_rows[worksheet][i] - fish1_rows[worksheet][i-1]
+        for i in range(1, len(fish1_rows[worksheet.title])):
+            current_step = fish1_rows[worksheet.title][i] - fish1_rows[worksheet.title][i-1]
             if current_step < cell_step:
-                worksheet.insert_rows(fish1_rows[worksheet][i], cell_step - current_step)
+                worksheet.insert_rows(fish1_rows[worksheet.title][i], cell_step - current_step)
                 # update fish1_rows
-                fish1_rows[worksheet][i:] = [row_idx + cell_step - current_step for row_idx in fish1_rows[worksheet][i:]]
+                fish1_rows[worksheet.title][i:] = [row_idx + cell_step - current_step for row_idx in fish1_rows[worksheet.title][i:]]
 
     
     def find_end_row(l_row, c_step):
@@ -695,3 +711,18 @@ def hyploader(hyp_path):
         data = zone_calculator("SEPARATOR", data)
 
     return data
+
+def get_static_dir(project_dir, batch_num, treatment_count):
+
+    if not os.path.exists(project_dir):
+        return
+    
+    p_dir = Path(project_dir)
+
+    temp_paths = []
+
+    for i in range(treatment_count):
+        treatment_char = chr(ord('A') + i)
+        temp_paths.append(p_dir / "static" / f"Batch {batch_num}" / treatment_char)
+
+    return temp_paths

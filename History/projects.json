@@ -1,6 +1,6 @@
 {
     "M1": {
-        "TREATMENTS": {
+        "Batch 1": {
             "Treatment A": [
                 "Control",
                 0,
@@ -23,36 +23,8 @@
                 ""
             ]
         },
-        "DIRECTORY": "D:\\TestSave\\M1"
-    },
-    "T1": {
-        "TREATMENTS": {
-            "Treatment A": [
-                "Control",
-                0,
-                "",
-                5,
-                "DMSO x%"
-            ],
-            "Treatment B": [
-                "Tacrolimus",
-                0.1,
-                "ppm",
-                6,
-                "DMSO x%"
-            ],
-            "Treatment C": [
-                "Tacrolimus",
-                10.0,
-                "ppm",
-                6,
-                "DMSO x%"
-            ]
-        },
-        "DIRECTORY": "D:\\TestSave\\T1"
-    },
-    "M2": {
-        "TREATMENTS": {
+        "DIRECTORY": "D:\\TestSave\\M1",
+        "Batch 2": {
             "Treatment A": [
                 "Control",
                 0,
@@ -75,6 +47,28 @@
                 ""
             ]
         },
-        "DIRECTORY": "D:\\TestSave\\M2"
+        "Batch 3": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                9,
+                ""
+            ],
+            "Treatment B": [
+                "Melamine",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Melamine",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        }
     }
 }

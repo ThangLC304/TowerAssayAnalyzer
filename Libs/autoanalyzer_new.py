@@ -37,7 +37,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
 
     TREATMENTS = find_treatments(PROJECT_DIR)
 
-    PARAMETERS_PATH = PROJECT_DIR / 'static'
+    # PARAMETERS_PATH = PROJECT_DIR / 'static'
 
     # Get all immediate subdirectories of PROJECT_DIR
     subdirectories = [x for x in PROJECT_DIR.glob("*/") if x.is_dir()]
@@ -61,11 +61,13 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
     def extract_data(test_num, batch_num, cond):
         fishes = {}
         fish_ids = [k for k in TESTS[test_num].batch[batch_num].condition[cond].targets.keys()]    
+        PARAMETERS_PATH = TESTS[test_num].batch[batch_num].condition[cond].hyp_path
         print(fish_ids)
         SEGMENTED_DATA = False    
         if test_num == 0:
-            json_name = f"hyp_{keywords[test_num]}.json"
-            json_path = PARAMETERS_PATH / json_name
+            # json_name = f"hyp_{keywords[test_num]}.json"
+            # json_path = PARAMETERS_PATH / json_name
+            json_path = PARAMETERS_PATH
             with open(json_path, 'r') as f:
                 hyp = json.load(f)
             try:

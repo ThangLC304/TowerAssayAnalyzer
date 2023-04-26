@@ -48,6 +48,12 @@ HISTORY_PATH = "History/projects.json"
 ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
 CHARS = [chr(i) for i in range(65, 65+26)]
 
+TESTLIST = ['Novel Tank Test', 
+            'Shoaling Test', 
+            'Mirror Biting Test',
+            'Social Interaction Test',
+            'Predator Test']
+
 
 def get_directory(project_name):
 
@@ -249,7 +255,34 @@ class Parameters(customtkinter.CTkFrame):
             "SEGMENT DURATION": "seconds",
         }
 
-    def load_parameters(self, project_name=None, selected_task=None, nested_key=0):
+    def get_hyp_path(self, project_dir, selected_task_init, condition, batch_num, mode = 'single'):
+
+        assert mode in ['single', 'multiple']
+
+        hyp_name = f"hyp_{selected_task_init}.json"
+
+        if mode == 'single':
+
+            hyp_path = project_dir / 'static' / f"Batch {batch_num}" / condition / hyp_name
+
+            return [hyp_path]
+        
+        elif mode == 'multiple':
+            
+            hyp_paths = []
+
+            hyp_batch_dir = project_dir / 'static' / f"Batch {batch_num}"
+
+            # find all subdirectory in hyp_batch_dir
+            for sub_dir in hyp_batch_dir.iterdir():
+                if sub_dir.is_dir():
+                    hyp_path = sub_dir / hyp_name
+                    hyp_paths.append(hyp_path)
+
+            return hyp_paths
+
+
+    def load_parameters(self, project_name=None, selected_task=None, condition = None, batch_num=None, nested_key=0):
 
         self.entries = {}
 
@@ -268,7 +301,7 @@ class Parameters(customtkinter.CTkFrame):
             self.hyp_path = ORI_HYP_PATH / hyp_name
         else:
             project_dir = get_directory(project_name)
-            self.hyp_path = Path(project_dir) / "static" / hyp_name
+            self.hyp_path = self.get_hyp_path(project_dir, self.selected_task, condition, batch_num)[0]
 
         with open(self.hyp_path, "r") as file:
             ori_dict = json.load(file)
@@ -354,7 +387,9 @@ class Parameters(customtkinter.CTkFrame):
         for child in self.winfo_children():
             child.destroy()
 
-    def save_parameters(self, project_name, selected_task):
+    def save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'single'):
+
+        assert mode in ['single', 'multiple'] 
 
         def get_entry(entry_dict):
             out_dict = {}
@@ -373,40 +408,43 @@ class Parameters(customtkinter.CTkFrame):
             return out_dict
         
         selected_task = self.selected_task.split()[0].lower()
-        hyp_name = f"hyp_{selected_task}.json"
 
         if project_name == "":
-            tkinter.messagebox.showerror("Error", "No project selected.")            
+            tkinter.messagebox.showerror("Error", "No project selected.")
+            return            
         else:
             project_dir = get_directory(project_name)
-            hyp_path = Path(project_dir) / "static" / hyp_name
+            hyp_paths = self.get_hyp_path(project_dir, self.selected_task, condition, batch_num, mode=mode)
+
 
         # Get the values from the entries
         updated_values = get_entry(self.entries)
         
-        # load the original data
-        with open(hyp_path, "r") as file:
-            parameters_data = json.load(file)
+        for hyp_path in hyp_paths:
 
-        # Update the values in the dictionary with the new values
-        for key, value in updated_values.items():
-            try:
-                if "_" not in key:
-                    parameters_data[key] = value
-                else:
-                    nested_key, nested_key_value = key.split("_")
-                    if nested_key not in parameters_data:
-                        parameters_data[nested_key] = {}
-                    parameters_data[nested_key][nested_key_value] = value
+            # load the original data
+            with open(hyp_path, "r") as file:
+                parameters_data = json.load(file)
 
-            except ValueError:
-                print(f"Invalid input for {key}: {value}. Skipping.")
+            # Update the values in the dictionary with the new values
+            for key, value in updated_values.items():
+                try:
+                    if "_" not in key:
+                        parameters_data[key] = value
+                    else:
+                        nested_key, nested_key_value = key.split("_")
+                        if nested_key not in parameters_data:
+                            parameters_data[nested_key] = {}
+                        parameters_data[nested_key][nested_key_value] = value
 
-        # Save the updated data to the file
-        with open(hyp_path, "w") as file:
-            json.dump(parameters_data, file, indent=4)
+                except ValueError:
+                    print(f"Invalid input for {key}: {value}. Skipping.")
 
-        print(f"Parameters of {selected_task} saved to {hyp_path}.")
+            # Save the updated data to the file
+            with open(hyp_path, "w") as file:
+                json.dump(parameters_data, file, indent=4)
+
+            print(f"Parameters of {selected_task} saved to {hyp_path}.")
 
 
 class App(customtkinter.CTk):
@@ -419,11 +457,7 @@ class App(customtkinter.CTk):
         self.PROJECT_CREATED = False
         self.CURRENT_PROJECT = ""
         # self.CURRENT_PARAMS = {}
-        self.TESTLIST = ['Novel Tank Test', 
-                    'Shoaling Test', 
-                    'Mirror Biting Test',
-                    'Social Interaction Test',
-                    'Predator Test']
+        self.TESTLIST = TESTLIST
         self.PREVIOUS_TEST = ""
 
         # configure window
