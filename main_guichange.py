@@ -250,19 +250,19 @@ class Parameters(customtkinter.CTkFrame):
             "SEGMENT DURATION": "seconds",
         }
 
-    def get_hyp_path(self, project_dir, selected_task_init, condition, batch_num, mode = 'single'):
+    def get_hyp_path(self, project_dir, selected_task_init, condition, batch_num, mode = 'batch'):
 
-        assert mode in ['single', 'multiple']
+        assert mode in ['batch', 'individual']
 
         hyp_name = f"hyp_{selected_task_init}.json"
 
-        if mode == 'single':
+        if mode == 'batch':
 
             hyp_path = os.path.join(project_dir, 'static', f"Batch {batch_num}", condition, hyp_name)
 
             return [hyp_path]
         
-        elif mode == 'multiple':
+        elif mode == 'individual':
             
             hyp_paths = []
 
@@ -382,9 +382,9 @@ class Parameters(customtkinter.CTkFrame):
         for child in self.winfo_children():
             child.destroy()
 
-    def save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'single'):
+    def save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'batch'):
 
-        assert mode in ['single', 'multiple'] 
+        assert mode in ['batch', 'individual'] 
 
         def get_entry(entry_dict):
             out_dict = {}
@@ -458,6 +458,7 @@ class App(customtkinter.CTk):
                     'Social Interaction Test',
                     'Predator Test']
         self.PREVIOUS_TEST = ""
+        self.CONDITIONS = ["Treatment A", "Treatment B", "Treatment C"]
 
         # configure window
         self.title("Tower Assay Analyzer")
@@ -495,12 +496,12 @@ class App(customtkinter.CTk):
         self.sidebar_button_3.configure(**button_config)
         self.sidebar_button_3.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
 
-        self.batch_label = customtkinter.CTkLabel(self.sidebar_frame, text="Batch Number", font=customtkinter.CTkFont(size=16))
-        self.batch_label.grid(row=4, column=0, padx=5, pady=5)
-        self.batch_entry = customtkinter.CTkEntry(self.sidebar_frame, width=50, height=10)
-        self.batch_entry.grid(row=4, column=1, padx=5, pady=5)
-        # set default value = 1
-        self.batch_entry.insert(0, "1")
+        # self.batch_label = customtkinter.CTkLabel(self.sidebar_frame, text="Batch Number", font=customtkinter.CTkFont(size=16))
+        # self.batch_label.grid(row=4, column=0, padx=5, pady=5)
+        # self.batch_entry = customtkinter.CTkEntry(self.sidebar_frame, width=50, height=10)
+        # self.batch_entry.grid(row=4, column=1, padx=5, pady=5)
+        # # set default value = 1
+        # self.batch_entry.insert(0, "1")
 
         self.sidebar_button_4 = customtkinter.CTkButton(self.sidebar_frame, text="Import Trajectories", 
                                                         command=self.import_trajectories)
@@ -578,39 +579,40 @@ class App(customtkinter.CTk):
         self.LoadedProject.grid(row=0, column=1, columnspan=2, padx=20, pady=(20, 10), sticky="nsew")
 
         # ROW 1
-        #[TO-CHANGE]
-        self.BATCHLIST, ErrorType = self.access_history("load batch list")
-        if ErrorType != None:
-            self.BATCHLIST = ["Batch 1"]
-            print(ErrorType)
+        # self.BATCHLIST, ErrorType = self.access_history("load batch list")
+        # if ErrorType != None:
+        #     self.BATCHLIST = ["Batch 1"]
+        #     print(ErrorType)
 
-        container_2_mid = customtkinter.CTkFrame(container_2)
-        container_2_mid.grid(row=1, column=0, columnspan=3, sticky="nsew")
+        self.BATCHLIST = ["Batch 1"]
+
+        self.container_2_mid = customtkinter.CTkFrame(container_2)
+        self.container_2_mid.grid(row=1, column=0, columnspan=3, sticky="nsew")
 
         
-        self.BatchOptions = customtkinter.CTkOptionMenu(container_2_mid, dynamic_resizing=False,
+        self.BatchOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False,
                                                         width = 105, values=self.BATCHLIST)
         self.BatchOptions.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
 
-        self.BatchAddButton = customtkinter.CTkButton(container_2_mid, text="Add Batch", width = 40,
+        self.BatchAddButton = customtkinter.CTkButton(self.container_2_mid, text="Add Batch", width = 40,
                                                         command=self.add_batch)
         self.BatchAddButton.grid(row=0, column=1, padx=20, pady=(20, 10), sticky="nsew")
 
-        self.BatchRemoveButton = customtkinter.CTkButton(container_2_mid, text="Remove Batch", width = 40,
+        self.BatchRemoveButton = customtkinter.CTkButton(self.container_2_mid, text="Remove Batch", width = 40,
                                                         command=self.remove_batch)
         self.BatchRemoveButton.grid(row=0, column=2, padx=20, pady=(20, 10), sticky="nsew")
         
-        self.TestOptions = customtkinter.CTkOptionMenu(container_2_mid, dynamic_resizing=False, 
+        self.TestOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False, 
                                                   width=210, values=self.TESTLIST)
         self.TestOptions.grid(row=1, column=0, columnspan = 2, padx=20, pady=(20, 10), sticky="nsew")
 
-        self.save_button = customtkinter.CTkButton(container_2_mid, text="Save", width = 50,
+        self.save_button = customtkinter.CTkButton(self.container_2_mid, text="Save", width = 50,
                                                    command=self.save_parameters)
         self.save_button.grid(row=1, column=2, padx=20, pady=20, sticky="nsew")
 
         # another option for selecting between Treatments
 
-        self.parameters_frame = Parameters(container_2_mid, self.CURRENT_PROJECT, self.TESTLIST[0], 0)
+        self.parameters_frame = Parameters(self.container_2_mid, self.CURRENT_PROJECT, self.TESTLIST[0], 0)
         self.parameters_frame.grid(row=3, columnspan=3, padx=20, pady=20, sticky="nsew")
 
         # Row 2
@@ -645,8 +647,18 @@ class App(customtkinter.CTk):
         # bind the event of self.InDetail to the function self.on_detail_selected
         self.InDetail.bind("<ButtonRelease-1>", self.on_detail_selected)
 
-    def on_detail_selected(self, event):
-        pass
+    def on_detail_selected(self, event=None):
+        # Check the value of InDetail
+        if self.InDetail.get() == 1:
+            # If the value is 1, create the TreatmentOptions widget
+            self.ConditionOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False,
+                                                                width=210, values=self.CONDITIONS)
+            self.ConditionOptions.grid(row=2, column=0, columnspan=3, padx=20, pady=(20, 10), sticky="nsew")
+        elif self.InDetail.get() == 0:
+            # If the value is 0, remove the TreatmentOptions widget if it exists
+            if hasattr(self, 'TreatmentOptions'):
+                self.ConditionOptions.grid_forget()
+                del self.ConditionOptions
 
     def access_history(self, command_type, batch_name=None, edit_command=None):
 
@@ -794,6 +806,16 @@ class App(customtkinter.CTk):
         shutil.rmtree(batch_static_dir)
 
 
+    def on_condition_selected(self, selected_condition=None, load_type="not_first_load"):
+        assert load_type in ["not_first_load", "first_load"]
+
+        if load_type == "first_load":
+            selected_condition = "A"
+        else:
+            self.save_parameters(mode = "previous")
+
+
+
     def on_batch_selected(self, selected_batch=None, load_type="not_first_load"):
         assert load_type in ["not_first_load", "first_load"]
 
@@ -820,9 +842,9 @@ class App(customtkinter.CTk):
 
         # load_parameters(self, project_name=None, selected_task=None, condition = None, batch_num=None, nested_key=0):
         condition = 'A' # FOR NOW
-        self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.batch_entry.get(), nested_key = 0)
-        nested_key_1 = self.nested_key_1_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.batch_entry.get(), nested_key = 1)
-        nested_key_2 = self.nested_key_2_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.batch_entry.get(), nested_key = 2)
+        self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], nested_key = 0)
+        nested_key_1 = self.nested_key_1_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], nested_key = 1)
+        nested_key_2 = self.nested_key_2_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], nested_key = 2)
 
         self.LoadedProject.configure(text=self.CURRENT_PROJECT)
         self.nested_key_1_header.configure(text=nested_key_1)
@@ -843,10 +865,13 @@ class App(customtkinter.CTk):
         # Save the parameters
         # save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'single'):
         condition = 'A' # FOR NOW
-        mode = 'single'
-        self.parameters_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.batch_entry.get(), mode = mode)
-        self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.batch_entry.get(), mode = mode)
-        self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.batch_entry.get(), mode = mode)
+        if self.InDetail.get() == 0:
+            savemode = 'batch'
+        else:
+            savemode = 'individual'
+        self.parameters_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], mode = savemode)
+        self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], mode = savemode)
+        self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], mode = savemode)
 
     ### DELETE PROJECT BUTTON FUNCTION ###
 
@@ -906,7 +931,7 @@ class App(customtkinter.CTk):
 
         # Update the batch options
         self.BATCHLIST, ErrorType = self.access_history("load batch list")
-        if ErrorType != 0:
+        if ErrorType != None:
             tkinter.messagebox.showerror("Error", ErrorType)
             return
         
@@ -1338,7 +1363,7 @@ class App(customtkinter.CTk):
         task = self.TestOptions.get()
 
         try:
-            BATCH_NUMBER = int(self.batch_entry.get())
+            BATCH_NUMBER = int(self.BatchOptions.get().split()[1])
         except ValueError:
             BATCH_NUMBER = 1
 
@@ -1449,7 +1474,7 @@ class App(customtkinter.CTk):
             file = txt_path.name
             return project_dir / ancestors / parent / file
 
-        BATCH_NUMBER = int(self.batch_entry.get())
+        BATCH_NUMBER = int(self.BatchOptions.get().split()[1])
 
         # Loop through each .txt file and copy it to the new location
         for txt_path in txt_paths:

@@ -46,29 +46,32 @@
                 10,
                 ""
             ]
-        },
-        "Batch 3": {
+        }
+    },
+    "T1": {
+        "Batch 1": {
             "Treatment A": [
                 "Control",
                 0,
                 "",
                 9,
-                ""
+                "DMSO"
             ],
             "Treatment B": [
-                "Melamine",
-                0.1,
-                "ppm",
-                10,
-                ""
-            ],
-            "Treatment C": [
-                "Melamine",
+                "Tacrolimus",
                 10.0,
                 "ppm",
                 10,
-                ""
+                "DMSO"
+            ],
+            "Treatment C": [
+                "Tacrolimus",
+                100.0,
+                "ppb",
+                10,
+                "DMSO"
             ]
-        }
+        },
+        "DIRECTORY": "D:\\TestSave\\T1"
     }
 }
