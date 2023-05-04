@@ -2,7 +2,6 @@ import tkinter
 import tkinter.messagebox
 import tkinter.ttk as ttk
 import customtkinter
-from tkinterdnd2 import TkinterDnD, DND_FILES
 
 import json
 from pathlib import Path
@@ -246,9 +245,9 @@ class Parameters(customtkinter.CTkFrame):
         self.entries = {}
 
         self.UNITS = {
-            "FPS": "",
+            "FRAME RATE": "frames/second",
             "DURATION": "seconds",
-            "CONVERSION RATE": "",
+            "CONVERSION RATE": "pixels/cm",
             "ZONE WIDTH": "cm",
             "SEGMENT DURATION": "seconds",
         }
@@ -312,7 +311,8 @@ class Parameters(customtkinter.CTkFrame):
 
         if nested_key == 0:
             display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
-
+            # Change "FPS" to "Frame Rate"
+            display_dict["FRAME RATE"] = display_dict.pop("FPS")
             headers = ["Parameter", "Value", "Unit"]
         else:
             try:
