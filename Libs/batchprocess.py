@@ -12,20 +12,32 @@ test_execs = [noveltank_exec, shoaling_exec, mirrorbiting_exec, socialinteractio
 
 class MY_CONDITION():
 
-    def __init__(self, test_name, condition, condition_path, no_gap, hyp):
+    def __init__(self, test_name, condition, condition_path, no_gap, hyp_name, hyp_batch_dir):
         
         self.test_name = test_name
 
-        self.condition = condition
+        self.condition = condition # A, B, C
 
         self.no_gap = no_gap
 
-        self.hyp = hyp
+
+        self.hyp_path = hyp_batch_dir / condition / hyp_name
+        if self.hyp_path.exists():
+            self.hyp = self.HypLoader()
+        else:
+            self.hyp = {}
 
         self.trajectory_format = self.set_trajectory_type()
 
         self.targets = self.find_targets(condition_path)
      
+
+    def HypLoader(self):
+
+        data = hyploader(self.hyp_path)
+        
+        return data
+
 
     def find_targets(self, condition_path):
         
@@ -124,24 +136,25 @@ class MY_CONDITION():
 
 class MY_BATCH():
 
-    def __init__(self, test_name, batch_num, batch_paths, no_gap, hyp):
+    def __init__(self, test_name, batch_num, batch_paths, no_gap, hyp_name, static_dir):
 
         self.test_name = test_name
-
 
         self.num = batch_num
 
         self.conditions = self.extract_conditions(batch_paths)
 
-        self.hyp = hyp
-
+        hyp_batch_dir = static_dir / f"Batch {self.num}"
+        
         self.condition = {}
         for condition, cond_path in self.conditions.items():
             self.condition[condition] = MY_CONDITION(test_name = self.test_name, 
                                                      condition = condition, 
                                                      condition_path = cond_path, 
                                                      no_gap = no_gap, 
-                                                     hyp = self.hyp)
+                                                     hyp_name = hyp_name,
+                                                     hyp_batch_dir = hyp_batch_dir)
+            
 
     def extract_conditions(self, batch_paths):
 
@@ -174,14 +187,10 @@ class MY_DIR():
 
     def __init__(self, name, dir_path, no_gap = False):
 
+        hyp_name = f"hyp_{name.split(' ')[0].lower()}.json"
+
         project_dir = Path(dir_path).parent
         static_dir = project_dir / 'static'
-        hyp_name = f"hyp_{name.split(' ')[0].lower()}.json"
-        hyp_path = static_dir / hyp_name
-        if hyp_path.exists():
-            self.hyp = self.HypLoader(hyp_path)
-        else:
-            self.hyp = {}
 
         self.test_name = name
         self.test_dir = dir_path
@@ -193,13 +202,14 @@ class MY_DIR():
                                        batch_num = i+1, 
                                        batch_paths = self.batches[i+1], 
                                        no_gap = no_gap, 
-                                       hyp = self.hyp)
+                                       hyp_name = hyp_name,
+                                       static_dir = static_dir)
 
-    def HypLoader(self, hyp_path):
+    # def HypLoader(self, hyp_path):
 
-        data = hyploader(hyp_path)
+    #     data = hyploader(hyp_path)
         
-        return data
+    #     return data
 
 
     def find_batches(self):

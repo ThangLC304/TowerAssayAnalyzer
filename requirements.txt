@@ -10,3 +10,4 @@ word2number
 shutil
 pathlib
 customtkinter
+tkinterdnd2

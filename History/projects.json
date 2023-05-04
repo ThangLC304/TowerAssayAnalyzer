@@ -73,5 +73,54 @@
             ]
         },
         "DIRECTORY": "D:\\TestSave\\T1"
+    },
+    "Test": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                3,
+                ""
+            ],
+            "Treatment B": [
+                "Melamine",
+                0.1,
+                "ppm",
+                3,
+                ""
+            ],
+            "Treatment C": [
+                "Melamine",
+                10.0,
+                "ppm",
+                3,
+                ""
+            ]
+        },
+        "DIRECTORY": "D:\\TestSave\\Test",
+        "Batch 2": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                3,
+                ""
+            ],
+            "Treatment B": [
+                "Melamine",
+                0.1,
+                "ppm",
+                3,
+                ""
+            ],
+            "Treatment C": [
+                "Melamine",
+                10.0,
+                "ppm",
+                3,
+                ""
+            ]
+        }
     }
 }

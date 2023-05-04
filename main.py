@@ -2,6 +2,8 @@ import tkinter
 import tkinter.messagebox
 import tkinter.ttk as ttk
 import customtkinter
+from tkinterdnd2 import TkinterDnD, DND_FILES
+
 import json
 from pathlib import Path
 import shutil
@@ -10,6 +12,7 @@ import os
 import threading
 
 from Libs.autoanalyzer import autoanalyzer
+from Libs.importvideos import VideoAdd
 from Libs.misc import get_static_dir
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -506,6 +509,11 @@ class App(customtkinter.CTk):
         # # set default value = 1
         # self.batch_entry.insert(0, "1")
 
+        self.ImportVideoButton = customtkinter.CTkButton(self.sidebar_frame, text="Import Video",
+                                                   command=self.import_video)
+        self.ImportVideoButton.configure(**button_config)
+        self.ImportVideoButton.grid(row=4, column=0, columnspan = 2, padx=20, pady=20)
+
         self.sidebar_button_4 = customtkinter.CTkButton(self.sidebar_frame, text="Import Trajectories", 
                                                         command=self.import_trajectories)
         self.sidebar_button_4.configure(**button_config)
@@ -624,6 +632,8 @@ class App(customtkinter.CTk):
 
         ### COLUMN 3+ ###
 
+        # ROW 0 #
+
         container_3 = customtkinter.CTkFrame(self, width = 400)
         container_3.grid(row=0, column=5, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
@@ -646,6 +656,16 @@ class App(customtkinter.CTk):
         # bind the event of self.InDetail to the function self.on_detail_selected
         self.InDetail.bind("<ButtonRelease-1>", self.on_detail_selected)
 
+        # ROW 1 #
+
+        
+        
+    def import_video(self):
+
+        project_dir = Path(get_directory(self.CURRENT_PROJECT))
+
+        video_add_window = VideoAdd(self, project_dir)
+        
     def on_detail_selected(self, event=None):
         # Check the value of InDetail
         if self.InDetail.get() == 1:
@@ -882,7 +902,10 @@ class App(customtkinter.CTk):
             selected_test = self.TestOptions.get()
             batch_num = self.BatchOptions.get().split()[1]
             different = self.InDetail.get()
-            condition = self.ConditionOptions.get()
+            try:
+                condition = self.ConditionOptions.get()
+            except:
+                condition = "A"
         else:
             selected_test = self.PREVIOUS_TEST
             batch_num = self.PREVIOUS_BATCH
@@ -893,7 +916,6 @@ class App(customtkinter.CTk):
         # save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'single'):
         
         if different == 0:
-            condition = "A"
             savemode = 'batch'
         else:
             savemode = 'individual'
