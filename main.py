@@ -1002,6 +1002,7 @@ class App(customtkinter.CTk):
     ### CREATE PROJECT BUTTON FUNCTION ###
 
     def create_project(self):
+        self.PROJECT_CREATED = False
         self.project_input_window()
 
         if self.PROJECT_CREATED:
@@ -1307,7 +1308,7 @@ class App(customtkinter.CTk):
 
         input_window = tkinter.Toplevel(self)
         # set window size
-        input_window.geometry("500x500")
+        input_window.geometry("400x500")
 
         input_window.title("Project Input")
 
