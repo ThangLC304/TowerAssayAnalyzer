@@ -245,7 +245,7 @@ class Parameters(customtkinter.CTkFrame):
         self.entries = {}
 
         self.UNITS = {
-            "FRAME RATE": "frames/second",
+            "FPS": "frames/second",
             "DURATION": "seconds",
             "CONVERSION RATE": "pixels/cm",
             "ZONE WIDTH": "cm",
@@ -311,8 +311,6 @@ class Parameters(customtkinter.CTkFrame):
 
         if nested_key == 0:
             display_dict = {k: v for k, v in ori_dict.items() if not isinstance(v, (dict, list))}
-            # Change "FPS" to "Frame Rate"
-            display_dict["FRAME RATE"] = display_dict.pop("FPS")
             headers = ["Parameter", "Value", "Unit"]
         else:
             try:
