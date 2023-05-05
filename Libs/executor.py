@@ -32,7 +32,7 @@ class NovelTank_Display(NovelTankTest):
             self.rows[i] = [upper_first(req), self.basic[req], self.units[req]]
 
         try:
-            average_entry = self.time.duration/self.events.count/self.hyp["FPS"]
+            average_entry = self.time.duration/self.events.count/self.hyp["FRAME RATE"]
         except:
             average_entry = 0
 

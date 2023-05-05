@@ -119,7 +119,7 @@ class Loader():
         calculate_top_position = True
 
         conversion_rate = self.hyp["CONVERSION RATE"]
-        fps = self.hyp["FPS"]
+        fps = self.hyp["FRAME RATE"]
         duration = self.hyp["DURATION"]
         try:
             TBS_line = self.hyp["TOP"][fish_num]
@@ -344,7 +344,7 @@ class Loader():
         #         interaction_events[(start_point, end_point)] = end_point - start_point + 1
 
         # Convert values in mirror_biting_events to seconds
-        interaction_events = {k: v/self.hyp["FPS"] for k, v in interaction_events.items()}
+        interaction_events = {k: v/self.hyp["FRAME RATE"] for k, v in interaction_events.items()}
 
         # print('Number of interaction events:', len(interaction_events))
         if len(df) > 0 and len(interaction_events) == 0:
