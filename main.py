@@ -1143,6 +1143,10 @@ class App(customtkinter.CTk):
         ori_static_path = Path(__file__).parent / "Bin"
         temp_path = Path(__file__).parent / "temp"
 
+        # make temp_path if not exist
+        if not temp_path.exists():
+            temp_path.mkdir()
+
         # take all the files start with "hyp_" and end with ".json" from ori_static_path
         # and copy them to a temp_path for modification first
         for file in ori_static_path.glob("hyp_*.json"):
