@@ -685,7 +685,7 @@ def hyploader(hyp_path):
     for key, value in data.items():
         if key == "CONVERSION RATE":
             data[key] = float(value)
-        elif key in ["FPS", "DURATION", "SEGMENT DURATION", "ZONE WIDTH"]:
+        elif key in ["FRAME RATE", "DURATION", "SEGMENT DURATION", "ZONE WIDTH"]:
             data[key] = int(float(value))
         else:
             for fish_num, fish_data in value.items():

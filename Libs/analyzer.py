@@ -20,7 +20,7 @@ class NovelTankTest(Loader): # 3000 * 7
 
         super().__init__(testtype='novel', project_hyp=project_hyp)
 
-        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
+        total_frames = self.hyp["FRAME RATE"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         if segment == -1:
@@ -54,7 +54,7 @@ class NovelTankTest(Loader): # 3000 * 7
         self.others['latency in frames'], self.others['latency in seconds'] = self.calculate_latency()
         self.others['entry number'] = self.events.count
         try:
-            self.others['average entry'] = self.time.duration / self.events.count / self.hyp["FPS"]
+            self.others['average entry'] = self.time.duration / self.events.count / self.hyp["FRAME RATE"]
         except:
             self.others['average entry'] = 0
 
@@ -69,8 +69,8 @@ class NovelTankTest(Loader): # 3000 * 7
         if segment_duration == 0:
             return input_df
         
-        start_frame = segment * segment_duration * self.hyp["FPS"]
-        end_frame = (segment + 1) * segment_duration * self.hyp["FPS"]
+        start_frame = segment * segment_duration * self.hyp["FRAME RATE"]
+        end_frame = (segment + 1) * segment_duration * self.hyp["FRAME RATE"]
         # print(f"DF segmented from {start_frame} to {end_frame}")
         
         return input_df[start_frame:end_frame]
@@ -98,7 +98,7 @@ class NovelTankTest(Loader): # 3000 * 7
         if latency == 0:
             latency = 1
 
-        return latency, latency/self.hyp["FPS"]
+        return latency, latency/self.hyp["FRAME RATE"]
 
 
 ### DONE ###
@@ -108,7 +108,7 @@ class ShoalingTest(Loader):
 
         super().__init__(testtype='shoaling', project_hyp=project_hyp)
 
-        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
+        total_frames = self.hyp["FRAME RATE"] * self.hyp["DURATION"]
         input_df1 = input_df1[:total_frames]
         input_df2 = input_df2[:total_frames]
         input_df3 = input_df3[:total_frames]
@@ -201,7 +201,7 @@ class MirrorBitingTest(Loader):
 
         super().__init__(testtype='mirror', project_hyp=project_hyp)
 
-        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
+        total_frames = self.hyp["FRAME RATE"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         self.df = input_df
@@ -238,7 +238,7 @@ class MirrorBitingTest(Loader):
     #             mirror_biting_events[(start_point, end_point-1)] = end_point - start_point
 
     #     # Convert values in mirror_biting_events to seconds
-    #     mirror_biting_events = {k: v/self.hyp["FPS"] for k, v in mirror_biting_events.items()}
+    #     mirror_biting_events = {k: v/self.hyp["FRAME RATE"] for k, v in mirror_biting_events.items()}
 
     #     return Time(mirror_biting), Events(mirror_biting_events, self.hyp["DURATION"])
     
@@ -251,7 +251,7 @@ class SocialInteractionTest(Loader):
 
         super().__init__(testtype='social', project_hyp=project_hyp)
 
-        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
+        total_frames = self.hyp["FRAME RATE"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         self.df = input_df
@@ -288,7 +288,7 @@ class SocialInteractionTest(Loader):
     #             social_interaction_events[(start_point, end_point-1)] = end_point - start_point
 
     #     # Convert values in social_interaction_events to seconds
-    #     social_interaction_events = {k: v/self.hyp["FPS"] for k, v in social_interaction_events.items()}
+    #     social_interaction_events = {k: v/self.hyp["FRAME RATE"] for k, v in social_interaction_events.items()}
 
     #     return Time(social_interaction), Events(social_interaction_events, self.hyp["DURATION"])
     
@@ -314,7 +314,7 @@ class PredatorAvoidanceTest(Loader):
 
         super().__init__(testtype='predator', project_hyp=project_hyp)
         
-        total_frames = self.hyp["FPS"] * self.hyp["DURATION"]
+        total_frames = self.hyp["FRAME RATE"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
         self.df = input_df

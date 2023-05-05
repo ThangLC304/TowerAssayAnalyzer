@@ -245,7 +245,7 @@ class Parameters(customtkinter.CTkFrame):
         self.entries = {}
 
         self.UNITS = {
-            "FPS": "frames/second",
+            "FRAME RATE": "frames/second",
             "DURATION": "seconds",
             "CONVERSION RATE": "pixels/cm",
             "ZONE WIDTH": "cm",
