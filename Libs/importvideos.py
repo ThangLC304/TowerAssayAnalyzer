@@ -19,13 +19,9 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 
 
 class VideoWidgets:
-    def __init__(self, master, display_frame, PROJECT_DIR = PROJECT_DIR, 
-                 list1=["01 - Novel Tank Test", "02 - Shoaling Test", "03 - Mirror Biting Test", "04 - Social Interaction Test", "05 - Predator Avoidance Test"], 
-                 list2=["Control", "Treatment X", "Treatment Y"], 
-                 list3=["1st", "2nd"]
-                 ):
+    def __init__(self, master, display_frame, project_dir, list1, list2, list3):
 
-        self.PROJECT_DIR = PROJECT_DIR
+        self.PROJECT_DIR = project_dir
 
         self.list1 = list1
         self.list2 = list2
@@ -140,10 +136,30 @@ class VideoWidgets:
 
 
 class VideoAdd(tkinter.Toplevel):
-    def __init__(self, master, PROJECT_DIR):
+    def __init__(self, master, PROJECT_DIR, list1=None, list2=None, list3=None):
         super().__init__(master)
 
         self.PROJECT_DIR = PROJECT_DIR
+
+        if list1==None:
+            self.list1 = ["01 - Novel Tank Test", 
+                   "02 - Shoaling Test", 
+                   "03 - Mirror Biting Test", 
+                   "04 - Social Interaction Test", 
+                   "05 - Predator Avoidance Test"]
+        else:
+            self.list1 = list1
+
+        if list2==None:    
+            self.list2 = ["Control", "Treatment X", "Treatment Y"]
+        else:
+            self.list2 = list2
+
+        if list3==None:
+            self.list3 = ["1st", "2nd"]
+        else:
+            self.list3 = list3
+        
 
         self.title("VideoAdd")
         # move to center of screen
@@ -175,7 +191,13 @@ class VideoAdd(tkinter.Toplevel):
         self.Frame_Mid = customtkinter.CTkFrame(self)
         self.Frame_Mid.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
 
-        self.video_widgets = VideoWidgets(self.Frame_Mid, display_frame=self, PROJECT_DIR = self.PROJECT_DIR)
+        self.video_widgets = VideoWidgets(master = self.Frame_Mid, 
+                                          display_frame = self, 
+                                          project_dir = self.PROJECT_DIR,
+                                          list1 = self.list1,
+                                          list2 = self.list2,
+                                          list3 = self.list3
+                                          )
         self.video_widgets.grid(row=0)
 
         self.Frame_Bot = customtkinter.CTkFrame(self)
@@ -343,7 +365,7 @@ class App(customtkinter.CTk):
         button.pack()
 
     def open_video_add(self):
-        video_add_window = VideoAdd(self)
+        video_add_window = VideoAdd(self, PROJECT_DIR)
 
 if __name__ == "__main__":
     app = App()

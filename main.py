@@ -662,7 +662,7 @@ class App(customtkinter.CTk):
 
         project_dir = Path(get_directory(self.CURRENT_PROJECT))
 
-        video_add_window = VideoAdd(self, project_dir)
+        video_add_window = VideoAdd(self, project_dir, list2=self.CONDITIONLIST, list3=self.BATCHLIST)
         
     def on_detail_selected(self, event=None):
         # Check the value of InDetail
