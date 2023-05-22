@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import shutil
 import os
+import logging
 
 import threading
 
@@ -51,14 +52,80 @@ HISTORY_PATH = "History/projects.json"
 ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
 CHARS = [chr(i) for i in range(65, 65+26)]
 
+# SETUP LOGGING CONFIGURATION
+# Create a Log directory if it doesn't exist
+if not os.path.exists('Log'):
+    os.makedirs('Log')
+# Define log format
+log_format = '%(asctime)s %(name)s %(levelname)s %(message)s'
+# Define the date format
+date_format = '%Y-%m-%d %H:%M:%S'
+# Define the log file path
+log_file_path = 'Log/log.txt'
 
-def get_directory(project_name):
+# Get a logger
+logger = logging.getLogger(__name__)
 
-    with open(HISTORY_PATH, "r") as file:
-        projects_data = json.load(file)
-    project_dir = projects_data[project_name]["DIRECTORY"]
+# Configure the root logger
+logging.basicConfig(level=logging.DEBUG,
+                    format=log_format,
+                    datefmt=date_format,
+                    handlers=[logging.FileHandler(log_file_path, 'a')])  # 'a' ensures logs are appended
 
-    return project_dir
+# def get_directory(project_name):
+
+#     with open(HISTORY_PATH, "r") as file:
+#         projects_data = json.load(file)
+#     project_dir = projects_data[project_name]["DIRECTORY"]
+
+#     return project_dir
+
+
+class HISTORY():
+
+    def __init(self, history_path = HISTORY_PATH):
+        self.history_path = history_path
+
+        with open(HISTORY_PATH, "r") as file:
+            self.projects_data = json.load(file)
+
+
+    def reload(self):
+        with open(HISTORY_PATH, "r") as file:
+            self.projects_data = json.load(file)
+
+    def get_project_dir(self, project_name):
+        self.reload()
+
+        project_dir = self.projects_data[project_name]["DIRECTORY"]
+
+        # check if the project directory exists
+        if not os.path.exists(project_dir):
+            tkinter.messagebox.showerror("Error", "Project directory does not exist!")
+
+            relocate = tkinter.messagebox.askyesno("Do you want to relocate it?")
+            if relocate:
+                # ask for new input of project_dir
+                new_dir = tkinter.filedialog.askdirectory()
+                self.save_project_dir(project_name, new_dir)
+
+                logger.info(f"Project directory of {project_name} has been relocated to {new_dir}")
+
+                return new_dir
+            else:
+                return None
+
+        return project_dir
+
+    def save_project_dir(self, project_name, project_dir):
+        self.reload()
+
+        self.projects_data[project_name]["DIRECTORY"] = project_dir
+
+        with open(HISTORY_PATH, "w") as file:
+            json.dump(self.projects_data, file, indent=4)
+
+THE_HISTORY = HISTORY()
 
 class ToolTip(object):
 
@@ -297,7 +364,10 @@ class Parameters(customtkinter.CTkFrame):
         if project_name == "":
             self.hyp_path = ORI_HYP_PATH / hyp_name
         else:
-            project_dir = get_directory(project_name)
+            project_dir = THE_HISTORY.get_project_dir(project_name)
+            if project_dir == None:
+                logger.warning(f"Project {project_name} not found and user don't know where to find it")
+                return None
             self.hyp_path = self.get_hyp_path(project_dir, self.selected_task, condition, batch_num)[0]
 
         with open(self.hyp_path, "r") as file:
@@ -409,7 +479,7 @@ class Parameters(customtkinter.CTkFrame):
             tkinter.messagebox.showerror("Warning", "No project selected. No save was made.")
             return            
         else:
-            project_dir = get_directory(project_name)
+            project_dir = THE_HISTORY.get_project_dir(project_name)
             hyp_paths = self.get_hyp_path(project_dir, self.selected_task, condition, batch_num, mode=mode)
 
 
@@ -660,7 +730,7 @@ class App(customtkinter.CTk):
         
     def import_video(self):
 
-        project_dir = Path(get_directory(self.CURRENT_PROJECT))
+        project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
 
         video_add_window = VideoAdd(self, project_dir, list2=self.CONDITIONLIST, list3=self.BATCHLIST)
         
@@ -817,7 +887,7 @@ class App(customtkinter.CTk):
 
         batch_ord = ORDINALS[int(batch_num)-1]
 
-        project_dir = Path(get_directory(self.CURRENT_PROJECT))
+        project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
 
         # Find all directory in project_dir, at any level, that contain batch_ord, use shutil.rmtree to delete them
         for dir in project_dir.glob(f"**/*{batch_ord}*"):
@@ -1125,7 +1195,7 @@ class App(customtkinter.CTk):
             save_dir = Path(save_dir)
             project_dir = save_dir / self.CURRENT_PROJECT
         else:
-            project_dir = Path(get_directory(self.CURRENT_PROJECT))
+            project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
 
         # project_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1417,7 +1487,7 @@ class App(customtkinter.CTk):
         # save the current parameters
         self.save_parameters(mode='current')
 
-        project_dir = Path(get_directory(self.CURRENT_PROJECT))
+        project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
 
         # get selected task
         task = self.TestOptions.get()
@@ -1471,7 +1541,7 @@ class App(customtkinter.CTk):
             tkinter.messagebox.showerror("Error", "Please select a project")
             return
         
-        project_dir = Path(get_directory(self.CURRENT_PROJECT))
+        project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
 
         # Get the project directory from the user using a file dialog
         ori_dir = tkinter.filedialog.askdirectory()

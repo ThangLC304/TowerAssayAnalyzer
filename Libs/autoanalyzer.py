@@ -1,12 +1,15 @@
 from pathlib import Path
 from Libs.batchprocess import MY_DIR
-from Libs.misc import append_df_to_excel, get_sheet_names, merge_cells, excel_polish, count_batch
+from Libs.misc import append_df_to_excel, get_sheet_names, merge_cells, excel_polish, find_existed_batches
 import pandas as pd
 import json
 import time
 from tqdm import tqdm
 import os
+import logging
 
+# Get a logger
+logger = logging.getLogger(__name__)
 
 tests = ['Novel Tank', 'Shoaling', 'Mirror Biting', 'Social Interaction', 'Predator Avoidance']
 keywords = [x.split(' ')[0].lower() for x in tests]
@@ -110,10 +113,12 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         def analyze(self):
 
             # Extract data according to input
-            print("Extracting data...")
+            print(f"Extracting data {self.batch_num} - {self.condition}...")
             self.test_result = extract_data(self.test_num, self.batch_num, self.condition)
 
-            # print("Test result:", self.test_result)
+            if self.test_result == {}:
+                logger.warning(f"No data found for test {self.test_num} batch {self.batch_num} condition {self.condition}.")
+                return
 
             self.dfs = {}
 
@@ -170,21 +175,38 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
             
             if self.excel_path.exists():
                 header = False
+                logger.debug("Excel file exists, appending to existing file...")
             else:
                 header = True
+                logger.debug("Excel file does not exist, creating new file...")
+
+            logger.info("Exporting to excel...")
+            logger.debug(f"Keys in dfs: {self.dfs.keys()}")
+            logger.debug(f"Excel path: {self.excel_path}")
+
             for segment in self.dfs.keys():
-                append_df_to_excel(self.excel_path, self.dfs[segment], sheet_name=segment, startcol = 2, index=True, header=header)
+                logger.debug(f"Exporting sheet {segment}...")
+                try:
+                    append_df_to_excel(self.excel_path, self.dfs[segment], sheet_name=segment, startcol = 2, index=True, header=header)
+                except:
+                    logger.error(f"Export sheet {segment} failed.")
+                    continue
                 # open the excel file to adjust the column width
                 # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
                 print("Sheet name " + segment + " exported to excel successfully.")
 
             print(f"All sheets exported to {self.excel_name} successfully.")
-            excel_polish(self.excel_path, 
+            logger.info("Polishing excel file...")
+            try:
+                excel_polish(self.excel_path, 
                          batch_num=self.batch_num, 
                          cell_step=10, 
                          treatment = TREATMENTS[self.condition],
                          inplace=True)
-
+            except Exception as e:
+                logger.error("Excel polishing failed.")
+                logger.error(e)
+                raise e
 
         def __repr__(self):
             return self.dfs.__repr__()
@@ -210,8 +232,12 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         def analyze(self):
             
             # Extract data according to input
-            print("Extracting data...")
+            print(f"Extracting data {self.batch_num} - {self.condition}...")
             self.test_result = extract_data(self.test_num, self.batch_num, self.condition)
+
+            if self.test_result == {}:
+                logger.warning(f"No data found for test {self.test_num} batch {self.batch_num} condition {self.condition}.")
+                return
 
             self.dfs = {}
 
@@ -277,13 +303,24 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
 
                 if TREATMENTS[self.condition] in get_sheet_names(self.excel_path):
                     header = False
+                    logger.debug("Header = False, appending to existing sheet...")
                 else:
                     header = True
+                    logger.debug("Header = True, creating new sheet...")
+
+            logger.info("Exporting to excel...")
+            logger.debug(f"Keys in dfs: {self.test_result.keys()}")
+            logger.debug(f"Excel path: {self.excel_path}")
                 
             for i, fishgroup in enumerate(self.test_result.keys()):
                 if i > 0:
                     header = False
-                append_df_to_excel(self.excel_path, self.dfs[fishgroup], sheet_name=TREATMENTS[self.condition], startcol = 2, index=True, header = header)
+                    logger.debug("Header = False, appending to existing sheet...")
+                try:
+                    append_df_to_excel(self.excel_path, self.dfs[fishgroup], sheet_name=TREATMENTS[self.condition], startcol = 2, index=True, header = header)
+                except:
+                    logger.error(f"Export {fishgroup} failed.")
+                    continue
                 # open the excel file to adjust the column width
                 # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
             print("Sheet name " + TREATMENTS[self.condition] + " exported to excel successfully.")
@@ -316,8 +353,12 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
 
         def analyze(self):
              # Extract data according to input
-            print("Extracting data...")
+            print(f"Extracting data {self.batch_num} - {self.condition}...")
             self.test_result = extract_data(self.test_num, self.batch_num, self.condition)
+
+            if self.test_result == {}:
+                logger.warning(f"No data found for test {self.test_num} batch {self.batch_num} condition {self.condition}.")
+                return
 
             self.df = pd.DataFrame()
 
@@ -364,15 +405,31 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
 
                 if TREATMENTS[self.condition] in get_sheet_names(self.excel_path):
                     header = False
+                    logger.debug("Excel file exists, appending to existing file...")
                 else:
                     header = True
-                
+                    logger.debug("Excel file does not exist, creating new file...")
+
+            logger.info("Exporting to excel...")
+            logger.debug(f"Keys in df: {self.df.keys()}")
+            logger.debug(f"Excel path: {self.excel_path}")
+
+
             append_df_to_excel(self.excel_path, self.df, sheet_name=TREATMENTS[self.condition], startcol = 1, index=True, header = header)
             # open the excel file to adjust the column width
             # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
             print("Sheet name " + TREATMENTS[self.condition] + " exported to excel successfully.")
 
-            excel_polish(self.excel_path, batch_num=self.batch_num, cell_step=10, inplace=True)
+            logger.info("Polishing excel file...")
+            try:
+                excel_polish(self.excel_path, 
+                            batch_num=self.batch_num, 
+                            cell_step=10, 
+                            inplace=True)
+            except Exception as e:
+                logger.error("Excel polishing failed.")
+                logger.error(e)
+                raise e
 
 
         def __repr__(self):
@@ -384,20 +441,36 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         excel_name = EXCEL_NAMES[test_num]
         excel_path = PROJECT_DIR / excel_name
 
-        if excel_path.exists():
-            batch_count = count_batch(excel_path, row_per_batch)
+        if test_num == 0:
+            repetition = 3
         else:
-            batch_count = 0
+            repetition = 1
 
-        if batch_count >= int(BATCHNUM):
+        if excel_path.exists():
+            existed_batch, row_error = find_existed_batches(excel_path, row_per_batch, repetition)
+        else:
+            existed_batch = []
+            row_error = ""
+
+        logger.warning(row_error)
+        if row_error != "":
+            row_error = "However, " + row_error
+            if OVERWRITE:
+                logger.info("Overwriting the existing excel file...")
+                os.remove(excel_path)
+
+
+        if f"Batch {BATCHNUM}" in existed_batch:
             if OVERWRITE == False:
                 ERROR = "Existed"
-                notification = f'Batch {BATCHNUM} has already been analyzed.'
+                notification = f'Batch {BATCHNUM} has already been analyzed.'  + row_error
                 total_time = time.time() - time00
                 return total_time, notification, ERROR
             else:
-                # remove file at excel_path
+                #[TODO] THE OVERWRITE FUNCTION SHOULD ONLY DELETE THE OLD VERSION OF SELECTED BATCH
+                # NOT THE WHOLE EXCEL FILE!
                 try:
+                    logger.info("Overwriting the existing excel file...")
                     os.remove(excel_path)
                 except OSError:
                     total_time = time.time() - time00

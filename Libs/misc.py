@@ -11,6 +11,11 @@ import openpyxl
 import re
 from tqdm import tqdm
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 
 def fill_space_in_name():
     root = tk.Tk()
@@ -373,14 +378,23 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startcol=None, startro
                        **to_excel_kwargs):
     # Excel file doesn't exist - saving and exiting
     if not os.path.isfile(filename):
+        logger.info("Excel file doesn't exist - directly export using df.to_excel")
         df.to_excel(
             filename,
             sheet_name=sheet_name, 
             startcol=startcol if startcol is not None else 0, 
             startrow=startrow if startrow is not None else 0,
             **to_excel_kwargs)
+        
+        wb = openpyxl.load_workbook(filename)
+        ws = wb[sheet_name]
+        row_0 = ws[1]
+        logger.debug(f"Header: {row_0}")
+
         return
     
+    logger.info("Excel file exists - appending using openpyxl")
+
     if 'engine' in to_excel_kwargs:
         to_excel_kwargs.pop('engine')
 
@@ -403,9 +417,8 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startcol=None, startro
     if startrow is None:
         startrow = 0
 
-    if DISPLAY:
-        print('In file: ', os.path.basename(filename))
-        print('Appended to column: ', startcol,', row: ', startrow)
+    logger.debug(f'In file: {os.path.basename(filename)}')
+    logger.debug(f'Appended to column: {startcol}, row: {startrow}')
     
     # remove df headers if they exist
     if startrow != 0:
@@ -507,21 +520,32 @@ def get_sheet_names(excel_path):
     wb = openpyxl.load_workbook(excel_path)
     return wb.sheetnames
 
-def count_batch(excel_path, row_per_batch):
+def find_existed_batches(excel_path, row_per_batch, repetition = 1):
     workbook = openpyxl.load_workbook(excel_path)
     
-    max_row_list = {}
+    max_row_dict = {}
+    existed_batches = []
+
     # get the first sheet
     for worksheet in workbook.worksheets:
         max_row = worksheet.max_row
-        max_row_list[worksheet.title] = max_row
+        max_row_dict[worksheet.title] = max_row
 
-    # check if all the sheets have the same number of rows
+        # find unique values of first column
+        first_col = [worksheet.cell(row=i, column=1).value for i in range(2, max_row+1)]
+        first_col = [i for i in first_col if i != None]
+        first_col = list(set(first_col))
+        for batch in first_col:
+            if batch not in existed_batches:
+                existed_batches.append(batch)
 
-    if len(set(max_row_list.values())) == 1 and (max_row_list[worksheet.title] - 1) % row_per_batch == 0:
-        return (max_row_list[worksheet.title] - 1) // row_per_batch
+    supposed_length = len(existed_batches) * row_per_batch * repetition + 1
+    if max_row_dict[worksheet.title] == supposed_length:
+        return existed_batches, ""
     else:
-        return 0
+        ERROR = "The number of rows in the excel file is not correct. Please check the excel file."
+        return existed_batches, ERROR
+
 
 
 def merge_cells(file_path, col_name = 'Shoaling Area', cell_step=3, inplace = True):

@@ -11,8 +11,8 @@ PROJECT_DIR = Path(r"D:\TestSave\M1")
 
 ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
 CHARS = [chr(i) for i in range(65, 65+26)]
-video_types = [".mp4", ".avi", ".mkv"]
-filetypes=[("Video Files", " ".join(["*" + t for t in video_types]))]
+video_types = [".mp4", ".avi", ".mkv", ".mov"]
+VIDEOFILES=[("Video Files", " ".join(["*" + t for t in video_types])), ("All Files", "*.*")]
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -116,7 +116,7 @@ class VideoWidgets:
 
         
     def on_import_click(self):
-        file_path = tkinter.filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv")])
+        file_path = tkinter.filedialog.askopenfilename(filetypes=VIDEOFILES)
         if file_path:
             self.origin_path = file_path
 

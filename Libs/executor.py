@@ -1,7 +1,10 @@
 from Libs.analyzer import *
 from Libs.general import upper_first
 from Libs.misc import load_raw_df, clean_df
+import logging
 
+# Get a logger
+logger = logging.getLogger(__name__)
 
 basic_requirements = ['total distance', 'average speed', 
                       'freezing percentage', 'swimming percentage', 'rapid movement percentage'] 

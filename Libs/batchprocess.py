@@ -6,6 +6,20 @@ import json
 import time
 from tqdm import tqdm
 
+import logging
+
+# Level     Numeric value
+#-----------------------
+# CRITICAL    50
+# ERROR       40
+# WARNING     30
+# INFO        20
+# DEBUG       10
+# NOTSET      0
+
+# Get a logger
+logger = logging.getLogger(__name__)
+
 tests = ['Novel Tank', 'Shoaling', 'Mirror Biting', 'Social Interaction', 'Predator Avoidance']
 keywords = [x.split(' ')[0].lower() for x in tests]
 test_execs = [noveltank_exec, shoaling_exec, mirrorbiting_exec, socialinteraction_exec, predatoravoidance_exec]
@@ -35,6 +49,8 @@ class MY_CONDITION():
     def HypLoader(self):
 
         data = hyploader(self.hyp_path)
+        logger.info(f'Loading hyp from {self.hyp_path}')
+        logger.debug(f'Loaded hyp: {data}')
         
         return data
 
@@ -43,7 +59,13 @@ class MY_CONDITION():
         
         trajectories = condition_path.glob(f'**/{self.trajectory_format}')
         trajectories = sort_paths_by_parent(trajectories)
+        logger.info(f'Found {len(trajectories)} trajectories in {condition_path}')
+        if len(trajectories) == 0:
+            logger.warning(f'No trajectories found in {condition_path}')
         targets = {trajectory.parent.name: trajectory for trajectory in trajectories}
+        # if any key of targets is not int, logger.warning
+        if any([not x.isdigit() for x in targets.keys()]):
+            logger.warning(f'Found non-integer fish group in {condition_path}')
         targets = self.priotize_data(targets, mode = 'last')
         
         return targets
@@ -52,6 +74,8 @@ class MY_CONDITION():
 
     def priotize_data(self, input_dict, mode = 'last'):
         
+        logger.info(f"Prioritizing data... mode = {mode}")
+
         key_group = {}
         for key in input_dict.keys():
             k = key.split('-')[0].strip()
@@ -63,6 +87,15 @@ class MY_CONDITION():
         def sub_num(input_str):
             return int(input_str.split('-')[1].strip())
 
+        #if mode is not first or last, try to convert to int
+        if mode not in ['first', 'last']:
+            logger.info("Mode is not first or last, trying to convert to int...")
+            try:
+                chosen = int(mode)
+                logger.info(f"Chosen {chosen} as the sub-num to keep")
+            except:
+                logger.info("Failed to convert to int, using mode=last as default")
+                mode = 'last'
 
         for k, v in key_group.items():
             remove_list = []
@@ -75,15 +108,12 @@ class MY_CONDITION():
                     remove_list = [x for x in addition_list if sub_num(x) != last_num]
                     remove_list.append(k)
                 else:
-                    try:
-                        chosen = int(mode)
-                        if chosen in [sub_num(x) for x in addition_list]:
-                            remove_list = [x for x in addition_list if sub_num(x) != chosen]
-                            remove_list.append(k)
-                    except:
-                        raise ValueError('mode must be first or last or an integer')
+                    if chosen in [sub_num(x) for x in addition_list]:
+                        remove_list = [x for x in addition_list if sub_num(x) != chosen]
+                        remove_list.append(k)         
                     
             # print(remove_list)
+            logger.debug(f'Removing {remove_list} from {k}')
             for key in remove_list:
                 input_dict.pop(key)
         
@@ -98,6 +128,8 @@ class MY_CONDITION():
         else:
             trajectory_format = "trajectories.txt"
 
+        logger.info(f'Using {trajectory_format} as trajectory format')
+
         return trajectory_format
     
 
@@ -107,13 +139,13 @@ class MY_CONDITION():
             raise ValueError(f'{self.test_name} is not a valid test name')
         
         test_index = tests.index(self.test_name)
-        # print('Running test: ', self.test_name, '...')
+        logger.info(f'Running test: {self.test_name}...')
         test_exec = test_execs[test_index]
 
         for target, target_path in self.targets.items():
-            # print(f'Scanning {target} if == {target_name}', end = '...')
+            logger.debug(f'Scanning {target} if == {target_name}')
             if target == target_name:
-                # print(' Matched !', end = '\n')
+                logger.debug(' Matched !')
                 if test_index == 0:
                     results = test_exec(target_path, project_hyp = self.hyp, seg_num = seg_num)
                     # test_exec("1", "../PROJECT/{num} - Test/{char} - Treatment ({ordinal} Batch)/{target}/.txt")
@@ -167,6 +199,8 @@ class MY_BATCH():
 
         conditions = {}
         for batch_path in batch_paths:
+            logger.info(f'Extracting condition name from {batch_path}')
+            logger.debug(f'Condition name is {get_name(batch_path)}')
             conditions[get_name(batch_path)] = batch_path
 
         return conditions

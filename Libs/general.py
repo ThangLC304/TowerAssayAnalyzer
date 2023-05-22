@@ -10,6 +10,10 @@ from word2number import w2n
 import re
 from Libs.misc import hyploader
 
+import logging
+# Get a logger
+logger = logging.getLogger(__name__)
+
 def ordinal_to_number(ordinal):
     ordinal = ordinal.lower().strip()
     if ordinal[-2:] == "st":

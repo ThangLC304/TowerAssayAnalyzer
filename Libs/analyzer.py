@@ -7,7 +7,10 @@ from pathlib import Path
 import json
 from statistics import mean
 from Libs.general import *
+import logging
 
+# Get a logger
+logger = logging.getLogger(__name__)
 
 
 ROUND_UP = 4
