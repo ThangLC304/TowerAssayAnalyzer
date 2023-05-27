@@ -6,7 +6,7 @@ tk
 openpyxl
 tqdm
 opencv-python
-word2number
+num2words
 shutil
 pathlib
 customtkinter

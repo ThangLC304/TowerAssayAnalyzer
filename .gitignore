@@ -17,6 +17,7 @@ example*
 old*
 *.ipynb
 local/*
+*_old.py
 
 # Distribution / packaging
 .Python

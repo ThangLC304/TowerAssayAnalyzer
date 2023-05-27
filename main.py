@@ -95,21 +95,27 @@ class HISTORY():
         with open(HISTORY_PATH, "r") as file:
             self.projects_data = json.load(file)
 
+
     def get_project_dir(self, project_name):
         self.reload()
 
+        if project_name == "":
+            logger.warning("Tried to get project directory of an empty project name")
+            return None
+        
         project_dir = self.projects_data[project_name]["DIRECTORY"]
 
         # check if the project directory exists
         if not os.path.exists(project_dir):
             tkinter.messagebox.showerror("Error", "Project directory does not exist!")
-
+            logger.info(f"Project directory of {project_name} does not exist. Asking for relocation")
             relocate = tkinter.messagebox.askyesno("Do you want to relocate it?")
             if relocate:
                 # ask for new input of project_dir
                 new_dir = tkinter.filedialog.askdirectory()
-                self.save_project_dir(project_name, new_dir)
-
+                
+                self.projects_data[project_name]["DIRECTORY"] = new_dir
+                self.saver()
                 logger.info(f"Project directory of {project_name} has been relocated to {new_dir}")
 
                 return new_dir
@@ -118,11 +124,91 @@ class HISTORY():
 
         return project_dir
 
-    def save_project_dir(self, project_name, project_dir):
-        self.reload()
+    def update_blank_folders(self, project_name, batch_num, treatment_num, target_amount):
+        project_path = Path(self.get_project_dir(project_name))
 
-        self.projects_data[project_name]["DIRECTORY"] = project_dir
+        # find children directory of project_path
+        test_dirs = [child for child in project_path.iterdir() if child.is_dir()]
 
+        batch_ordinal = ORDINALS[batch_num - 1]
+
+        for test_dir in test_dirs:
+            # treatment_dir pattern = "A - Control (1st Batch)"
+            treatment_dir = test_dir.glob(f"*{treatment_num}*({batch_ordinal} Batch)")
+            treatment_dir = list(treatment_dir)[0]
+
+            # find number of directories inside treatment_dir
+            current_fish_list = [child for child in treatment_dir.iterdir() if child.is_dir()]
+            current_fish_list = [int(fish.split("_")[0].strip()) for fish in current_fish_list]
+            max_fish_num = max(current_fish_list)
+            if max_fish_num < target_amount:
+                for i in range(max_fish_num + 1, target_amount + 1):
+                    new_fish_dir = treatment_dir / f"{i}"
+                    new_fish_dir.mkdir()
+                    logger.info(f"New fish directory '{new_fish_dir}' in {test_dir}/{treatment_dir}")
+            elif max_fish_num > target_amount:
+                for i in range(target_amount, max_fish_num, -1):
+                    fish_dir = treatment_dir / f"{i}"
+                    shutil.rmtree(fish_dir)
+                    logger.info(f"Fish directory '{fish_dir}' has been removed")
+
+    def fish_adder(self, project_name, batch_num, treatment_num, add_amount=1, modify_history=False):
+        if treatment_num == "all":
+            # get list of treatments in batch_num
+            project_detail = self.projects_data[project_name]
+            batch_name = f"Batch {batch_num}"
+            treatments_count = len(project_detail[batch_name].keys())
+            treatment_nums = [chr(i) for i in range(65, 65+treatments_count)]
+            for treatment_num in treatment_nums:
+                self.add_fish(project_name, batch_num, treatment_num, add_amount, modify_history)
+        else:
+            self.add_fish(project_name, batch_num, treatment_num, add_amount, modify_history)
+
+
+    def add_fish(self, project_name, batch_num, treatment_num, add_amount=1, modify_history=False):
+        project_detail = self.projects_data[project_name]
+
+        batch_name = f"Batch {batch_num}"
+        treatment_name = f"Treatment {treatment_num}"
+
+        if batch_name not in project_detail.keys():
+            ERROR = f"Batch {batch_num} does not exist in project {project_name}"
+            logger.warning(ERROR)
+            return ERROR
+        
+        if treatment_name not in project_detail[batch_name].keys():
+            ERROR = f"Treatment {treatment_num} does not exist in batch {batch_num}"
+            logger.warning(ERROR)
+            return ERROR
+        
+        # treatment_detail pattern
+        # [
+        #         "Melamine",
+        #         10.0,
+        #         "ppm",
+        #         10, # fish num
+        #         ""
+        #     ]
+        # Position of fish num in treatment detail
+        DATA_NO = 3
+
+        if DATA_NO > len(project_detail[batch_name][treatment_name]):
+            ERROR = f"{DATA_NO} out-of-range for {treatment_num}"
+            logger.warning(ERROR)
+            return ERROR
+        
+        add_amount = int(add_amount)
+        current_fish_num = int(self.projects_data[project_name][batch_name][treatment_name][DATA_NO])
+        target_fish_num = current_fish_num + add_amount
+
+        if modify_history:
+            self.projects_data[project_name][batch_name][treatment_name][DATA_NO] = target_fish_num
+            self.saver()
+
+        # Add blank folder to project directory
+        self.update_blank_folders(project_name, batch_num, treatment_num, target_fish_num)
+
+    def saver(self):
         with open(HISTORY_PATH, "w") as file:
             json.dump(self.projects_data, file, indent=4)
 
@@ -413,8 +499,9 @@ class Parameters(customtkinter.CTkFrame):
             last_entry[1].destroy()
 
         # remove the last entry from self.entries
-        self.key_labels[last_row_num].destroy()
-        self.key_labels.pop(last_row_num)
+        print(self.key_labels)
+        self.key_labels[str(last_row_num)].destroy()
+        self.key_labels.pop(str(last_row_num))
         self.entries.pop(last_row)
         logger.info(f"Removed entry {last_row}")
         
@@ -586,19 +673,43 @@ class Parameters(customtkinter.CTkFrame):
             with open(hyp_path, "r") as file:
                 parameters_data = json.load(file)
 
-            # Update the values in the dictionary with the new values
-            for key, value in updated_values.items():
-                try:
-                    if "_" not in key:
-                        parameters_data[key] = value
-                    else:
-                        nested_key, nested_key_value = key.split("_")
-                        if nested_key not in parameters_data:
-                            parameters_data[nested_key] = {}
-                        parameters_data[nested_key][nested_key_value] = value
+            #separate the updated_values.items into 2 groups
+            updated_values_simple = {key: value for key, value in updated_values.items() if "_" not in key}
+            updated_values_nested = {key: value for key, value in updated_values.items() if "_" in key}
+            updated_values_nested_grouped = {}
+            for key, value in updated_values_nested.items():
+                nested_key, nested_key_fish = key.split("_")
+                if nested_key not in updated_values_nested_grouped:
+                    updated_values_nested_grouped[nested_key] = {}
+                updated_values_nested_grouped[nested_key][nested_key_fish] = value
 
+            # Update the values in the dictionary with the new values
+            for key, value in updated_values_simple.items():
+                try:
+                    parameters_data[key] = value
                 except ValueError:
                     print(f"Invalid input for {key}: {value}. Skipping.")
+            
+            for nested_key, fishes in updated_values_nested_grouped.items():
+                if nested_key not in parameters_data:
+                    logger.error(f"Nested key {nested_key} not found in {hyp_path}")
+                    raise ValueError(f"Nested key {nested_key} not found in {hyp_path}")
+                parameters_data[nested_key] = fishes
+
+
+            # # Update the values in the dictionary with the new values
+            # for key, value in updated_values.items():
+            #     try:
+            #         if "_" not in key:
+            #             parameters_data[key] = value
+            #         else:
+            #             nested_key, nested_key_fish = key.split("_")
+            #             if nested_key not in parameters_data:
+            #                 parameters_data[nested_key] = {}
+            #             parameters_data[nested_key][nested_key_fish] = value
+
+            #     except ValueError:
+            #         print(f"Invalid input for {key}: {value}. Skipping.")
 
             # Save the updated data to the file
             with open(hyp_path, "w") as file:
@@ -645,7 +756,7 @@ class App(customtkinter.CTk):
 
         # configure window
         self.title("Tower Assay Analyzer")
-        self.geometry(f"{1440}x{790}")
+        self.geometry(f"{1500}x{790}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=0) 
@@ -819,10 +930,10 @@ class App(customtkinter.CTk):
         self.nested_key_1_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 1)
         self.nested_key_1_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(10, 20), sticky="nsew")
 
-        self.nk1_add_button = NK_button(container_3, text="Add", width = 40,
+        self.nk1_add_button = NK_button(container_3, text="Add", width = 20,
                                         row = 2, column = 0,
                                         command=self.nk1_add)
-        self.nk1_remove_button = NK_button(container_3, text="Remove", width = 40,
+        self.nk1_remove_button = NK_button(container_3, text="Remove", width = 20,
                                         row = 2, column = 1,
                                         command=self.nk1_remove)
 
@@ -831,10 +942,10 @@ class App(customtkinter.CTk):
         self.nested_key_2_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 2)
         self.nested_key_2_frame.grid(row=1, column=2, columnspan = 2, padx=20, pady=(10, 20), sticky="nsew")
 
-        self.nk2_add_button = NK_button(container_3, text="Add", width = 40,
+        self.nk2_add_button = NK_button(container_3, text="Add", width = 20,
                                         row = 2, column = 2,
                                         command=self.nk2_add)
-        self.nk2_remove_button = NK_button(container_3, text="Remove", width = 40,
+        self.nk2_remove_button = NK_button(container_3, text="Remove", width = 20,
                                         row = 2, column = 3,
                                         command=self.nk2_remove)
 
@@ -861,15 +972,75 @@ class App(customtkinter.CTk):
 
     def nk1_add(self):
         self.nested_key_1_frame.add_entry()
+        current_batch = self.BatchOptions.get()
+
+        if self.InDetail.get() == 1:
+            current_treatment = self.TestOptions.get()
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num=current_treatment, 
+                                 add_amount=1, 
+                                 modify_history=False)
+        else:
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num="all",
+                                 add_amount=1, 
+                                 modify_history=False)
 
     def nk2_add(self):
         self.nested_key_2_frame.add_entry()
+        current_batch = self.BatchOptions.get()
+
+        if self.InDetail.get() == 1:
+            current_treatment = self.TestOptions.get()
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num=current_treatment, 
+                                 add_amount=1, 
+                                 modify_history=False)
+        else:
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num="all",
+                                 add_amount=1, 
+                                 modify_history=False)
 
     def nk1_remove(self):
         self.nested_key_1_frame.remove_entry()
+        current_batch = self.BatchOptions.get()
+
+        if self.InDetail.get() == 1:
+            current_treatment = self.TestOptions.get()
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num=current_treatment, 
+                                 add_amount=-1, 
+                                 modify_history=False)
+        else:
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num="all",
+                                 add_amount=-1, 
+                                 modify_history=False)
 
     def nk2_remove(self):
         self.nested_key_2_frame.remove_entry()
+        current_batch = self.BatchOptions.get()
+
+        if self.InDetail.get() == 1:
+            current_treatment = self.TestOptions.get()
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num=current_treatment, 
+                                 add_amount=-1, 
+                                 modify_history=False)
+        else:
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 batch_num=current_batch, 
+                                 treatment_num="all",
+                                 add_amount=-1, 
+                                 modify_history=False)
         
         
     def import_video(self):
