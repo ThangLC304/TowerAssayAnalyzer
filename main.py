@@ -304,9 +304,11 @@ class Parameters(customtkinter.CTkFrame):
         self.project_name = project_name
         self.selected_task = selected_task
 
+        self.null_label = None
+
         if self.project_name == "":
-            label = customtkinter.CTkLabel(self, text="No project selected")
-            label.grid(row=0, column=0, padx=5, pady=5)
+            self.null_label = customtkinter.CTkLabel(self, text="No project selected")
+            self.null_label.grid(row=0, column=0, padx=5, pady=5)
         else:
             self.load_parameters(nested_key = nested_key)
 
@@ -346,8 +348,80 @@ class Parameters(customtkinter.CTkFrame):
 
             return hyp_paths
 
+    def add_entry(self):
+
+        # add a new entry to self.entries, similar to the last entry
+        # add a new row to the grid
+        last_row = list(self.entries.keys())[-1]
+        last_entry = self.entries[last_row]
+
+        try:
+            last_row_num = int(last_row.split('_')[-1])
+        except:
+            return
+
+        new_row_num = last_row_num + 1
+        new_row = f"{last_row.split('_')[0]}_{new_row_num}"
+
+        try:
+            entry_length = len(last_entry)
+        except:
+            entry_length = 1
+
+        if entry_length == 1:
+            value_entry = customtkinter.CTkEntry(self)
+            value_entry.insert(0, 0)
+            value_entry.grid(row=new_row_num, column=1, padx=5, pady=5)
+            
+            new_entry = value_entry
+
+        elif entry_length == 2:
+            value_entry = customtkinter.CTkEntry(self)
+            value_entry.insert(0, 0)
+            value_entry.grid(row=new_row_num, column=1, padx=5, pady=5)
+
+            LR_switch = customtkinter.CTkSwitch(self, text=None)
+            LR_switch.grid(row=new_row_num, column=2, padx=(5,0), pady=5)
+
+            new_entry = [value_entry, LR_switch]
+
+        self.key_labels[new_row_num] = customtkinter.CTkLabel(self, text=new_row_num)
+        self.key_labels[new_row_num].grid(row=new_row_num, column=0, padx=5, pady=5)
+        self.entries[new_row] = new_entry
+        logger.info(f"Added entry {new_row}")
+
+
+    def remove_entry(self):
+        last_row = list(self.entries.keys())[-1]
+        last_entry = self.entries[last_row]
+
+        try:
+            last_row_num = int(last_row.split('_')[-1])
+        except:
+            return
+        
+        try:
+            entry_length = len(last_entry)
+        except:
+            entry_length = 1
+
+        if entry_length == 1:
+            last_entry.destroy()
+        
+        elif entry_length == 2:
+            last_entry[0].destroy()
+            last_entry[1].destroy()
+
+        # remove the last entry from self.entries
+        self.key_labels[last_row_num].destroy()
+        self.key_labels.pop(last_row_num)
+        self.entries.pop(last_row)
+        logger.info(f"Removed entry {last_row}")
+        
 
     def load_parameters(self, project_name=None, selected_task=None, condition = None, batch_num=None, nested_key=0):
+
+        self.null_label = None
 
         self.entries = {}
 
@@ -389,8 +463,8 @@ class Parameters(customtkinter.CTkFrame):
                 
 
             except IndexError:
-                label = customtkinter.CTkLabel(self, text="No more nested keys")
-                label.grid(row=0, column=0, padx=5, pady=5) 
+                self.null_label = customtkinter.CTkLabel(self, text="No more nested keys")
+                self.null_label.grid(row=0, column=0, padx=5, pady=5) 
                 return "None"
             
             display_dict = ori_dict[nested_key]
@@ -411,9 +485,11 @@ class Parameters(customtkinter.CTkFrame):
                 unit_label = customtkinter.CTkLabel(self, text=unit)
                 unit_label.grid(row=i+1, column=2, padx=(5,10), pady=5)
 
+        self.key_labels = {}
+
         for row, (key, value) in enumerate(display_dict.items()):
-            key_label = customtkinter.CTkLabel(self, text=key)
-            key_label.grid(row=row+1, column=0, padx=5, pady=5)
+            self.key_labels[key] = customtkinter.CTkLabel(self, text=key)
+            self.key_labels[key].grid(row=row+1, column=0, padx=5, pady=5)
 
             # if value is a list
             if isinstance(value, list):
@@ -447,6 +523,23 @@ class Parameters(customtkinter.CTkFrame):
             for i, header in enumerate(headers):
                 label = customtkinter.CTkLabel(self, text=header, font=customtkinter.CTkFont(weight="bold"))
                 label.grid(row=0, column=i, padx=5, pady=5)
+
+        last_row = list(self.entries.keys())[-1]
+        last_entry = self.entries[last_row]
+        try:
+            print("Entry value length: ", len(last_entry))
+        except:
+            print("Entry value length: ", 1)
+
+        try:
+            last_row_num = int(last_row.split('_')[-1])
+            new_row_num = last_row_num + 1
+            new_row = f"{last_row.split('_')[0]}_{new_row_num}"
+            print("New row: ", new_row)
+            print("With Entry: ", last_entry)
+        except:
+            pass
+        
 
         return nested_key
 
@@ -512,6 +605,21 @@ class Parameters(customtkinter.CTkFrame):
                 json.dump(parameters_data, file, indent=4)
 
             print(f"Parameters of {selected_task} saved to {hyp_path}.")
+
+class NK_button(customtkinter.CTkButton):
+    def __init__(self, parent, text, command, row, column, *args, **kwargs):
+        super().__init__(parent, text=text, command=command, *args, **kwargs)
+        self.parent = parent
+        self.text = text
+        self.command = command
+        self.row = row
+        self.column = column
+
+    def show(self):
+        self.grid(row=self.row, column=self.column, padx=5, pady=5, sticky="nsew")
+
+    def hide(self):
+        self.grid_forget()
 
 
 class App(customtkinter.CTk):
@@ -703,18 +811,36 @@ class App(customtkinter.CTk):
 
         # ROW 0 #
 
-        container_3 = customtkinter.CTkFrame(self, width = 400)
-        container_3.grid(row=0, column=5, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        container_3 = customtkinter.CTkScrollableFrame(self, width = 500)
+        container_3.grid(row=0, rowspan=2, column=5, columnspan = 2, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         self.nested_key_1_header = customtkinter.CTkLabel(container_3, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.nested_key_1_header.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
         self.nested_key_1_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 1)
         self.nested_key_1_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(10, 20), sticky="nsew")
 
+        self.nk1_add_button = NK_button(container_3, text="Add", width = 40,
+                                        row = 2, column = 0,
+                                        command=self.nk1_add)
+        self.nk1_remove_button = NK_button(container_3, text="Remove", width = 40,
+                                        row = 2, column = 1,
+                                        command=self.nk1_remove)
+
         self.nested_key_2_header = customtkinter.CTkLabel(container_3, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.nested_key_2_header.grid(row=0, column=2, padx=20, pady=(20, 10), sticky="nsew")
         self.nested_key_2_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 2)
         self.nested_key_2_frame.grid(row=1, column=2, columnspan = 2, padx=20, pady=(10, 20), sticky="nsew")
+
+        self.nk2_add_button = NK_button(container_3, text="Add", width = 40,
+                                        row = 2, column = 2,
+                                        command=self.nk2_add)
+        self.nk2_remove_button = NK_button(container_3, text="Remove", width = 40,
+                                        row = 2, column = 3,
+                                        command=self.nk2_remove)
+
+        
+
+        # Config
 
         self.BatchOptions.configure(command=self.update_param_display)
         self.TestOptions.configure(command=self.update_param_display)
@@ -727,6 +853,23 @@ class App(customtkinter.CTk):
 
         # ROW 1 #
 
+
+    def fish_num_manipulation(self, target, action="add"):
+        assert action in ["add", "remove"]
+
+
+
+    def nk1_add(self):
+        self.nested_key_1_frame.add_entry()
+
+    def nk2_add(self):
+        self.nested_key_2_frame.add_entry()
+
+    def nk1_remove(self):
+        self.nested_key_1_frame.remove_entry()
+
+    def nk2_remove(self):
+        self.nested_key_2_frame.remove_entry()
         
         
     def import_video(self):
@@ -928,6 +1071,22 @@ class App(customtkinter.CTk):
         self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, nested_key = 0)
         nested_key_1 = self.nested_key_1_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, nested_key = 1)
         nested_key_2 = self.nested_key_2_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, nested_key = 2)
+
+        if self.nested_key_1_frame.null_label != None:
+            # hide add & remove button
+            self.nk1_add_button.hide()
+            self.nk1_remove_button.hide()
+        else:
+            self.nk1_add_button.show()
+            self.nk1_remove_button.show()
+
+        if self.nested_key_2_frame.null_label != None:
+            # hide add & remove button
+            self.nk2_add_button.hide()
+            self.nk2_remove_button.hide()
+        else:
+            self.nk2_add_button.show()
+            self.nk2_remove_button.show()
 
         self.LoadedProject.configure(text=self.CURRENT_PROJECT)
         self.nested_key_1_header.configure(text=nested_key_1)
