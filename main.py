@@ -1378,7 +1378,6 @@ class App(customtkinter.CTk):
         # Refresh the project details
         self.refresh_projects_detail()
 
-
     ### LOAD PROJECT BUTTON FUNCTION ###
 
     def refresh_projects_detail(self):
