@@ -22,7 +22,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 
 #[TODO] Add parameters for each tank                                                # DONE
 #[TODO] Add GUI to input parameters for each tank                                   # DONE
-#[TODO] Add a Note row for WindowInput Control (DMSO x%)                            #
+#[TODO] Add a Note row for WindowInput Control (DMSO x%)                            # DONE
 #[TODO] Automatically save parameters each time the task is changed                 # DONE
 #[TODO] Analyzer button will analyze the task being selected                        # DONE
 #[TODO] The Cancel button currently create the project at cwd()                     # DONE
@@ -30,19 +30,21 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] The number of the nested parameters should be dynamic                       # DONE
 #[TODO] The mirror position of the tanks -> need to change the comparing conditions # DONE
 #[TODO] Add a (left/right) option to RIGHT side of nested parameters                # DONE
-#[TODO] Add a small button to LEFT side of nested parameters to delete              #
-#[TODO] Add a batch selector                                                        #
-# [BUG] A bug when just created a project then create another one then cancel       #
+#[TODO] Add a small button to LEFT side of nested parameters to delete              # DONE
+#[TODO] Add a batch selector                                                        # DONE
+# [BUG] A bug when just created a project then create another one then cancel       # FIXED
 # [BUG] Adding more than 2 treatments causing display bug                           # FIXED
 #[TODO] Change hyp format to only "MIRROR" & "SEPARATOR", " ZONE" is calculated     # DONE
 #[TODO] Note can be edit directly by user, even after the Project creating step     #
 #[TODO] Save before analyze                                                         # DONE
 #[TODO] Add batch and treatment name to the excel file                              # DONE
-#[TODO] Hyperparamater sets for Batch/TreatmentGroup                                #
+#[TODO] Hyperparamater sets for Batch/TreatmentGroup                                # DONE
 #[TODO] Drag and drop video, select Test/Batch/TreatmentGroup                       #
 #[TODO] Put units for each parameters                                               # DONE
 #[TODO] Change the dropdown menu of ppm/ppb to manual input                         #
 #[TODO] Batch menu moved next Loaded Project, ADD / DELETE buttons                  #
+#[TODO] Change to InDetail checkbox to a button that copy the current treatment     #
+# paramters to other + Confirm dialog
 
 
 ROOT = Path(__file__).parent
@@ -52,6 +54,11 @@ HISTORY_PATH = "History/projects.json"
 
 ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
 CHARS = [chr(i) for i in range(65, 65+26)]
+TESTS_LIST = ['Novel Tank Test', 
+              'Shoaling Test', 
+              'Mirror Biting Test',
+              'Social Interaction Test',
+              'Predator Test']
 
 # SETUP LOGGING CONFIGURATION
 # Create a Log directory if it doesn't exist
@@ -67,11 +74,19 @@ log_file_path = 'Log/log.txt'
 # Get a logger
 logger = logging.getLogger(__name__)
 
-# Configure the root logger
-logging.basicConfig(level=logging.DEBUG,
-                    format=log_format,
-                    datefmt=date_format,
-                    handlers=[logging.FileHandler(log_file_path, 'a')])  # 'a' ensures logs are appended
+# Create a file handler
+file_handler = logging.FileHandler(log_file_path, 'a')
+file_handler.setFormatter(logging.Formatter(log_format, date_format))
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(log_format, date_format))
+
+# Add handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
 
 # def get_directory(project_name):
 
@@ -109,7 +124,7 @@ class HISTORY():
         if not os.path.exists(project_dir):
             tkinter.messagebox.showerror("Error", "Project directory does not exist!")
             logger.info(f"Project directory of {project_name} does not exist. Asking for relocation")
-            relocate = tkinter.messagebox.askyesno("Do you want to relocate it?")
+            relocate = tkinter.messagebox.askyesno("Project not found", "Do you want to relocate it?")
             if relocate:
                 # ask for new input of project_dir
                 new_dir = tkinter.filedialog.askdirectory()
@@ -124,35 +139,54 @@ class HISTORY():
 
         return project_dir
 
-    def update_blank_folders(self, project_name, batch_num, treatment_num, target_amount):
+    def update_blank_folders(self, project_name, test_num, batch_num, treatment_num, target_amount):
         project_path = Path(self.get_project_dir(project_name))
 
         # find children directory of project_path
-        test_dirs = [child for child in project_path.iterdir() if child.is_dir()]
+        test_dirs = [child for child in project_path.iterdir() if child.is_dir() and child.name != "static"]
 
         batch_ordinal = ORDINALS[batch_num - 1]
 
+        test_name = TESTS_LIST[test_num]
+        logger.debug("Test name", test_name)
+
         for test_dir in test_dirs:
+            if test_name not in test_dir.name:
+                continue
             # treatment_dir pattern = "A - Control (1st Batch)"
-            treatment_dir = test_dir.glob(f"*{treatment_num}*({batch_ordinal} Batch)")
-            treatment_dir = list(treatment_dir)[0]
+            pattern = f"*{treatment_num}*({batch_ordinal} Batch)"
+            logger.debug("Pattern: ", pattern)
+            treatment_dirs = test_dir.glob(pattern)
+            treatment_dir = list(treatment_dirs)[0]
 
             # find number of directories inside treatment_dir
             current_fish_list = [child for child in treatment_dir.iterdir() if child.is_dir()]
-            current_fish_list = [int(fish.split("_")[0].strip()) for fish in current_fish_list]
+            # WindowsPath('D:/TestSave/DifNum/04 - Social Interaction Test/A - Control (1st Batch)/1')
+            
+            current_fish_list = [int(str(fish.name).split("_")[0].strip()) for fish in current_fish_list]
+            logger.debug("Current fish list: ", current_fish_list)
+            # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            
             max_fish_num = max(current_fish_list)
+            # 10
+            logger.debug("Current fish number: ", max_fish_num)
+            logger.debug("Target amount: ", target_amount)
             if max_fish_num < target_amount:
+                logger.debug("Current number of fish is less than target amount")
                 for i in range(max_fish_num + 1, target_amount + 1):
                     new_fish_dir = treatment_dir / f"{i}"
+                    logger.debug("Try creating new fish directory: ", new_fish_dir)
                     new_fish_dir.mkdir()
-                    logger.info(f"New fish directory '{new_fish_dir}' in {test_dir}/{treatment_dir}")
+                    logger.debug(f"New fish directory '{new_fish_dir}' in {test_dir}/{treatment_dir}")
             elif max_fish_num > target_amount:
-                for i in range(target_amount, max_fish_num, -1):
+                logger.debug("Current number of fish is more than target amount")
+                for i in range(max_fish_num, target_amount, -1):
                     fish_dir = treatment_dir / f"{i}"
+                    logger.debug("Try removing fish directory: ", fish_dir)
                     shutil.rmtree(fish_dir)
-                    logger.info(f"Fish directory '{fish_dir}' has been removed")
+                    logger.debug(f"Fish directory '{fish_dir}' has been removed")
 
-    def fish_adder(self, project_name, batch_num, treatment_num, add_amount=1, modify_history=False):
+    def fish_adder(self, project_name, test_num, batch_num, treatment_num, target_amount, modify_history=False):
         if treatment_num == "all":
             # get list of treatments in batch_num
             project_detail = self.projects_data[project_name]
@@ -160,12 +194,14 @@ class HISTORY():
             treatments_count = len(project_detail[batch_name].keys())
             treatment_nums = [chr(i) for i in range(65, 65+treatments_count)]
             for treatment_num in treatment_nums:
-                self.add_fish(project_name, batch_num, treatment_num, add_amount, modify_history)
+                self.add_fish(project_name, test_num, batch_num, treatment_num, target_amount, modify_history)
         else:
-            self.add_fish(project_name, batch_num, treatment_num, add_amount, modify_history)
+            self.add_fish(project_name, test_num, batch_num, treatment_num, target_amount, modify_history)
 
 
-    def add_fish(self, project_name, batch_num, treatment_num, add_amount=1, modify_history=False):
+    def add_fish(self, project_name, test_num, batch_num, treatment_num, target_amount, modify_history=False):
+        logger.debug("add_fish is called")
+        logger.debug(f"variables: project_name = {project_name}, test_num = {test_num}, batch_num = {batch_num}, treatment_num = {treatment_num}, target_amount = {target_amount}, modify_history = {modify_history}")
         project_detail = self.projects_data[project_name]
 
         batch_name = f"Batch {batch_num}"
@@ -197,16 +233,14 @@ class HISTORY():
             logger.warning(ERROR)
             return ERROR
         
-        add_amount = int(add_amount)
-        current_fish_num = int(self.projects_data[project_name][batch_name][treatment_name][DATA_NO])
-        target_fish_num = current_fish_num + add_amount
+        target_amount = int(target_amount)
 
         if modify_history:
-            self.projects_data[project_name][batch_name][treatment_name][DATA_NO] = target_fish_num
+            self.projects_data[project_name][batch_name][treatment_name][DATA_NO] = target_amount
             self.saver()
 
         # Add blank folder to project directory
-        self.update_blank_folders(project_name, batch_num, treatment_num, target_fish_num)
+        self.update_blank_folders(project_name, test_num, batch_num, treatment_num, target_amount)
 
     def saver(self):
         with open(HISTORY_PATH, "w") as file:
@@ -318,7 +352,7 @@ class ProjectDetailFrame(customtkinter.CTkFrame):
 
     def load_project_details(self, project_name=None, batch_name="Batch 1"):
 
-        print('Loading.. project name = ', project_name)
+        logger.info('Loading.. project name = ', project_name)
 
         if project_name == "":
             label = customtkinter.CTkLabel(self, text="No project selected")
@@ -333,7 +367,7 @@ class ProjectDetailFrame(customtkinter.CTkFrame):
 
         project_data = projects_data[self.project_name][batch_name]
 
-        print(project_data)
+        logger.info(project_data)
 
         headers = ["Treatment", "Dose", "Dose Unit", "Fish Number", "Note"]
 
@@ -408,19 +442,21 @@ class Parameters(customtkinter.CTkFrame):
             "SEGMENT DURATION": "seconds",
         }
 
-    def get_hyp_path(self, project_dir, selected_task_init, condition, batch_num, mode = 'individual'):
+    def get_hyp_path(self, project_dir, selected_task_init, condition, batch_num, treatment_mode = 'current'):
 
-        assert mode in ['batch', 'individual']
+        assert treatment_mode in ['all', 'current']
 
         hyp_name = f"hyp_{selected_task_init}.json"
 
-        if mode == 'individual':
+        if treatment_mode == 'current':
 
             hyp_path = os.path.join(project_dir, 'static', f"Batch {batch_num}", condition, hyp_name)
 
+            logger.debug(f"Retrieved hyp from {hyp_path}, mode = {treatment_mode}")
+
             return [hyp_path]
         
-        elif mode == 'batch':
+        elif treatment_mode == 'all':
             
             hyp_paths = []
 
@@ -432,8 +468,21 @@ class Parameters(customtkinter.CTkFrame):
                     hyp_path = sub_dir / hyp_name
                     hyp_paths.append(hyp_path)
 
+            logger.debug(f"Retrieved hyps from {hyp_paths}, mode = {treatment_mode}")
+
             return hyp_paths
 
+    def get_current_entry_quantity(self):
+
+        last_row = list(self.entries.keys())[-1]
+        last_entry = self.entries[last_row]
+
+        try:
+            last_row_num = int(last_row.split('_')[-1])
+            return last_row_num
+        except:
+            return 0
+        
     def add_entry(self):
 
         # add a new entry to self.entries, similar to the last entry
@@ -444,7 +493,7 @@ class Parameters(customtkinter.CTkFrame):
         try:
             last_row_num = int(last_row.split('_')[-1])
         except:
-            return
+            return 0
 
         new_row_num = last_row_num + 1
         new_row = f"{last_row.split('_')[0]}_{new_row_num}"
@@ -471,10 +520,12 @@ class Parameters(customtkinter.CTkFrame):
 
             new_entry = [value_entry, LR_switch]
 
-        self.key_labels[new_row_num] = customtkinter.CTkLabel(self, text=new_row_num)
-        self.key_labels[new_row_num].grid(row=new_row_num, column=0, padx=5, pady=5)
+        self.key_labels[str(new_row_num)] = customtkinter.CTkLabel(self, text=str(new_row_num))
+        self.key_labels[str(new_row_num)].grid(row=new_row_num, column=0, padx=5, pady=5)
         self.entries[new_row] = new_entry
         logger.info(f"Added entry {new_row}")
+
+        return new_row_num
 
 
     def remove_entry(self):
@@ -499,14 +550,16 @@ class Parameters(customtkinter.CTkFrame):
             last_entry[1].destroy()
 
         # remove the last entry from self.entries
-        print(self.key_labels)
         self.key_labels[str(last_row_num)].destroy()
         self.key_labels.pop(str(last_row_num))
         self.entries.pop(last_row)
         logger.info(f"Removed entry {last_row}")
+
+        return last_row_num-1
         
 
     def load_parameters(self, project_name=None, selected_task=None, condition = None, batch_num=None, nested_key=0):
+        logger.debug(f"Loading parameters for project_name = {project_name}, selected_task = {selected_task}, condition = {condition}, batch_num = {batch_num}, nested_key = {nested_key}")
 
         self.null_label = None
 
@@ -611,22 +664,6 @@ class Parameters(customtkinter.CTkFrame):
                 label = customtkinter.CTkLabel(self, text=header, font=customtkinter.CTkFont(weight="bold"))
                 label.grid(row=0, column=i, padx=5, pady=5)
 
-        last_row = list(self.entries.keys())[-1]
-        last_entry = self.entries[last_row]
-        try:
-            print("Entry value length: ", len(last_entry))
-        except:
-            print("Entry value length: ", 1)
-
-        try:
-            last_row_num = int(last_row.split('_')[-1])
-            new_row_num = last_row_num + 1
-            new_row = f"{last_row.split('_')[0]}_{new_row_num}"
-            print("New row: ", new_row)
-            print("With Entry: ", last_entry)
-        except:
-            pass
-        
 
         return nested_key
 
@@ -634,9 +671,10 @@ class Parameters(customtkinter.CTkFrame):
         for child in self.winfo_children():
             child.destroy()
 
-    def save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'batch'):
+    def save_parameters(self, project_name, selected_task, condition, batch_num, treatment_mode = 'all'):
+        logger.debug(f"Saving parameters for {project_name}.{selected_task}.{condition}.{batch_num} in mode {treatment_mode}")
 
-        assert mode in ['batch', 'individual'] 
+        assert treatment_mode in ['all', 'current'] 
 
         def get_entry(entry_dict):
             out_dict = {}
@@ -647,9 +685,10 @@ class Parameters(customtkinter.CTkFrame):
                     else:
                         v = value.get()
                 except AttributeError:
-                    print(f"AttributeError: {key} is not a tkinter entry")
-                    print(f"Value: ", v)
-                    print(f"Value type: ", type(v))
+                    logger.warning(f"During saving parameters for {project_name}.{selected_task}.{condition}.{batch_num} in mode {mode}")
+                    logger.warning(f"AttributeError: {key} is not a tkinter entry")
+                    logger.warning(f"Value: ", v)
+                    logger.warning(f"Value type: ", type(v))
                     continue
                 out_dict[key] = v
             return out_dict
@@ -661,7 +700,7 @@ class Parameters(customtkinter.CTkFrame):
             return            
         else:
             project_dir = THE_HISTORY.get_project_dir(project_name)
-            hyp_paths = self.get_hyp_path(project_dir, self.selected_task, condition, batch_num, mode=mode)
+            hyp_paths = self.get_hyp_path(project_dir, self.selected_task, condition, batch_num, treatment_mode=treatment_mode)
 
 
         # Get the values from the entries
@@ -688,7 +727,7 @@ class Parameters(customtkinter.CTkFrame):
                 try:
                     parameters_data[key] = value
                 except ValueError:
-                    print(f"Invalid input for {key}: {value}. Skipping.")
+                    logger.warning(f"Invalid input for {key}: {value}. Skipping.")
             
             for nested_key, fishes in updated_values_nested_grouped.items():
                 if nested_key not in parameters_data:
@@ -715,7 +754,7 @@ class Parameters(customtkinter.CTkFrame):
             with open(hyp_path, "w") as file:
                 json.dump(parameters_data, file, indent=4)
 
-            print(f"Parameters of {selected_task} saved to {hyp_path}.")
+            logger.info(f"Parameters of {selected_task} saved to {hyp_path}.")
 
 class NK_button(customtkinter.CTkButton):
     def __init__(self, parent, text, command, row, column, *args, **kwargs):
@@ -743,11 +782,7 @@ class App(customtkinter.CTk):
         self.PROJECT_CREATED = False
         self.CURRENT_PROJECT = ""
         # self.CURRENT_PARAMS = {}
-        self.TESTLIST = ['Novel Tank Test', 
-                    'Shoaling Test', 
-                    'Mirror Biting Test',
-                    'Social Interaction Test',
-                    'Predator Test']
+        self.TESTLIST = TESTS_LIST
         self.PREVIOUS_TEST = ""
         self.PREVIOUS_BATCH = ""
         self.PREVIOUS_CONDITION = ""
@@ -904,7 +939,10 @@ class App(customtkinter.CTk):
                                                    command=self.save_parameters)
         self.save_button.grid(row=1, column=2, padx=20, pady=20, sticky="nsew")
 
-        # another option for selecting between Treatments
+        self.ConditionOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False,
+                                                                width=210, values=self.CONDITIONLIST)
+        self.ConditionOptions.grid(row=2, column=0, columnspan=3, padx=20, pady=(20, 10), sticky="nsew")
+        self.ConditionOptions.configure(command=self.update_param_display)
 
         self.parameters_frame = Parameters(self.container_2_mid, self.CURRENT_PROJECT, self.TESTLIST[0], 0)
         self.parameters_frame.grid(row=3, columnspan=3, padx=20, pady=20, sticky="nsew")
@@ -913,10 +951,17 @@ class App(customtkinter.CTk):
         container_2_bot = customtkinter.CTkFrame(container_2)
         container_2_bot.grid(row=2, column=0, columnspan=3, sticky="nsew")
 
-        # create a check box 
-        self.InDetail = customtkinter.CTkCheckBox(container_2_bot)
-        self.InDetail.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="nsew")
-        self.InDetail.configure(text="Hyperparameters of each Treatment are different")
+        # create a Cloner button to copy current treatment's parameters to other treatment
+        self.Cloner = customtkinter.CTkButton(container_2_bot, text="Copy to other treatment", width = 50,
+                                              command=self.copy_to_other_treatment)
+        self.Cloner.grid(row=1, column=0, pady=20, padx=20, sticky="nsew")
+
+        self.ClonerToolTip = tkinter.Button(container_2_bot, text="?")
+        self.ClonerToolTip.grid(row=1, column=2, pady=20, padx=20)
+        CreateToolTip(self.ClonerToolTip, text = 'Copy all parameters setting above and on the right-side columns\n'
+                 'to other Treatment and save them immediately\n'
+        )
+
 
         ### COLUMN 3+ ###
 
@@ -949,121 +994,106 @@ class App(customtkinter.CTk):
                                         row = 2, column = 3,
                                         command=self.nk2_remove)
 
-        
-
         # Config
-
         self.BatchOptions.configure(command=self.update_param_display)
         self.TestOptions.configure(command=self.update_param_display)
 
         # Load the first test by default
         self.update_param_display(load_type = "first_load")
 
-        # bind the event of self.InDetail to the function self.on_detail_selected
-        self.InDetail.bind("<ButtonRelease-1>", self.on_detail_selected)
 
-        # ROW 1 #
+    def copy_to_other_treatment(self):
+        current_treatment = self.ConditionOptions.get()
+
+        message_ = f"You are going to copy current treatment parameters to other treatments'"
+        message_ += f"\nThis is an irreversible action, do you want to continue?"
+        confirm = tkinter.messagebox.askyesno("Confirmation", message_)
+        if not confirm:
+            return
+
+        logger.debug(f"Copying parameters from {current_treatment} to other treatment")
+        treatment_mode = "all"
 
 
-    def fish_num_manipulation(self, target, action="add"):
-        assert action in ["add", "remove"]
+        # save current treatment parameters to other treatments
+        self.save_parameters(mode="current", treatment_mode=treatment_mode)
 
+        # count current entries in available parameters
+        target_amount = self.nested_key_1_frame.get_current_entry_quantity()
+        # mimic the folder change of the current treatment to other treatment
+        self.folder_changer(target_amount, treatment_mode=treatment_mode)
+
+        #Notification
+        message_ = "Copied the parameters settings to all other treatments and Saved!"
+        tkinter.messagebox("Action Completed", message_)
+        logger.debug(message_)
+
+
+    def folder_changer(self, target_amount, treatment_mode="current"):
+        logger.debug(f"folder_changer called with target_amount = {target_amount}")
+        current_test = self.TestOptions.get()
+        current_test_index = self.TESTLIST.index(current_test)
+        logger.debug(f"current_test_index = {current_test_index}")
+        
+        current_batch = self.BatchOptions.get()
+        current_batch_index = int(current_batch.split(" ")[1])
+        logger.debug(f"current_batch_index = {current_batch_index}")
+
+        if treatment_mode == "current":
+            current_treatment = self.ConditionOptions.get()
+            logger.debug(f"Modify folders for current treatment {current_treatment}")
+            current_treatment_index = current_treatment.split(" ")[1]
+            logger.debug(f"current_treatment_index = {current_treatment_index}")
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 test_num=current_test_index,
+                                 batch_num=current_batch_index, 
+                                 treatment_num=current_treatment_index, 
+                                 target_amount=target_amount, 
+                                 modify_history=False)
+        elif treatment_mode == "all":
+            logger.debug("Modify folders for all treatment")
+            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
+                                 test_num=current_test_index,
+                                 batch_num=current_batch_index, 
+                                 treatment_num=treatment_mode,
+                                 target_amount=target_amount, 
+                                 modify_history=False)
 
 
     def nk1_add(self):
-        self.nested_key_1_frame.add_entry()
-        current_batch = self.BatchOptions.get()
-
-        if self.InDetail.get() == 1:
-            current_treatment = self.TestOptions.get()
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num=current_treatment, 
-                                 add_amount=1, 
-                                 modify_history=False)
-        else:
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num="all",
-                                 add_amount=1, 
-                                 modify_history=False)
+        logger.debug("nk1_add_button pressed")
+        target_amount = self.nested_key_1_frame.add_entry()
+        self.folder_changer(target_amount)
 
     def nk2_add(self):
-        self.nested_key_2_frame.add_entry()
-        current_batch = self.BatchOptions.get()
-
-        if self.InDetail.get() == 1:
-            current_treatment = self.TestOptions.get()
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num=current_treatment, 
-                                 add_amount=1, 
-                                 modify_history=False)
-        else:
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num="all",
-                                 add_amount=1, 
-                                 modify_history=False)
+        logger.debug("nk2_add_button pressed")
+        target_amount = self.nested_key_2_frame.add_entry()
+        self.folder_changer(target_amount)
 
     def nk1_remove(self):
-        self.nested_key_1_frame.remove_entry()
-        current_batch = self.BatchOptions.get()
-
-        if self.InDetail.get() == 1:
-            current_treatment = self.TestOptions.get()
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num=current_treatment, 
-                                 add_amount=-1, 
-                                 modify_history=False)
-        else:
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num="all",
-                                 add_amount=-1, 
-                                 modify_history=False)
+        logger.debug("nk1_remove_button pressed")
+        target_amount = self.nested_key_1_frame.remove_entry()
+        self.folder_changer(target_amount)
 
     def nk2_remove(self):
-        self.nested_key_2_frame.remove_entry()
-        current_batch = self.BatchOptions.get()
-
-        if self.InDetail.get() == 1:
-            current_treatment = self.TestOptions.get()
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num=current_treatment, 
-                                 add_amount=-1, 
-                                 modify_history=False)
-        else:
-            THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
-                                 batch_num=current_batch, 
-                                 treatment_num="all",
-                                 add_amount=-1, 
-                                 modify_history=False)
+        logger.debug("nk2_remove_button pressed")
+        target_amount = self.nested_key_2_frame.remove_entry()
+        self.folder_changer(target_amount)
         
         
     def import_video(self):
 
-        project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
+        try:
+            project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
+        except TypeError:
+            message_ = "Please select a project before using Import Videos function"
+            tkinter.messagebox("Warning", message_)
 
         video_add_window = VideoAdd(self, project_dir, list2=self.CONDITIONLIST, list3=self.BATCHLIST)
         
-    def on_detail_selected(self, event=None):
-        # Check the value of InDetail
-        if self.InDetail.get() == 1:
-            # If the value is 1, create the TreatmentOptions widget
-            self.ConditionOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False,
-                                                                width=210, values=self.CONDITIONLIST)
-            self.ConditionOptions.grid(row=2, column=0, columnspan=3, padx=20, pady=(20, 10), sticky="nsew")
-            self.ConditionOptions.configure(command=self.update_param_display)
-        elif self.InDetail.get() == 0:
-            # If the value is 0, remove the ConditionOptions widget if it exists
-            if hasattr(self, 'ConditionOptions'):
-                self.ConditionOptions.grid_forget()
-                del self.ConditionOptions
 
     def access_history(self, command_type, batch_name=None, edit_command=None):
+        logger.debug("Accessing history file")
 
         # load the history file
         try:
@@ -1071,6 +1101,7 @@ class App(customtkinter.CTk):
                 projects_data = json.load(file)
         except:
             ErrorType = "Empty history file"
+            logger.warning(ErrorType)
             return None, ErrorType
 
         # current project name
@@ -1079,6 +1110,7 @@ class App(customtkinter.CTk):
         # Check if the project exists
         if cp not in projects_data.keys():
             ErrorType = "Project doesn't exist"
+            logger.warning(ErrorType)
             return None, ErrorType
     
         # How many batch files are there?
@@ -1091,12 +1123,15 @@ class App(customtkinter.CTk):
 
         if batch_quantity == 0:
             ErrorType = "No batches"
+            logger.warning(ErrorType)
             return None, ErrorType
 
         # Modify the history file
         if command_type == "add":
+            logger.debug("Command = add")
             if batch_name in projects_data[cp].keys():
                 ErrorType = "Batch already exists, can't add"
+                logger.warning(ErrorType)
                 return None, ErrorType
             else:
                 example_key = list(projects_data[cp].keys())[0]
@@ -1106,11 +1141,14 @@ class App(customtkinter.CTk):
                 return None, None
             
         elif command_type == "remove":
+            logger.debug("Command = remove")
             if batch_quantity == 1:
                 ErrorType = "Last batch, can't remove"
+                logger.warning(ErrorType)
                 return None, ErrorType
             elif batch_name not in projects_data[cp].keys():
                 ErrorType = f"{batch_name} doesn't exist"
+                logger.warning(ErrorType)
                 return None, ErrorType
             else:
                 # Remove the batch
@@ -1120,8 +1158,10 @@ class App(customtkinter.CTk):
                 return None, None
             
         elif command_type == "edit":
+            logger.debug("Command = edit")
             if edit_command == None:
                 ErrorType = "No edit command given"
+                logger.warning(ErrorType)
                 return None, ErrorType
             else:
                 treatment = edit_command[0]
@@ -1133,22 +1173,27 @@ class App(customtkinter.CTk):
                         json.dump(projects_data, file, indent=4)
                     return None, None
                 except:
+                    logger.error("Invalid edit command")
                     raise Exception("Invalid edit command")
 
         elif command_type == "load batch list":
+            logger.debug("Command = load batch list")
             return batch_list, None
         
         elif command_type == "load treatment list":
-            print("CP:", cp)
-            print("Batch name:", batch_name)
+            logger.debug("Command = load treatment list")
+            logger.debug("CP:", cp)
+            logger.debug("Batch name:", batch_name)
             treatments = list(projects_data[cp][batch_name].keys())
-            print("Treatments:", treatments)
+            logger.debug("Treatments:", treatments)
             return list(projects_data[cp][batch_name].keys()), None
         
         else:
+            logger.error("Invalid command type")
             raise Exception("Invalid command type")
 
     def add_batch(self):
+        logger.debug("Adding batch")
         new_batch_num = len(self.BATCHLIST) + 1
         self.BATCHLIST.append("Batch " + str(new_batch_num))
 
@@ -1162,15 +1207,16 @@ class App(customtkinter.CTk):
         _, ErrorType = self.access_history("add", f"Batch {new_batch_num}")
 
         if ErrorType != None:
+            logger.error(ErrorType)
             tkinter.messagebox.showerror("Error", ErrorType)
             return
 
         # Create new batch directories and hyp files
-        self.save_project(batch_num = new_batch_num, make_batch = True)
+        self.save_project(batch_num = new_batch_num, subsequent_save = True)
 
 
     def remove_batch(self):
-
+        logger.debug("Removing batch")
         selected_batch = self.BatchOptions.get()
 
         # Pop-up window to confirm deletion
@@ -1181,6 +1227,7 @@ class App(customtkinter.CTk):
         _, ErrorType = self.access_history("remove", selected_batch)
 
         if ErrorType != None:
+            logger.error(ErrorType)
             tkinter.messagebox.showerror("Error", ErrorType)
             return
 
@@ -1197,6 +1244,7 @@ class App(customtkinter.CTk):
 
     
     def delete_batch(self, batch_name):
+        logger.debug("Deleting batch")
 
         batch_num = batch_name.split(" ")[1]
 
@@ -1211,30 +1259,6 @@ class App(customtkinter.CTk):
         # Delete the hyp file
         batch_static_dir = project_dir / "static" / f"Batch {batch_num}"
         shutil.rmtree(batch_static_dir)
-
-
-    # # Function to handle when a new test is selected
-    # def on_test_selected(self, selected_test=None, load_type="not_first_load"):
-    #     assert load_type in ["not_first_load", "first_load"]
-
-    #     if load_type == "first_load":
-    #         selected_test = self.TESTLIST[0]
-    #     else:
-    #         self.save_parameters(mode = "previous")
-
-    #     print("Current Project: ", self.CURRENT_PROJECT)
-
-    #     # load_parameters(self, project_name=None, selected_task=None, condition = None, batch_num=None, nested_key=0):
-    #     condition = 'A' # FOR NOW
-    #     self.parameters_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], nested_key = 0)
-    #     nested_key_1 = self.nested_key_1_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], nested_key = 1)
-    #     nested_key_2 = self.nested_key_2_frame.load_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=self.BatchOptions.get().split()[1], nested_key = 2)
-
-    #     self.LoadedProject.configure(text=self.CURRENT_PROJECT)
-    #     self.nested_key_1_header.configure(text=nested_key_1)
-    #     self.nested_key_2_header.configure(text=nested_key_2)
-
-    #     self.PREVIOUS_TEST = selected_test
 
 
     def param_display(self, selected_test = None, condition = "A", batch_num = "1"):
@@ -1266,62 +1290,56 @@ class App(customtkinter.CTk):
         self.PREVIOUS_TEST = selected_test
         self.PREVIOUS_BATCH = batch_num
         self.PREVIOUS_CONDITION = condition
-        self.PREVIOUS_DIFFERENCE = self.InDetail.get()
+
 
     def update_param_display(self, event=None, load_type="not_first_load"):
         assert load_type in ["not_first_load", "first_load"]
 
         if load_type == "first_load":
+            logger.info("Loading the abitrary numbers used for initial display")
             selected_test = self.TESTLIST[0]
             self.param_display(selected_test = selected_test)
             return
         
         self.save_parameters(mode = "previous")
+        logger.debug("Saved the previous parameters")
 
         batch_num = self.BatchOptions.get().split()[1]
+        logger.debug(f"Batch DropDown: {self.PREVIOUS_BATCH} -> {batch_num}")
         selected_test = self.TestOptions.get()
-        different = self.InDetail.get()
-        if different == 0:
-            condition = "A"
-        else:
-            condition = self.ConditionOptions.get()
-            # find index of condition in self.CONDITIONLIST
-            condition_index = self.CONDITIONLIST.index(condition)
-            # convert condition_index to letter 1 -> A
-            condition = chr(condition_index + 65)
+        logger.debug(f"Test DropDown: {self.PREVIOUS_TEST} -> {selected_test}")
+        
+        condition = self.ConditionOptions.get()
+        logger.debug(f"Condition DropDown: {self.PREVIOUS_CONDITION} -> {condition}")
+        # find index of condition in self.CONDITIONLIST
+        condition_index = self.CONDITIONLIST.index(condition)
+        # convert condition_index to letter 1 -> A
+        condition = chr(condition_index + 65)
 
         self.param_display(selected_test = selected_test, condition = condition, batch_num = batch_num)
 
 
-    def save_parameters(self, mode = "current"):
+    def save_parameters(self, mode = "current", treatment_mode="current"):
         assert mode in ["current", "previous"]
 
         if mode == "current":
+            logger.debug("Save button pressed, save the current parameters")
             # Get the selected test type
             selected_test = self.TestOptions.get()
             batch_num = self.BatchOptions.get().split()[1]
-            different = self.InDetail.get()
-            try:
-                condition = self.ConditionOptions.get()
-            except:
-                condition = "A"
+            condition = self.ConditionOptions.get()
         else:
+            logger.debug("Other option selected, save the previous parameters")
             selected_test = self.PREVIOUS_TEST
             batch_num = self.PREVIOUS_BATCH
-            different = self.PREVIOUS_DIFFERENCE
             condition = self.PREVIOUS_CONDITION
 
         # Save the parameters
         # save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'single'):
         
-        if different == 0:
-            savemode = 'batch'
-        else:
-            savemode = 'individual'
-
-        self.parameters_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, mode = savemode)
-        self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, mode = savemode)
-        self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, mode = savemode)
+        self.parameters_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, treatment_mode = treatment_mode)
+        self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, treatment_mode = treatment_mode)
+        self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, treatment_mode = treatment_mode)
 
     ### DELETE PROJECT BUTTON FUNCTION ###
 
@@ -1342,30 +1360,30 @@ class App(customtkinter.CTk):
 
         # Delete the project directory
         shutil.rmtree(project_dir)
+        logger.info("Deleted project directory: ", project_dir)
 
         del projects_data[selected_project]
 
         with open(HISTORY_PATH, "w") as file:
             json.dump(projects_data, file, indent=4)
 
-        print("Deleted project: ", selected_project)
-
         self.CURRENT_PROJECT = ""
 
-        print("Set current project to blank")
+        logger.info("Set current project to blank")
 
         # Refresh the project list
-        print("Refresh projects")
+        logger.debug("Refresh projects")
         self.refresh_projects()
 
         # Refresh the project details
-        print("Refresh projects detail")
         self.refresh_projects_detail()
 
 
     ### LOAD PROJECT BUTTON FUNCTION ###
 
     def refresh_projects_detail(self):
+        logger.debug("Refresh projects detail")
+
         # Clear existing project details labels
         self.project_detail_container.clear()
 
@@ -1374,10 +1392,12 @@ class App(customtkinter.CTk):
         
 
     def load_project(self):
+        logger.debug("Load project button pressed")
+
         selected_project = self.scrollable_frame.get_selected_project()
         self.CURRENT_PROJECT = selected_project
 
-        print("current project: ", self.CURRENT_PROJECT)
+        logger.info("Current project: ", self.CURRENT_PROJECT)
 
         # Update the batch options
         self.BATCHLIST, ErrorType = self.access_history("load batch list")
@@ -1399,10 +1419,11 @@ class App(customtkinter.CTk):
 
 
 
-
     ### CREATE PROJECT BUTTON FUNCTION ###
 
     def create_project(self):
+        logger.debug("Create project button pressed")
+
         self.PROJECT_CREATED = False
         self.project_input_window()
 
@@ -1427,6 +1448,8 @@ class App(customtkinter.CTk):
 
 
     def refresh_projects(self):
+        logger.debug("Refresh projects")
+
         # Clear existing project labels
         self.scrollable_frame.clear_projects()
 
@@ -1442,10 +1465,11 @@ class App(customtkinter.CTk):
             self.scrollable_frame.add_project(project_name)
 
 
-    def directories_maker(self, project_dir, batch_num, make_batch = False):
+    def directories_maker(self, project_dir, batch_num, subsequent_save = False):
+        logger.debug(f"Make directories for {project_dir}, batch_num = {batch_num}")
 
         if os.path.exists(project_dir):
-            if not make_batch:
+            if not subsequent_save:
                 return
             else:
                 pass
@@ -1460,7 +1484,7 @@ class App(customtkinter.CTk):
         with open(HISTORY_PATH, "r") as file:
             projects_data = json.load(file)
 
-        if not make_batch:
+        if not subsequent_save:
             treatments = projects_data[self.CURRENT_PROJECT]["Batch 1"]
         else:
             treatments = projects_data[self.CURRENT_PROJECT][f"Batch {batch_num}"]
@@ -1509,7 +1533,7 @@ class App(customtkinter.CTk):
                 all_paths[f"Child-{char}"].extend([f"{parent}\\{tail}\\{i}" for parent in group_parents])
 
         for k, v in all_paths.items():
-            if k == "Parent" and make_batch:
+            if k == "Parent" and subsequent_save:
                 continue
             for path in v:
                 os.makedirs(os.path.join(project_dir, path))
@@ -1517,11 +1541,10 @@ class App(customtkinter.CTk):
         return shoaling_tank_count, other_tank_count, len(treatments)
 
 
-    def save_project(self, batch_num = 1, make_batch = False):
-        # selected_project = self.scrollable_frame.get_selected_project()
-        # self.CURRENT_PROJECT = selected_project
+    def save_project(self, batch_num = 1, subsequent_save = False):
+        logger.info(f"Save project {self.CURRENT_PROJECT}")
 
-        if not make_batch:
+        if not subsequent_save:
             save_dir = tkinter.filedialog.askdirectory()
             save_dir = Path(save_dir)
             project_dir = save_dir / self.CURRENT_PROJECT
@@ -1530,7 +1553,7 @@ class App(customtkinter.CTk):
 
         # project_dir.mkdir(parents=True, exist_ok=True)
 
-        shoaling_tank_count, other_tank_count, treatment_count = self.directories_maker(project_dir, batch_num, make_batch)
+        shoaling_tank_count, other_tank_count, treatment_count = self.directories_maker(project_dir, batch_num, subsequent_save)
 
         with open(HISTORY_PATH, "r") as file:
             projects_data = json.load(file)
@@ -1607,6 +1630,7 @@ class App(customtkinter.CTk):
 
 
     def project_input_window(self):
+        logger.info("Project input window opened")
 
         batch_name = "Batch 1"
 
@@ -1615,6 +1639,8 @@ class App(customtkinter.CTk):
         bold_font = customtkinter.CTkFont(size = 15, weight="bold")
 
         def add_treatment():
+            logger.debug("Add treatment button clicked")
+
             treatment_row = len(treatment_widgets)*3 + r + 1
             treatment_name = f"Treatment {chr(ord('C') + len(treatment_widgets))}:"
 
@@ -1703,6 +1729,8 @@ class App(customtkinter.CTk):
                 input_window.destroy()  # Move this line inside the except block
 
         def cancel_button_command():
+            logger.debug("Cancel button clicked")
+
             self.PROJECT_CREATED = False
             input_window.destroy()
 
@@ -1810,6 +1838,7 @@ class App(customtkinter.CTk):
         return progress_bar
 
     def analyze_project(self):
+        logger.info("Start analyzing project")
 
         if self.CURRENT_PROJECT == "":
             tkinter.messagebox.showerror("Error", "Please select a project")
@@ -1837,18 +1866,24 @@ class App(customtkinter.CTk):
 
             if ERROR == None:
                 progress_bar.master.destroy()  # Close the progress window
-                tkinter.messagebox.showinfo("Analysis Complete", f"{notification}.\n Total time taken: {total_time} seconds")
+                display_info = f"{notification}.\n Total time taken: {total_time} seconds"
+                tkinter.messagebox.showinfo("Analysis Complete", display_info)
+                logger.info(display_info)
                 break
             elif ERROR == "Existed":
+                logger.debug("File existed")
                 # pop up a window to ask if the user wants to overwrite
                 overwrite = tkinter.messagebox.askyesno("Warning", f"{notification}. Do you want to overwrite?")
                 if overwrite:
+                    logger.debug("User chose to overwrite")
                     progress_bar.master.destroy()
                     continue
                 else:
+                    logger.debug("User chose not to overwrite")
                     progress_bar.master.destroy()
                     break
             elif ERROR == "File Opened":
+                logger.debug("File opened")
                 message = f"{notification}. \n Please close the file and press OK to proceed. \n Press No to cancel."
                 proceed = tkinter.messagebox.askyesno("Error", message)
                 if proceed:
@@ -1859,7 +1894,7 @@ class App(customtkinter.CTk):
                     break
 
     def analyze_project_THREADED(self):
-
+        logger.debug("Open a new thread to analyze project")
         analyze_thread = threading.Thread(target=self.analyze_project)
         analyze_thread.start()
 
@@ -1867,6 +1902,7 @@ class App(customtkinter.CTk):
     ### IMPORT BUTTON ###
 
     def import_trajectories(self):
+        logger.debug("Import trajectories button pressed")
 
         if self.CURRENT_PROJECT == "":
             tkinter.messagebox.showerror("Error", "Please select a project")
@@ -1955,13 +1991,12 @@ class App(customtkinter.CTk):
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
+        logger.debug(f"New UI appearance mode: {new_appearance_mode}")
 
     def change_scaling_event(self, new_scaling: str):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
+        logger.debug(f"New UI scaling: {new_scaling_float}")
         customtkinter.set_widget_scaling(new_scaling_float)
-
-    def sidebar_button_event(self):
-        print("sidebar_button click")
 
 
 if __name__ == "__main__":

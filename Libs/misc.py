@@ -419,6 +419,9 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startcol=None, startro
 
     logger.debug(f'In file: {os.path.basename(filename)}')
     logger.debug(f'Appended to column: {startcol}, row: {startrow}')
+
+    row_0 = writer.workbook[sheet_name][1]
+    logger.debug(f"Header: {row_0}")
     
     # remove df headers if they exist
     if startrow != 0:
@@ -520,7 +523,7 @@ def get_sheet_names(excel_path):
     wb = openpyxl.load_workbook(excel_path)
     return wb.sheetnames
 
-def find_existed_batches(excel_path, row_per_batch, repetition = 1):
+def find_existed_batches(excel_path):
     workbook = openpyxl.load_workbook(excel_path)
     
     max_row_dict = {}
@@ -536,16 +539,14 @@ def find_existed_batches(excel_path, row_per_batch, repetition = 1):
         first_col = [i for i in first_col if i != None]
         first_col = list(set(first_col))
         for batch in first_col:
-            if batch not in existed_batches:
-                existed_batches.append(batch)
+            if batch == None:
+                continue
+            elif batch not in existed_batches:
+                existed_batches[batch] = 1
+            else:
+                existed_batches[batch] += 1
 
-    supposed_length = len(existed_batches) * row_per_batch * repetition + 1
-    if max_row_dict[worksheet.title] == supposed_length:
-        return existed_batches, ""
-    else:
-        ERROR = "The number of rows in the excel file is not correct. Please check the excel file."
-        return existed_batches, ERROR
-
+    return existed_batches
 
 
 def merge_cells(file_path, col_name = 'Shoaling Area', cell_step=3, inplace = True):
@@ -627,54 +628,61 @@ def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=T
             if fish_id and fish_id == "Fish 1":
                 fish1_rows[worksheet.title].append(row_idx)
 
-    for worksheet in workbook.worksheets:
-        for i in range(1, len(fish1_rows[worksheet.title])):
-            current_step = fish1_rows[worksheet.title][i] - fish1_rows[worksheet.title][i-1]
-            if current_step < cell_step:
-                worksheet.insert_rows(fish1_rows[worksheet.title][i], cell_step - current_step)
-                # update fish1_rows
-                fish1_rows[worksheet.title][i:] = [row_idx + cell_step - current_step for row_idx in fish1_rows[worksheet.title][i:]]
-
-    
-    def find_end_row(l_row, c_step):
-        return (((l_row-2)//c_step)+1)*c_step+1
-
-    # batch_num is the first column
-    batch_num_col = 1
-    # from second row, merge the next 10 rows and put f"Batch {batch_num}" in the merged cell
-    for worksheet in workbook.worksheets:
-        last_row = worksheet.max_row
-        end_row = find_end_row(last_row, cell_step)
-        start_row = end_row - cell_step + 1
+    def merge_cells(ws, merge_column, merge_value, start_row, end_row):
         # merge the next {cell_step} rows
-        worksheet.merge_cells(start_row=start_row, start_column=batch_num_col, end_row=end_row, end_column=batch_num_col)
-        # put f"Batch {batch_num}" in the merged cell
-        worksheet.cell(row=start_row, column=batch_num_col).value = f"Batch {batch_num}"
-        # font 14, Calibri, Bold
-        worksheet.cell(row=start_row, column=batch_num_col).font = openpyxl.styles.Font(name='Calibri', size=14, bold=True)
-        worksheet.cell(row=start_row, column=batch_num_col).alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+        ws.merge_cells(start_row=start_row, start_column=merge_column, end_row=end_row, end_column=merge_column)
+        # put merge_value in the merged cell
+        ws.cell(row=start_row, column=merge_column).value = merge_value
+        # font 12, Calibri, Bold
+        ws.cell(row=start_row, column=merge_column).font = openpyxl.styles.Font(name='Calibri', size=12, bold=True)
+        ws.cell(row=start_row, column=merge_column).alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
 
-            
+    BATCH_NUM_COL = 1
+    TREATMENT_COL = 2
+    BATCH_TEXT = f"Batch {batch_num}"
 
-    if treatment is not None:
-        for worksheet in workbook.worksheets:
-            last_row = worksheet.max_row
-            end_row = find_end_row(last_row, cell_step)
-            start_row = end_row - cell_step + 1
-
-            # merge the next {cell_step} rows
-            worksheet.merge_cells(start_row=start_row, start_column=batch_num_col+1, end_row=end_row, end_column=batch_num_col+1)
-            # put treatment[i] in the merged cell
-            worksheet.cell(row=start_row, column=batch_num_col+1).value = treatment
-            # font 12, Calibri, Bold
-            worksheet.cell(row=start_row, column=batch_num_col+1).font = openpyxl.styles.Font(name='Calibri', size=12, bold=True)
-            worksheet.cell(row=start_row, column=batch_num_col+1).alignment = openpyxl.styles.Alignment(horizontal='center', vertical='center')
-    
+    # Add a separator line between each update
+    # Iterate in fish_id_col, from fish1_rows[worksheet.title][-1] to the end of the column
+    for worksheet in workbook.worksheets:
+        start_row = fish1_rows[worksheet.title][-1] # Because we modify only the last update
+        last_row = start_row # In case there's only 1 fish
+        for row_idx in range(fish1_rows[worksheet.title][-1], worksheet.max_row):
+            cell_value = worksheet.cell(row=row_idx, column=fish_id_col).value
+            fish_id = int(cell_value.split()[1])
+            next_cell_value = worksheet.cell(row=row_idx+1, column=fish_id_col).value
+            try:
+                next_fish_id = int(next_cell_value.split()[1])
+            except:
+                next_fish_id = -1
+            if next_fish_id - fish_id != 1:
+                last_row = row_idx
+                merge_cells(ws = worksheet,
+                            merge_column = BATCH_NUM_COL,
+                            merge_value = BATCH_TEXT,
+                            start_row = start_row,
+                            end_row = last_row)
                 
-    
+                if treatment is not None:
+                    merge_cells(ws = worksheet,
+                                merge_column = TREATMENT_COL,
+                                merge_value = treatment,
+                                start_row = start_row,
+                                end_row = last_row)
+
+                # Check if the cell in last_row+1 is "Separator"?
+                if worksheet.cell(row=last_row+1, column=fish_id_col).value == "Separator":
+                    print("Already had a separator")
+                    break
+                # insert a blank row with fish_id = "Separator" at the end of the last update
+                worksheet.insert_rows(last_row+1)
+                worksheet.cell(row=last_row+1, column=fish_id_col).value = "Separator"
+                break
+
+        print(f"In worksheet {worksheet.title}, last update has {last_row-start_row+1} fish, start from row {start_row} to row {last_row}")
+
     # define output_path
     if inplace == False:
-        output_path = file_path[:-5] + '_merged.xlsx'        
+        output_path = file_path.replace(str(Path(file_path).suffix),'_merged.xlsx')      
     else:
         output_path = file_path    
 
@@ -750,3 +758,6 @@ def get_static_dir(project_dir, batch_num, treatment_count):
         temp_paths.append(p_dir / "static" / f"Batch {batch_num}" / treatment_char)
 
     return temp_paths
+
+
+

@@ -436,34 +436,26 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
             return self.dfs.__repr__()
         
 
-    def first_check(test_num, row_per_batch):
+    def first_check(test_num):
 
         excel_name = EXCEL_NAMES[test_num]
         excel_path = PROJECT_DIR / excel_name
 
-        if test_num == 0:
-            repetition = 3
-        else:
-            repetition = 1
+        # if test_num == 0:
+        #     repetition = 3
+        # else:
+        #     repetition = 1
 
         if excel_path.exists():
-            existed_batch, row_error = find_existed_batches(excel_path, row_per_batch, repetition)
+            existed_batch = find_existed_batches(excel_path)
         else:
-            existed_batch = []
-            row_error = ""
-
-        logger.warning(row_error)
-        if row_error != "":
-            row_error = "However, " + row_error
-            if OVERWRITE:
-                logger.info("Overwriting the existing excel file...")
-                os.remove(excel_path)
+            existed_batch = {}
 
 
-        if f"Batch {BATCHNUM}" in existed_batch:
+        if f"Batch {BATCHNUM}" in existed_batch.keys():
             if OVERWRITE == False:
                 ERROR = "Existed"
-                notification = f'Batch {BATCHNUM} has already been analyzed.'  + row_error
+                notification = f'Batch {BATCHNUM} has already been analyzed.'
                 total_time = time.time() - time00
                 return total_time, notification, ERROR
             else:
@@ -504,10 +496,9 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         print('Analyzing Novel Tank Test...')
 
         test_num = 0
-        row_per_batch = 30
 
         if first_check(test_num, row_per_batch) != (None, None, None):
-            total_time, notification, ERROR = first_check(test_num, row_per_batch)
+            total_time, notification, ERROR = first_check(test_num)
             return total_time, notification, ERROR
 
         time0 = time.time()

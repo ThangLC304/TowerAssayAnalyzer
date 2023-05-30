@@ -59,13 +59,14 @@ class MY_CONDITION():
         
         trajectories = condition_path.glob(f'**/{self.trajectory_format}')
         trajectories = sort_paths_by_parent(trajectories)
-        logger.info(f'Found {len(trajectories)} trajectories in {condition_path}')
+        logger.info(f'Found {len(trajectories)} existed trajectories in {condition_path}')
+        logger.debug(f'Existed trajectories: {trajectories}')
         if len(trajectories) == 0:
             logger.warning(f'No trajectories found in {condition_path}')
         targets = {trajectory.parent.name: trajectory for trajectory in trajectories}
         # if any key of targets is not int, logger.warning
         if any([not x.isdigit() for x in targets.keys()]):
-            logger.warning(f'Found non-integer fish group in {condition_path}')
+            logger.error(f'Found non-integer fish group in {condition_path}')
         targets = self.priotize_data(targets, mode = 'last')
         
         return targets
@@ -73,6 +74,9 @@ class MY_CONDITION():
 
 
     def priotize_data(self, input_dict, mode = 'last'):
+
+        # mode can be the sub-num to keep or 'first' or 'last'
+        # sub-num is like the 9 in a folder named "1-9"
         
         logger.info(f"Prioritizing data... mode = {mode}")
 
@@ -89,12 +93,12 @@ class MY_CONDITION():
 
         #if mode is not first or last, try to convert to int
         if mode not in ['first', 'last']:
-            logger.info("Mode is not first or last, trying to convert to int...")
+            logger.debug("Mode is not first or last, trying to convert to int...")
             try:
                 chosen = int(mode)
-                logger.info(f"Chosen {chosen} as the sub-num to keep")
+                logger.debug(f"Chosen {chosen} as the sub-num to keep")
             except:
-                logger.info("Failed to convert to int, using mode=last as default")
+                logger.debug("Failed to convert to int, using mode=last as default")
                 mode = 'last'
 
         for k, v in key_group.items():
