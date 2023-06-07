@@ -5993,3 +5993,4 @@
 2023-05-28 22:44:29 __main__ INFO Added entry TOP_13
 2023-05-28 22:44:32 __main__ INFO Removed entry TOP_13
 2023-05-30 14:59:26 __main__ WARNING Tried to get project directory of an empty project name
+2023-06-07 10:40:05 __main__ WARNING Tried to get project directory of an empty project name

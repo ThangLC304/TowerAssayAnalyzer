@@ -13,7 +13,7 @@ import threading
 
 from Libs.autoanalyzer import autoanalyzer
 from Libs.importvideos import VideoAdd
-from Libs.misc import get_static_dir
+from Libs.misc import get_static_dir, check_trajectories_dir
 from Libs.params import TestParams
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -957,10 +957,14 @@ class App(customtkinter.CTk):
         self.Cloner.grid(row=1, column=0, pady=20, padx=20, sticky="nsew")
 
         self.ClonerToolTip = tkinter.Button(container_2_bot, text="?")
-        self.ClonerToolTip.grid(row=1, column=2, pady=20, padx=20)
+        self.ClonerToolTip.grid(row=1, column=1, pady=20, padx=20)
         CreateToolTip(self.ClonerToolTip, text = 'Copy all parameters setting above and on the right-side columns\n'
                  'to other Treatment and save them immediately\n'
         )
+
+        self.CheckIntegrity = customtkinter.CTkButton(container_2_bot, text="Trajectories Check", width = 50,
+                                                command=self.trajectories_check)
+        self.CheckIntegrity.grid(row=1, column=2, pady=20, padx=20)
 
 
         ### COLUMN 3+ ###
@@ -1000,6 +1004,66 @@ class App(customtkinter.CTk):
 
         # Load the first test by default
         self.update_param_display(load_type = "first_load")
+
+    
+    def trajectories_check(self):
+        logger.debug("Checking the existence of the trajectories")
+
+        if self.CURRENT_PROJECT == "":
+            tkinter.messagebox.showerror("Error", "No project is currently opened")
+            return
+
+        # get current project_dir
+        current_project_dir = THE_HISTORY.get_project_dir(self.CURRENT_PROJECT)
+        # get current test
+        current_test = self.TestOptions.get()
+        # get current treatment
+        current_treatment = self.ConditionOptions.get()
+        # get current batch
+        current_batch = self.BatchOptions.get()
+
+        checker_dict = check_trajectories_dir(current_project_dir, current_test, current_treatment, current_batch)
+
+        # create a topview window
+        checker_window = tkinter.Toplevel(self)
+        checker_window.title("Trajectories Check")
+        checker_window.minsize(400, 400)
+        checker_window.geometry("+%d+%d" % (self.winfo_screenwidth()/2 - 400, self.winfo_screenheight()/2 - 300))
+        checker_window.rowconfigure(0, weight=1)
+
+        # Create a Canvas widget with a Scrollbar
+        checker_container = tkinter.Canvas(checker_window)
+        checker_container.pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=True)
+
+        scrollbar = tkinter.Scrollbar(checker_window, orient=tkinter.VERTICAL, command=checker_container.yview)
+        scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+
+        checker_container.configure(yscrollcommand=scrollbar.set)
+        checker_container.bind('<Configure>', lambda e: checker_container.configure(scrollregion=checker_container.bbox('all')))
+
+        # Create a frame inside the canvas to hold the labels
+        checker_frame = tkinter.Frame(checker_container)
+        checker_container.create_window((0,0), window=checker_frame, anchor='nw')
+
+        row = 0
+        for key, value in checker_dict.items():
+            # Create a label for the key
+            key_label = tkinter.Label(checker_frame, text=key)
+            key_label.grid(row=row, column=0)
+
+            # Create a label for the value
+            if value:
+                value_label = tkinter.Label(checker_frame, text="✓")
+            else:
+                value_label = tkinter.Label(checker_frame, text="✗")
+
+            value_label.grid(row=row, column=1)
+
+            row += 1
+
+        # Update the scrollregion after creating all the labels
+        checker_container.update_idletasks()
+        checker_container.configure(scrollregion=checker_container.bbox('all'))
 
 
     def copy_to_other_treatment(self):

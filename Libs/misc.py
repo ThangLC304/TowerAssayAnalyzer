@@ -12,9 +12,17 @@ import re
 from tqdm import tqdm
 import numpy as np
 import logging
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
+ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
+CHARS = [chr(i) for i in range(65, 65+26)]
+TESTS_LIST = ['Novel Tank Test', 
+              'Shoaling Test', 
+              'Mirror Biting Test',
+              'Social Interaction Test',
+              'Predator Test']
 
 
 def fill_space_in_name():
@@ -758,6 +766,72 @@ def get_static_dir(project_dir, batch_num, treatment_count):
         temp_paths.append(p_dir / "static" / f"Batch {batch_num}" / treatment_char)
 
     return temp_paths
+
+def natural_sort_keys(path):
+    dir_name, file_name = os.path.split(path)
+    return [int(text) if text.isdigit() else text.lower() for text in re.split('(\d+)', file_name)]
+
+
+def check_trajectories_dir(project_dir, current_test, current_treatment, current_batch):
+
+    logger.info(f"Checking trajectories dir for Project:{project_dir}, {current_test}, {current_treatment}, {current_batch}")
+
+    # current_test = Novel Tank Test
+    # current_batch = Batch 1
+    # current_treatment = Treatment A
+
+    batch_num = current_batch.split()[1]
+    # change batch_num to ordinal
+    batch_num = int(batch_num)
+    batch_num = ORDINALS[batch_num-1]
+
+    treatment_index = current_treatment.split()[1]
+
+    project_dir_path = Path(project_dir)
+
+    # use glob to find directory with name include current_test
+
+    test_dirs = project_dir_path.glob(f"*{current_test}*")
+    test_dir = list(test_dirs)[0]
+    logger.debug(f"Test dir pattern: *{current_test}* => test_dir found: {test_dir}")
+
+
+    pattern = f"*{treatment_index}*({batch_num} Batch)"
+    treatment_dirs = test_dir.glob(pattern)
+    treatment_dir = list(treatment_dirs)[0]
+    logger.debug(f"Treatment dir pattern: {pattern} => treatment_dir found: {treatment_dir}")
+
+
+    # find all directories inside treatment_dir, no pattern, just directories
+
+    trajectories_dirs = [x for x in treatment_dir.iterdir() if x.is_dir()]
+    logger.debug(f"Total {len(trajectories_dirs)} trajectories_dirs found in {treatment_dir}")
+
+    checker_dict = {}
+    # go into each trajectories_dir, find .txt file, if existed, set checker_dict[trajectories_dir] = True
+    for trajectories_dir in trajectories_dirs:
+        txt_files = trajectories_dir.glob("*.txt")
+        if len(list(txt_files)) > 0:
+            checker_dict[str(trajectories_dir)] = True
+        else:
+            checker_dict[str(trajectories_dir)] = False
+
+    if len(checker_dict):
+        logger.info("Checked successfully!")
+    else:
+        logger.info("No trajectories folder found!")
+
+    # Create a new dictionary with keys sorted in natural order
+    checker_dict = OrderedDict(sorted(checker_dict.items(), key=lambda item: natural_sort_keys(item[0])))
+    logger.debug("Rearranged checker_dict to natural order")
+
+    return checker_dict
+
+    
+
+
+
+    
 
 
 
