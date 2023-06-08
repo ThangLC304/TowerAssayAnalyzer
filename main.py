@@ -123,7 +123,7 @@ stream_handler.addFilter(f)  # Add the filter to the stream handler
 
 # Get the root logger
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # Add the handlers to the logger
 logger.addHandler(file_handler)
@@ -1478,8 +1478,11 @@ class App(customtkinter.CTk):
         project_dir = projects_data[selected_project]["DIRECTORY"]
 
         # Delete the project directory
-        shutil.rmtree(project_dir)
-        logger.info("Deleted project directory: ", project_dir)
+        try:
+            shutil.rmtree(project_dir)
+            logger.info("Deleted project directory: ", project_dir)
+        except:
+            logger.debug("Project directory does not exist: , just remove from History")
 
         del projects_data[selected_project]
 
