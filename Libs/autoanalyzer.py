@@ -497,7 +497,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
 
         test_num = 0
 
-        if first_check(test_num, row_per_batch) != (None, None, None):
+        if first_check(test_num) != (None, None, None):
             total_time, notification, ERROR = first_check(test_num)
             return total_time, notification, ERROR
 
@@ -528,10 +528,10 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         print('Analyzing Shoaling Test...')
 
         test_num = 1
-        row_per_batch = 9
+        # row_per_batch = 9
 
-        if first_check(test_num, row_per_batch) != (None, None, None):
-            total_time, notification, ERROR = first_check(test_num, row_per_batch)
+        if first_check(test_num) != (None, None, None):
+            total_time, notification, ERROR = first_check(test_num)
             return total_time, notification, ERROR
 
         time0 = time.time()
@@ -561,10 +561,10 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
 
         print(f'Analyzing {tests[test_num]} Test...')
 
-        row_per_batch = 10
+        # row_per_batch = 10
 
-        if first_check(test_num, row_per_batch) != (None, None, None):
-            total_time, notification, ERROR = first_check(test_num, row_per_batch)
+        if first_check(test_num) != (None, None, None):
+            total_time, notification, ERROR = first_check(test_num)
             return total_time, notification, ERROR
 
         time0 = time.time()

@@ -428,8 +428,8 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startcol=None, startro
     logger.debug(f'In file: {os.path.basename(filename)}')
     logger.debug(f'Appended to column: {startcol}, row: {startrow}')
 
-    row_0 = writer.workbook[sheet_name][1]
-    logger.debug(f"Header: {row_0}")
+    # row_0 = writer.workbook[sheet_name][1]
+    # logger.debug(f"Header: {row_0}")
     
     # remove df headers if they exist
     if startrow != 0:
@@ -785,7 +785,7 @@ def check_trajectories_dir(project_dir, current_test, current_treatment, current
     batch_num = int(batch_num)
     batch_num = ORDINALS[batch_num-1]
 
-    treatment_index = current_treatment.split()[1]
+    treatment_char = current_treatment
 
     project_dir_path = Path(project_dir)
 
@@ -796,7 +796,7 @@ def check_trajectories_dir(project_dir, current_test, current_treatment, current
     logger.debug(f"Test dir pattern: *{current_test}* => test_dir found: {test_dir}")
 
 
-    pattern = f"*{treatment_index}*({batch_num} Batch)"
+    pattern = f"*{treatment_char} -*({batch_num} Batch)"
     treatment_dirs = test_dir.glob(pattern)
     treatment_dir = list(treatment_dirs)[0]
     logger.debug(f"Treatment dir pattern: {pattern} => treatment_dir found: {treatment_dir}")
@@ -811,10 +811,15 @@ def check_trajectories_dir(project_dir, current_test, current_treatment, current
     # go into each trajectories_dir, find .txt file, if existed, set checker_dict[trajectories_dir] = True
     for trajectories_dir in trajectories_dirs:
         txt_files = trajectories_dir.glob("*.txt")
+
+        # take out the project_dir from trajectories_dir
+
+        checker_key = str(trajectories_dir.relative_to(project_dir_path))
+
         if len(list(txt_files)) > 0:
-            checker_dict[str(trajectories_dir)] = True
+            checker_dict[checker_key] = True
         else:
-            checker_dict[str(trajectories_dir)] = False
+            checker_dict[checker_key] = False
 
     if len(checker_dict):
         logger.info("Checked successfully!")

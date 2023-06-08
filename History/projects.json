@@ -96,5 +96,77 @@
             ]
         },
         "DIRECTORY": "D:/TestSave/DifNum"
+    },
+    "Melamine": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "Batch 2": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "Batch 3": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "DIRECTORY": "D:/TestSave/Melamine"
     }
 }

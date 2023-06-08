@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import os
 import logging
+from colorlog import ColoredFormatter
 
 import threading
 
@@ -39,12 +40,13 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] Save before analyze                                                         # DONE
 #[TODO] Add batch and treatment name to the excel file                              # DONE
 #[TODO] Hyperparamater sets for Batch/TreatmentGroup                                # DONE
-#[TODO] Drag and drop video, select Test/Batch/TreatmentGroup                       #
+#[TODO] Import video feature                                                        # DONE
 #[TODO] Put units for each parameters                                               # DONE
 #[TODO] Change the dropdown menu of ppm/ppb to manual input                         #
-#[TODO] Batch menu moved next Loaded Project, ADD / DELETE buttons                  #
-#[TODO] Change to InDetail checkbox to a button that copy the current treatment     #
-# paramters to other + Confirm dialog
+#[TODO] Batch menu moved next Loaded Project, ADD / DELETE buttons                  # DONE
+#[TODO] Change to InDetail checkbox to a button that copy the current treatment     # DONE
+#[TODO] Import Project from other directory                                         # 
+#[TODO] In Tests that has 2 nested params, just 1 add&remove pair of button is ok   #
 
 
 ROOT = Path(__file__).parent
@@ -61,31 +63,35 @@ TESTS_LIST = ['Novel Tank Test',
               'Predator Test']
 
 # SETUP LOGGING CONFIGURATION
-# Create a Log directory if it doesn't exist
-if not os.path.exists('Log'):
-    os.makedirs('Log')
-# Define log format
-log_format = '%(asctime)s %(name)s %(levelname)s %(message)s'
-# Define the date format
-date_format = '%Y-%m-%d %H:%M:%S'
-# Define the log file path
-log_file_path = 'Log/log.txt'
-
-# Get a logger
 logger = logging.getLogger(__name__)
 
-# Create a file handler
-file_handler = logging.FileHandler(log_file_path, 'a')
-file_handler.setFormatter(logging.Formatter(log_format, date_format))
+# save log to Log/log.txt
+Path('Log').mkdir(parents=True, exist_ok=True)
 
-# Create a console handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(logging.Formatter(log_format, date_format))
+# Configure the logging module
+log_file = 'Log/log.txt'
 
-# Add handlers to the logger
+# Define the log format with colors
+log_format = "%(asctime)s %(log_color)s%(levelname)-8s%(reset)s %(message)s"
+
+# Create a formatter with colored output
+formatter = ColoredFormatter(log_format)
+
+# Create a file handler to save logs to the file
+file_handler = logging.FileHandler(log_file, mode='a')  # Set the mode to 'a' for append
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
+
+# Create a stream handler to display logs on the console with colored output
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+# Get the root logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# Add the handlers to the logger
 logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+logger.addHandler(stream_handler)
 
 
 # def get_directory(project_name):
@@ -1005,6 +1011,12 @@ class App(customtkinter.CTk):
         # Load the first test by default
         self.update_param_display(load_type = "first_load")
 
+    def get_treatment_char(self, current_condition = None):
+        if current_condition == None:
+            current_condition = self.ConditionOptions.get()
+        condition_index = self.CONDITIONLIST.index(current_condition)
+        condition_char = CHARS[condition_index]
+        return condition_char
     
     def trajectories_check(self):
         logger.debug("Checking the existence of the trajectories")
@@ -1018,7 +1030,7 @@ class App(customtkinter.CTk):
         # get current test
         current_test = self.TestOptions.get()
         # get current treatment
-        current_treatment = self.ConditionOptions.get()
+        current_treatment = self.get_treatment_char()
         # get current batch
         current_batch = self.BatchOptions.get()
 
@@ -1067,7 +1079,7 @@ class App(customtkinter.CTk):
 
 
     def copy_to_other_treatment(self):
-        current_treatment = self.ConditionOptions.get()
+        current_treatment = self.ConditionOptions.get() #OK - just for display
 
         message_ = f"You are going to copy current treatment parameters to other treatments'"
         message_ += f"\nThis is an irreversible action, do you want to continue?"
@@ -1104,14 +1116,14 @@ class App(customtkinter.CTk):
         logger.debug(f"current_batch_index = {current_batch_index}")
 
         if treatment_mode == "current":
-            current_treatment = self.ConditionOptions.get()
-            logger.debug(f"Modify folders for current treatment {current_treatment}")
-            current_treatment_index = current_treatment.split(" ")[1]
-            logger.debug(f"current_treatment_index = {current_treatment_index}")
+            current_condition_char = self.get_treatment_char()
+            logger.debug(f"Modify folders for current treatment: {self.ConditionOptions.get()}") #OK - just for log
+            # current_treatment_index = current_treatment.split(" ")[1]
+            logger.debug(f"current_treatment_index = {current_condition_char}")
             THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
                                  test_num=current_test_index,
                                  batch_num=current_batch_index, 
-                                 treatment_num=current_treatment_index, 
+                                 treatment_num=current_condition_char, 
                                  target_amount=target_amount, 
                                  modify_history=False)
         elif treatment_mode == "all":
@@ -1373,14 +1385,12 @@ class App(customtkinter.CTk):
         selected_test = self.TestOptions.get()
         logger.debug(f"Test DropDown: {self.PREVIOUS_TEST} -> {selected_test}")
         
-        condition = self.ConditionOptions.get()
+        condition = self.ConditionOptions.get() #OK - just for log
         logger.debug(f"Condition DropDown: {self.PREVIOUS_CONDITION} -> {condition}")
-        # find index of condition in self.CONDITIONLIST
-        condition_index = self.CONDITIONLIST.index(condition)
         # convert condition_index to letter 1 -> A
-        condition = chr(condition_index + 65)
+        current_condition_char = self.get_treatment_char()
 
-        self.param_display(selected_test = selected_test, condition = condition, batch_num = batch_num)
+        self.param_display(selected_test = selected_test, condition = current_condition_char, batch_num = batch_num)
 
 
     def save_parameters(self, mode = "current", treatment_mode="current"):
@@ -1391,12 +1401,14 @@ class App(customtkinter.CTk):
             # Get the selected test type
             selected_test = self.TestOptions.get()
             batch_num = self.BatchOptions.get().split()[1]
-            condition = self.ConditionOptions.get()
+            condition = self.get_treatment_char()
+            logger.debug(f"Condition: {condition}")
         else:
             logger.debug("Other option selected, save the previous parameters")
             selected_test = self.PREVIOUS_TEST
             batch_num = self.PREVIOUS_BATCH
             condition = self.PREVIOUS_CONDITION
+            logger.debug(f"Condition: {condition}")
 
         # Save the parameters
         # save_parameters(self, project_name, selected_task, condition, batch_num, mode = 'single'):
@@ -1475,6 +1487,9 @@ class App(customtkinter.CTk):
         if ErrorType != None:
             tkinter.messagebox.showerror("Error", ErrorType)
             return
+        
+        #set values of ConditionOptions
+        self.ConditionOptions.configure(values=self.CONDITIONLIST)
 
         self.refresh_projects_detail()
 
