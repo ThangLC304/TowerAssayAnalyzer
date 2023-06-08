@@ -17651,3 +17651,8 @@
 2023-06-08 15:28:35,726 INFO     [batchprocess.py] Prioritizing data... mode = last
 2023-06-08 15:28:35,750 DEBUG    [main.py] File existed
 2023-06-08 15:28:41,496 DEBUG    [main.py] User chose not to overwrite
+2023-06-08 15:29:32,640 DEBUG    [main.py] Refresh projects
+2023-06-08 15:29:32,715 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:29:32,716 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:29:32,743 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:29:32,799 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2

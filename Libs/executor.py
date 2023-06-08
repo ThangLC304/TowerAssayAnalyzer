@@ -46,7 +46,7 @@ class NovelTank_Display(NovelTankTest):
             ['Time spent in top/bottom ratio', self.others['top/bottom ratio'], ''],
             ['Distance traveled in top', self.others['distance in top'], self.distance.unit],
             ['Distance traveled top/bottom ratio', self.others['distance top/bottom ratio'], ''],
-            ['Latency in frames', self.others['latency in frames'], 'frames'],
+            # ['Latency in frames', self.others['latency in frames'], 'frames'],
             ['Latency in seconds', self.others['latency in seconds'], 'seconds'],
             ['Number of entries', self.others['entry number'], ''],
             ['Average entry', self.others['average entry'], 'seconds']
