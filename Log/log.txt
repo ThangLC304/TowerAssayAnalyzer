@@ -17656,3 +17656,382 @@
 2023-06-08 15:29:32,716 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
 2023-06-08 15:29:32,743 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
 2023-06-08 15:29:32,799 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:32:13,543 DEBUG    [main.py] Refresh projects
+2023-06-08 15:32:13,619 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:32:13,619 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:32:13,646 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:32:13,697 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:32:18,074 DEBUG    [main.py] Load project button pressed
+2023-06-08 15:32:18,079 DEBUG    [main.py] Accessing history file
+2023-06-08 15:32:18,079 DEBUG    [main.py] Command = load batch list
+2023-06-08 15:32:18,079 DEBUG    [main.py] Accessing history file
+2023-06-08 15:32:18,080 DEBUG    [main.py] Command = load treatment list
+2023-06-08 15:32:18,080 DEBUG    [main.py] CP: Melamine ,Batch name: Batch 1
+2023-06-08 15:32:18,082 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:32:18,086 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-08 15:32:18,094 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:32:18,094 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:32:18,122 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:32:18,146 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:32:18,193 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:32:18,249 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:32:18,297 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:32:20,706 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 15:32:20,707 DEBUG    [main.py] Condition: A
+2023-06-08 15:32:20,707 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 15:32:20,707 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:32:20,708 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 15:32:20,708 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 15:32:20,708 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:32:20,712 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 15:32:20,713 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 15:32:20,713 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:32:20,714 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 15:32:20,714 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 15:32:20,714 DEBUG    [main.py] Batch DropDown: 1 -> 3
+2023-06-08 15:32:20,714 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Novel Tank Test
+2023-06-08 15:32:20,715 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 15:32:20,715 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 0
+2023-06-08 15:32:20,746 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 15:32:20,774 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 1
+2023-06-08 15:32:20,824 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 15:32:20,881 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 2
+2023-06-08 15:32:20,928 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 15:45:41,669 DEBUG    [main.py] Refresh projects
+2023-06-08 15:45:41,745 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:45:41,745 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:45:41,772 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:45:41,822 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:45:43,824 DEBUG    [main.py] Create project button pressed
+2023-06-08 15:45:43,824 INFO     [main.py] Project input window opened
+2023-06-08 15:46:00,042 DEBUG    [main.py] Add treatment button clicked
+2023-06-08 15:46:07,570 DEBUG    [main.py] Refresh projects
+2023-06-08 15:46:07,591 INFO     [main.py] Save project testsets
+2023-06-08 15:46:15,706 DEBUG    [main.py] Make directories for D:\TestSave\testsets, batch_num = 1
+2023-06-08 15:46:15,761 DEBUG    [main.py] Load project button pressed
+2023-06-08 15:46:15,765 DEBUG    [main.py] Set project variable to testsets
+2023-06-08 15:46:15,769 DEBUG    [main.py] Accessing history file
+2023-06-08 15:46:15,773 DEBUG    [main.py] Command = load batch list
+2023-06-08 15:46:15,774 DEBUG    [main.py] Accessing history file
+2023-06-08 15:46:15,774 DEBUG    [main.py] Command = load treatment list
+2023-06-08 15:46:15,774 DEBUG    [main.py] CP: testsets ,Batch name: Batch 1
+2023-06-08 15:46:15,777 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:46:15,781 INFO     [main.py] {'Treatment A': ['Control', 0, '', 12, '124124'], 'Treatment B': ['sdrgseb', 10.0, 'ppm', 12, '124124'], 'Treatment C': ['sgsfdg', 1.0, 'ppm', 10, '124124']}
+2023-06-08 15:46:15,789 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:46:15,789 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:46:15,821 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:15,849 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:46:15,897 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:15,962 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:46:16,009 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:39,604 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 15:46:39,604 DEBUG    [main.py] Condition: A
+2023-06-08 15:46:39,604 DEBUG    [main.py] Saving parameters for testsets.Novel Tank Test.A.1 in mode current
+2023-06-08 15:46:39,605 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:39,605 INFO     [main.py] Parameters of novel saved to D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json.
+2023-06-08 15:46:39,606 DEBUG    [main.py] Saving parameters for testsets.Novel Tank Test.A.1 in mode current
+2023-06-08 15:46:39,606 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:39,607 INFO     [main.py] Parameters of novel saved to D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json.
+2023-06-08 15:46:39,607 DEBUG    [main.py] Saving parameters for testsets.Novel Tank Test.A.1 in mode current
+2023-06-08 15:46:39,608 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:39,612 INFO     [main.py] Parameters of novel saved to D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json.
+2023-06-08 15:46:39,612 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 15:46:39,612 DEBUG    [main.py] Batch DropDown: 1 -> 1
+2023-06-08 15:46:39,612 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Shoaling Test
+2023-06-08 15:46:39,613 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 15:46:39,613 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Shoaling Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:46:39,642 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-08 15:46:39,662 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Shoaling Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:46:39,719 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-08 15:46:39,740 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Shoaling Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:46:39,800 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-08 15:46:41,276 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 15:46:41,276 DEBUG    [main.py] Condition: A
+2023-06-08 15:46:41,277 DEBUG    [main.py] Saving parameters for testsets.Shoaling Test.A.1 in mode current
+2023-06-08 15:46:41,277 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-08 15:46:41,278 INFO     [main.py] Parameters of shoaling saved to D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json.
+2023-06-08 15:46:41,278 DEBUG    [main.py] Saving parameters for testsets.Shoaling Test.A.1 in mode current
+2023-06-08 15:46:41,278 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-08 15:46:41,279 INFO     [main.py] Parameters of shoaling saved to D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json.
+2023-06-08 15:46:41,279 DEBUG    [main.py] Saving parameters for testsets.Shoaling Test.A.1 in mode current
+2023-06-08 15:46:41,280 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-08 15:46:41,284 INFO     [main.py] Parameters of shoaling saved to D:\TestSave\testsets\static\Batch 1\A\hyp_shoaling.json.
+2023-06-08 15:46:41,284 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 15:46:41,285 DEBUG    [main.py] Batch DropDown: 1 -> 1
+2023-06-08 15:46:41,285 DEBUG    [main.py] Test DropDown: Shoaling Test -> Novel Tank Test
+2023-06-08 15:46:41,285 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 15:46:41,285 DEBUG    [main.py] Loading parameters for project_name = testsets, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:46:41,307 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testsets\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:47,662 INFO     [main.py] Set current project to blank
+2023-06-08 15:46:47,662 DEBUG    [main.py] Refresh projects
+2023-06-08 15:46:47,662 DEBUG    [main.py] Refresh projects
+2023-06-08 15:46:47,680 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:46:54,620 DEBUG    [main.py] Load project button pressed
+2023-06-08 15:46:54,622 DEBUG    [main.py] Accessing history file
+2023-06-08 15:46:54,622 DEBUG    [main.py] Command = load batch list
+2023-06-08 15:46:54,623 DEBUG    [main.py] Accessing history file
+2023-06-08 15:46:54,623 DEBUG    [main.py] Command = load treatment list
+2023-06-08 15:46:54,623 DEBUG    [main.py] CP: Melamine ,Batch name: Batch 1
+2023-06-08 15:46:54,625 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:46:54,629 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-08 15:46:54,638 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:46:54,638 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:46:54,639 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:54,665 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:46:54,684 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:46:54,738 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:46:54,758 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:47:14,818 DEBUG    [main.py] Create project button pressed
+2023-06-08 15:47:14,819 INFO     [main.py] Project input window opened
+2023-06-08 15:47:25,813 DEBUG    [main.py] Add treatment button clicked
+2023-06-08 15:47:31,391 DEBUG    [main.py] Refresh projects
+2023-06-08 15:47:31,423 INFO     [main.py] Save project sfgsfg
+2023-06-08 15:47:34,926 DEBUG    [main.py] Make directories for D:\TestSave\sfgsfg, batch_num = 1
+2023-06-08 15:47:34,961 DEBUG    [main.py] Load project button pressed
+2023-06-08 15:47:34,965 DEBUG    [main.py] Set project variable to sfgsfg
+2023-06-08 15:47:34,967 DEBUG    [main.py] Accessing history file
+2023-06-08 15:47:34,971 DEBUG    [main.py] Command = load batch list
+2023-06-08 15:47:34,972 DEBUG    [main.py] Accessing history file
+2023-06-08 15:47:34,972 DEBUG    [main.py] Command = load treatment list
+2023-06-08 15:47:34,972 DEBUG    [main.py] CP: sfgsfg ,Batch name: Batch 1
+2023-06-08 15:47:34,975 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:47:35,004 INFO     [main.py] {'Treatment A': ['Control', 0, '', 12, 'sdfgsf'], 'Treatment B': ['sdfgdg', 10.0, 'ppm', 12, 'sdfgsf'], 'Treatment C': ['adgadg', 1.0, 'ppm', 10, 'sdfgsf']}
+2023-06-08 15:47:35,013 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:47:35,013 DEBUG    [main.py] Loading parameters for project_name = sfgsfg, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:47:35,044 DEBUG    [main.py] Retrieved hyp from D:\TestSave\sfgsfg\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:47:35,071 DEBUG    [main.py] Loading parameters for project_name = sfgsfg, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:47:35,121 DEBUG    [main.py] Retrieved hyp from D:\TestSave\sfgsfg\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:47:35,190 DEBUG    [main.py] Loading parameters for project_name = sfgsfg, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:47:35,239 DEBUG    [main.py] Retrieved hyp from D:\TestSave\sfgsfg\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:47:48,112 INFO     [main.py] Set current project to blank
+2023-06-08 15:47:48,112 DEBUG    [main.py] Refresh projects
+2023-06-08 15:47:48,112 DEBUG    [main.py] Refresh projects
+2023-06-08 15:47:48,127 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:50:14,905 DEBUG    [main.py] Create project button pressed
+2023-06-08 15:50:14,905 INFO     [main.py] Project input window opened
+2023-06-08 15:50:26,879 DEBUG    [main.py] Add treatment button clicked
+2023-06-08 15:50:31,592 DEBUG    [main.py] Refresh projects
+2023-06-08 15:50:31,616 INFO     [main.py] Save project 3452345
+2023-06-08 15:50:34,066 DEBUG    [main.py] Make directories for D:\TestSave\3452345, batch_num = 1
+2023-06-08 15:50:34,096 DEBUG    [main.py] Load project button pressed
+2023-06-08 15:50:34,100 DEBUG    [main.py] Set project variable to 3452345
+2023-06-08 15:50:34,102 DEBUG    [main.py] Accessing history file
+2023-06-08 15:50:34,106 DEBUG    [main.py] Command = load batch list
+2023-06-08 15:50:34,106 DEBUG    [main.py] Accessing history file
+2023-06-08 15:50:34,107 DEBUG    [main.py] Command = load treatment list
+2023-06-08 15:50:34,107 DEBUG    [main.py] CP: 3452345 ,Batch name: Batch 1
+2023-06-08 15:50:34,109 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:50:34,114 INFO     [main.py] {'Treatment A': ['Control', 0, '', 12, '52345'], 'Treatment B': ['ssgsdfg', 10.0, 'ppm', 12, '52345'], 'Treatment C': ['sdfsfh', 1.0, 'ppm', 10, '52345']}
+2023-06-08 15:50:34,122 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:50:34,123 DEBUG    [main.py] Loading parameters for project_name = 3452345, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:50:34,152 DEBUG    [main.py] Retrieved hyp from D:\TestSave\3452345\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:50:34,179 DEBUG    [main.py] Loading parameters for project_name = 3452345, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:50:34,235 DEBUG    [main.py] Retrieved hyp from D:\TestSave\3452345\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:50:34,303 DEBUG    [main.py] Loading parameters for project_name = 3452345, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:50:34,359 DEBUG    [main.py] Retrieved hyp from D:\TestSave\3452345\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:55:23,530 INFO     [main.py] Set current project to blank
+2023-06-08 15:55:23,531 DEBUG    [main.py] Refresh projects
+2023-06-08 15:55:23,531 DEBUG    [main.py] Refresh projects
+2023-06-08 15:55:23,545 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:55:27,917 DEBUG    [main.py] Refresh projects
+2023-06-08 15:55:27,997 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:55:27,997 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:55:28,028 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:55:28,081 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:55:29,483 DEBUG    [main.py] Create project button pressed
+2023-06-08 15:55:29,483 INFO     [main.py] Project input window opened
+2023-06-08 15:55:36,392 DEBUG    [main.py] Cancel button clicked
+2023-06-08 15:55:37,401 DEBUG    [main.py] Create project button pressed
+2023-06-08 15:55:37,401 INFO     [main.py] Project input window opened
+2023-06-08 15:55:47,794 DEBUG    [main.py] Add treatment button clicked
+2023-06-08 15:55:53,024 DEBUG    [main.py] Refresh projects
+2023-06-08 15:55:53,045 INFO     [main.py] Save project testest
+2023-06-08 15:55:55,067 DEBUG    [main.py] Make directories for D:\TestSave\testest, batch_num = 1
+2023-06-08 15:55:55,085 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,091 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,095 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,099 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,104 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,106 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,108 DEBUG    [main.py] Tank number is not enough, adding extra tanks
+2023-06-08 15:55:55,135 DEBUG    [main.py] Load project button pressed
+2023-06-08 15:55:55,139 DEBUG    [main.py] Set project variable to testest
+2023-06-08 15:55:55,141 DEBUG    [main.py] Accessing history file
+2023-06-08 15:55:55,145 DEBUG    [main.py] Command = load batch list
+2023-06-08 15:55:55,146 DEBUG    [main.py] Accessing history file
+2023-06-08 15:55:55,146 DEBUG    [main.py] Command = load treatment list
+2023-06-08 15:55:55,146 DEBUG    [main.py] CP: testest ,Batch name: Batch 1
+2023-06-08 15:55:55,149 DEBUG    [main.py] Refresh projects detail
+2023-06-08 15:55:55,153 INFO     [main.py] {'Treatment A': ['Control', 0, '', 12, 'aset'], 'Treatment B': ['bset', 10.0, 'ppm', 12, 'aset'], 'Treatment C': ['cset', 1.0, 'ppm', 10, 'aset']}
+2023-06-08 15:55:55,162 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 15:55:55,162 DEBUG    [main.py] Loading parameters for project_name = testest, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 15:55:55,193 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testest\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:55:55,220 DEBUG    [main.py] Loading parameters for project_name = testest, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 15:55:55,275 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testest\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 15:55:55,341 DEBUG    [main.py] Loading parameters for project_name = testest, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 15:55:55,392 DEBUG    [main.py] Retrieved hyp from D:\TestSave\testest\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:35,455 DEBUG    [main.py] Refresh projects
+2023-06-08 16:02:35,544 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 16:02:35,545 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 16:02:35,573 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 16:02:35,629 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 16:02:37,830 DEBUG    [main.py] Load project button pressed
+2023-06-08 16:02:37,835 DEBUG    [main.py] Accessing history file
+2023-06-08 16:02:37,835 DEBUG    [main.py] Command = load batch list
+2023-06-08 16:02:37,835 DEBUG    [main.py] Accessing history file
+2023-06-08 16:02:37,836 DEBUG    [main.py] Command = load treatment list
+2023-06-08 16:02:37,836 DEBUG    [main.py] CP: Melamine ,Batch name: Batch 1
+2023-06-08 16:02:37,838 DEBUG    [main.py] Refresh projects detail
+2023-06-08 16:02:37,842 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-08 16:02:37,851 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 16:02:37,851 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 16:02:37,880 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:37,905 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 16:02:37,954 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:38,009 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 16:02:38,061 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:39,300 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 16:02:39,300 DEBUG    [main.py] Condition: A
+2023-06-08 16:02:39,300 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 16:02:39,301 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:39,302 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 16:02:39,302 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 16:02:39,302 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:39,303 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 16:02:39,304 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 16:02:39,304 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:02:39,305 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 16:02:39,305 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 16:02:39,305 DEBUG    [main.py] Batch DropDown: 1 -> 3
+2023-06-08 16:02:39,305 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Novel Tank Test
+2023-06-08 16:02:39,305 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 16:02:39,305 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 0
+2023-06-08 16:02:39,335 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:02:39,361 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 1
+2023-06-08 16:02:39,414 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:02:39,471 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 2
+2023-06-08 16:02:39,521 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:02:40,549 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 16:02:40,550 DEBUG    [main.py] Condition: A
+2023-06-08 16:02:40,550 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.3 in mode current
+2023-06-08 16:02:40,550 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:02:40,551 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json.
+2023-06-08 16:02:40,551 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.3 in mode current
+2023-06-08 16:02:40,551 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:02:40,556 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json.
+2023-06-08 16:02:40,556 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.3 in mode current
+2023-06-08 16:02:40,557 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:02:40,558 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json.
+2023-06-08 16:02:40,558 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 16:02:40,558 DEBUG    [main.py] Batch DropDown: 3 -> 3
+2023-06-08 16:02:40,558 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Mirror Biting Test
+2023-06-08 16:02:40,558 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 16:02:40,559 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Mirror Biting Test, condition = A, batch_num = 3, nested_key = 0
+2023-06-08 16:02:40,589 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_mirror.json, mode = current
+2023-06-08 16:02:40,614 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Mirror Biting Test, condition = A, batch_num = 3, nested_key = 1
+2023-06-08 16:02:40,662 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_mirror.json, mode = current
+2023-06-08 16:02:40,768 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Mirror Biting Test, condition = A, batch_num = 3, nested_key = 2
+2023-06-08 16:02:40,818 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_mirror.json, mode = current
+2023-06-08 16:02:41,680 DEBUG    [main.py] Checking the existence of the trajectories
+2023-06-08 16:02:41,681 INFO     [misc.py] Checking trajectories dir for Project:D:/TestSave/Melamine, Mirror Biting Test, A, Batch 3
+2023-06-08 16:02:41,682 DEBUG    [misc.py] Test dir pattern: *Mirror Biting Test* => test_dir found: D:\TestSave\Melamine\03 - Mirror Biting Test
+2023-06-08 16:02:41,682 DEBUG    [misc.py] Treatment dir pattern: *A -*(3rd Batch) => treatment_dir found: D:\TestSave\Melamine\03 - Mirror Biting Test\A - Control (3rd Batch)
+2023-06-08 16:02:41,683 DEBUG    [misc.py] Total 13 trajectories_dirs found in D:\TestSave\Melamine\03 - Mirror Biting Test\A - Control (3rd Batch)
+2023-06-08 16:02:41,684 INFO     [misc.py] Checked successfully!
+2023-06-08 16:02:41,684 DEBUG    [misc.py] Rearranged checker_dict to natural order
+2023-06-08 16:02:44,348 DEBUG    [main.py] Load project button pressed
+2023-06-08 16:02:44,350 DEBUG    [main.py] Accessing history file
+2023-06-08 16:02:44,351 DEBUG    [main.py] Command = load batch list
+2023-06-08 16:02:44,351 DEBUG    [main.py] Accessing history file
+2023-06-08 16:02:44,351 DEBUG    [main.py] Command = load treatment list
+2023-06-08 16:02:44,351 DEBUG    [main.py] CP: DifNum ,Batch name: Batch 3
+2023-06-08 16:02:52,646 DEBUG    [main.py] Load project button pressed
+2023-06-08 16:02:52,648 DEBUG    [main.py] Accessing history file
+2023-06-08 16:02:52,648 DEBUG    [main.py] Command = load batch list
+2023-06-08 16:02:52,649 DEBUG    [main.py] Accessing history file
+2023-06-08 16:02:52,649 DEBUG    [main.py] Command = load treatment list
+2023-06-08 16:02:52,649 DEBUG    [main.py] CP: DifNum ,Batch name: Batch 3
+2023-06-08 16:07:35,743 DEBUG    [main.py] Refresh projects
+2023-06-08 16:07:35,836 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 16:07:35,836 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 16:07:35,866 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 16:07:35,916 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 16:07:38,226 DEBUG    [main.py] Load project button pressed
+2023-06-08 16:07:38,231 DEBUG    [main.py] Accessing history file
+2023-06-08 16:07:38,231 DEBUG    [main.py] Command = load batch list
+2023-06-08 16:07:38,232 DEBUG    [main.py] Accessing history file
+2023-06-08 16:07:38,232 DEBUG    [main.py] Command = load treatment list
+2023-06-08 16:07:38,232 DEBUG    [main.py] CP: Melamine ,Batch name: Batch 1
+2023-06-08 16:07:38,234 DEBUG    [main.py] Loaded condition list
+2023-06-08 16:07:38,236 DEBUG    [main.py] Refresh projects detail
+2023-06-08 16:07:38,240 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-08 16:07:38,247 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 16:07:38,248 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 16:07:38,277 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:38,302 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 16:07:38,351 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:38,406 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 16:07:38,457 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:39,937 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 16:07:39,938 DEBUG    [main.py] Condition: A
+2023-06-08 16:07:39,938 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 16:07:39,939 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:39,939 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 16:07:39,940 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 16:07:39,940 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:39,941 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 16:07:39,941 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-08 16:07:39,942 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:39,942 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-08 16:07:39,943 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 16:07:39,943 DEBUG    [main.py] Batch DropDown: 1 -> 3
+2023-06-08 16:07:39,943 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Novel Tank Test
+2023-06-08 16:07:39,943 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 16:07:39,943 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 0
+2023-06-08 16:07:39,973 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:07:39,999 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 1
+2023-06-08 16:07:40,054 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:07:40,110 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 3, nested_key = 2
+2023-06-08 16:07:40,158 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:07:41,158 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-08 16:07:41,158 DEBUG    [main.py] Condition: A
+2023-06-08 16:07:41,159 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.3 in mode current
+2023-06-08 16:07:41,159 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:07:41,160 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json.
+2023-06-08 16:07:41,160 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.3 in mode current
+2023-06-08 16:07:41,160 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:07:41,161 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json.
+2023-06-08 16:07:41,161 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.3 in mode current
+2023-06-08 16:07:41,162 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json, mode = current
+2023-06-08 16:07:41,163 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 3\A\hyp_novel.json.
+2023-06-08 16:07:41,163 DEBUG    [main.py] Saved the previous parameters
+2023-06-08 16:07:41,163 DEBUG    [main.py] Batch DropDown: 3 -> 3
+2023-06-08 16:07:41,163 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Mirror Biting Test
+2023-06-08 16:07:41,163 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-08 16:07:41,164 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Mirror Biting Test, condition = A, batch_num = 3, nested_key = 0
+2023-06-08 16:07:41,193 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_mirror.json, mode = current
+2023-06-08 16:07:41,218 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Mirror Biting Test, condition = A, batch_num = 3, nested_key = 1
+2023-06-08 16:07:41,267 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_mirror.json, mode = current
+2023-06-08 16:07:41,375 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Mirror Biting Test, condition = A, batch_num = 3, nested_key = 2
+2023-06-08 16:07:41,423 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 3\A\hyp_mirror.json, mode = current
+2023-06-08 16:07:42,838 DEBUG    [main.py] Load project button pressed
+2023-06-08 16:07:42,841 DEBUG    [main.py] Accessing history file
+2023-06-08 16:07:42,841 DEBUG    [main.py] Command = load batch list
+2023-06-08 16:07:42,842 DEBUG    [main.py] Accessing history file
+2023-06-08 16:07:42,842 DEBUG    [main.py] Command = load treatment list
+2023-06-08 16:07:42,842 DEBUG    [main.py] CP: DifNum ,Batch name: Batch 3
+2023-06-08 16:07:42,842 WARNING  [main.py] Batch Batch 3 does not exist in this project, try another batch
+2023-06-08 16:07:42,842 DEBUG    [main.py] Retried 1 times
+2023-06-08 16:07:42,843 DEBUG    [main.py] Accessing history file
+2023-06-08 16:07:42,843 DEBUG    [main.py] Command = load treatment list
+2023-06-08 16:07:42,843 DEBUG    [main.py] CP: DifNum ,Batch name: Batch 1
+2023-06-08 16:07:42,845 DEBUG    [main.py] Loaded condition list
+2023-06-08 16:07:42,847 DEBUG    [main.py] Refresh projects detail
+2023-06-08 16:07:42,875 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-08 16:07:42,883 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-08 16:07:42,884 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-08 16:07:42,913 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:42,938 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-08 16:07:43,013 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-08 16:07:43,078 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-08 16:07:43,081 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current

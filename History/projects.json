@@ -168,5 +168,31 @@
             ]
         },
         "DIRECTORY": "D:/TestSave/Melamine"
+    },
+    "testest": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                12,
+                "aset"
+            ],
+            "Treatment B": [
+                "bset",
+                10.0,
+                "ppm",
+                12,
+                "aset"
+            ],
+            "Treatment C": [
+                "cset",
+                1.0,
+                "ppm",
+                10,
+                "aset"
+            ]
+        },
+        "DIRECTORY": "D:\\TestSave\\testest"
     }
 }

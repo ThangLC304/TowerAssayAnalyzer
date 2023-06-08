@@ -47,6 +47,9 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] Change to InDetail checkbox to a button that copy the current treatment     # DONE
 #[TODO] Import Project from other directory                                         # 
 #[TODO] In Tests that has 2 nested params, just 1 add&remove pair of button is ok   #
+#[TODO] CREATE PROJECT AUTO LOAD                                                    # DONE
+#[TODO] CHANGE PROJECT AUTO SET DEFAULT< IF CAN"T< SEARCH FOR THEM                  # DONE
+#[TODO] ALERT BEFORE DELETE PROJECT                                                 # DONE  
 
 
 ROOT = Path(__file__).parent
@@ -123,7 +126,7 @@ stream_handler.addFilter(f)  # Add the filter to the stream handler
 
 # Get the root logger
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Add the handlers to the logger
 logger.addHandler(file_handler)
@@ -355,12 +358,25 @@ class ScrollableProjectList(customtkinter.CTkScrollableFrame):
 
     def get_selected_project(self):
         return self.project_variable.get()
+
+    def set_selected_project(self, project_name="last"):
+        if project_name == "last":
+            # set to the last project in list
+            self.project_variable.set(self.project_radiobuttons[-1].cget("text"))
+            logger.warning("Set project variable failed, set to the last project in list")
+        else:
+            self.project_variable.set(project_name)
+            logger.debug("Set project variable to " + project_name)
     
     def select_project(self, project_name):
         for radiobutton in self.project_radiobuttons:
             if radiobutton.cget("text") == project_name:
                 radiobutton.invoke()
                 break
+
+    def return_recent_project(self):
+        return self.project_radiobuttons[-1].cget("text")
+        
 
 
 class ProjectDetailFrame(customtkinter.CTkFrame):
@@ -1417,6 +1433,14 @@ class App(customtkinter.CTk):
         if load_type == "first_load":
             logger.info("Loading the abitrary numbers used for initial display")
             selected_test = self.TESTLIST[0]
+
+            #set TestOptions to the first test
+            self.TestOptions.set(selected_test)
+            #set ConditionOptions to the first condition
+            self.ConditionOptions.set(self.CONDITIONLIST[0])
+            #set BatchOptions to the first batch
+            self.BatchOptions.set(self.BATCHLIST[0])
+
             self.param_display(selected_test = selected_test)
             return
         
@@ -1463,6 +1487,11 @@ class App(customtkinter.CTk):
     ### DELETE PROJECT BUTTON FUNCTION ###
 
     def delete_project(self):
+
+        # create confirmation box
+        choice = tkinter.messagebox.askquestion("Delete Project", "Are you sure you want to delete this project?")
+        if choice == "no":
+            return
 
         # Get the selected project
         selected_project = self.scrollable_frame.get_selected_project()
@@ -1512,10 +1541,16 @@ class App(customtkinter.CTk):
         self.project_detail_container.load_project_details(self.CURRENT_PROJECT)
         
 
-    def load_project(self):
+    def load_project(self, custom_project=None):
         logger.debug("Load project button pressed")
 
-        selected_project = self.scrollable_frame.get_selected_project()
+        if custom_project == None:
+            selected_project = self.scrollable_frame.get_selected_project()
+        else:
+            selected_project = custom_project
+            # set the current project to the custom project
+            self.scrollable_frame.set_selected_project(custom_project)
+
         self.CURRENT_PROJECT = selected_project
 
         logger.info("Current project: ", self.CURRENT_PROJECT)
@@ -1529,7 +1564,23 @@ class App(customtkinter.CTk):
         
         self.BatchOptions.configure(values=self.BATCHLIST)
 
-        self.CONDITIONLIST, ErrorType = self.access_history("load treatment list", batch_name = self.BatchOptions.get())
+        retry = 0 
+        while retry<3:
+            try:
+                self.CONDITIONLIST, ErrorType = self.access_history("load treatment list", batch_name = self.BatchOptions.get())
+                logger.debug("Loaded condition list")
+                logger.debug("Possible warning: ", ErrorType)
+                break
+            except:
+                logger.warning(f"Batch {self.BatchOptions.get()} does not exist in this project, try another batch")
+                self.BatchOptions.set(self.BATCHLIST[0])
+                retry += 1
+                logger.debug(f"Retried {retry} times")
+        else:
+            logger.error("Failed to load condition list, please check the project directory")
+            tkinter.messagebox.showerror("Error", "Failed to load condition list, please check the project directory")
+            return
+
         if ErrorType != None:
             tkinter.messagebox.showerror("Error", ErrorType)
             return
@@ -1568,6 +1619,8 @@ class App(customtkinter.CTk):
             self.scrollable_frame.select_project(self.CURRENT_PROJECT)
 
             self.save_project()
+
+            self.load_project(custom_project=self.CURRENT_PROJECT)
 
         else:
             print("Project not created")
@@ -1720,20 +1773,20 @@ class App(customtkinter.CTk):
                     continue
 
                 if len(value) < desired_key_num:
-                    print("Tank number is not enough, adding extra tanks")
+                    logger.debug("Tank number is not enough, adding extra tanks")
                     # check type of value.values(), if it is a list, new_value = [0,0], else new_value = 0
                     if type(list(value.values())[0]) == list:
                         default_value = [0,0]
                     else:
                         default_value = 0
                     while len(value) < desired_key_num:
-                        temp_key = chr(len(value)+65)
-                        print("Adding tank: ", temp_key, "with default value: ", default_value, "to file: ", file.name, "")
+                        temp_key = len(value)+1
+                        logger.debug("Adding tank: ", temp_key, "with default value: ", default_value, "to file: ", file.name, "")
                         value[temp_key] = default_value
                 elif len(value) > desired_key_num:
-                    print("Tank number is too much, removing extra tanks")
+                    logger.debug("Tank number is too much, removing extra tanks")
                     while len(value) > desired_key_num:
-                        print("Removing tank")
+                        logger.debug("Removing tank")
                         value.popitem()
                 else:
                     pass
