@@ -71,19 +71,55 @@ Path('Log').mkdir(parents=True, exist_ok=True)
 # Configure the logging module
 log_file = 'Log/log.txt'
 
+# # Define the log format with colors
+# log_format = "%(asctime)s %(log_color)s%(levelname)-8s%(reset)s %(message)s"
+
+# # Create a formatter with colored output
+# formatter = ColoredFormatter(log_format)
+
+# # Create a file handler to save logs to the file
+# file_handler = logging.FileHandler(log_file, mode='a')  # Set the mode to 'a' for append
+# file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
+
+# # Create a stream handler to display logs on the console with colored output
+# stream_handler = logging.StreamHandler()
+# stream_handler.setFormatter(formatter)
+
+# # Get the root logger
+# logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
+
+# # Add the handlers to the logger
+# logger.addHandler(file_handler)
+# logger.addHandler(stream_handler)
+
+class ContextFilter(logging.Filter):
+    """
+    This is a filter which injects contextual information into the log.
+    """
+
+    def filter(self, record):
+        record.pathname = os.path.basename(record.pathname)  # Modify this line if you want to alter the path
+        return True
+
 # Define the log format with colors
-log_format = "%(asctime)s %(log_color)s%(levelname)-8s%(reset)s %(message)s"
+log_format = "%(asctime)s %(log_color)s%(levelname)-8s%(reset)s [%(pathname)s] %(message)s"
 
 # Create a formatter with colored output
 formatter = ColoredFormatter(log_format)
 
+# Create a filter
+f = ContextFilter()
+
 # Create a file handler to save logs to the file
 file_handler = logging.FileHandler(log_file, mode='a')  # Set the mode to 'a' for append
-file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s [%(pathname)s] %(message)s"))
+file_handler.addFilter(f)  # Add the filter to the file handler
 
 # Create a stream handler to display logs on the console with colored output
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
+stream_handler.addFilter(f)  # Add the filter to the stream handler
 
 # Get the root logger
 logger = logging.getLogger()
@@ -1258,11 +1294,18 @@ class App(customtkinter.CTk):
         
         elif command_type == "load treatment list":
             logger.debug("Command = load treatment list")
-            logger.debug("CP:", cp)
-            logger.debug("Batch name:", batch_name)
-            treatments = list(projects_data[cp][batch_name].keys())
+            logger.debug(f"CP: {cp} ,Batch name: {batch_name}")
+            treatments = []
+            for treatment_key in projects_data[cp][batch_name].keys():
+                _name = projects_data[cp][batch_name][treatment_key][0]
+                _dose = projects_data[cp][batch_name][treatment_key][1]
+                _unit = projects_data[cp][batch_name][treatment_key][2]
+                if _unit == "":
+                    treatments.append(_name)
+                else:
+                    treatments.append(f"{_name} {_dose} {_unit}")
             logger.debug("Treatments:", treatments)
-            return list(projects_data[cp][batch_name].keys()), None
+            return treatments, None
         
         else:
             logger.error("Invalid command type")
@@ -1490,6 +1533,8 @@ class App(customtkinter.CTk):
         
         #set values of ConditionOptions
         self.ConditionOptions.configure(values=self.CONDITIONLIST)
+        #set current value to first choice
+        self.ConditionOptions.set(self.CONDITIONLIST[0])
 
         self.refresh_projects_detail()
 

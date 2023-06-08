@@ -535,7 +535,7 @@ def find_existed_batches(excel_path):
     workbook = openpyxl.load_workbook(excel_path)
     
     max_row_dict = {}
-    existed_batches = []
+    existed_batches = {}
 
     # get the first sheet
     for worksheet in workbook.worksheets:
@@ -624,6 +624,7 @@ def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=T
             header = worksheet.cell(row=1, column=col_idx).value
             if header and "Fish ID" in header:
                 fish_id_col = col_idx
+                logger.debug("Found fish_id_col at column %d", fish_id_col)
                 break
 
     # find row index of cell with "Fish 1" in fish_id_col
@@ -652,25 +653,39 @@ def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=T
     # Add a separator line between each update
     # Iterate in fish_id_col, from fish1_rows[worksheet.title][-1] to the end of the column
     for worksheet in workbook.worksheets:
+        logger.debug("In worksheet %s", worksheet.title)
         start_row = fish1_rows[worksheet.title][-1] # Because we modify only the last update
         last_row = start_row # In case there's only 1 fish
-        for row_idx in range(fish1_rows[worksheet.title][-1], worksheet.max_row):
+        logger.debug(f"Total row of the worksheet: {worksheet.max_row}")
+        logger.debug(f"Content of the last row: {worksheet.cell(row=worksheet.max_row, column=fish_id_col).value}")
+        logger.debug(f"Start row: {start_row}, last row: {last_row}")
+        for row_idx in range(fish1_rows[worksheet.title][-1], worksheet.max_row+1):
             cell_value = worksheet.cell(row=row_idx, column=fish_id_col).value
+            logger.debug(f"Cell value: {cell_value}")
             fish_id = int(cell_value.split()[1])
+            logger.debug(f"Fish id: {fish_id}")
             next_cell_value = worksheet.cell(row=row_idx+1, column=fish_id_col).value
+            logger.debug(f"Next cell value: {next_cell_value}")
             try:
                 next_fish_id = int(next_cell_value.split()[1])
             except:
                 next_fish_id = -1
+            logger.debug("Next fish id: %d", next_fish_id)
             if next_fish_id - fish_id != 1:
+                logger.debug("Found a separator at row %d", row_idx)
                 last_row = row_idx
-                merge_cells(ws = worksheet,
+                try:
+                    merge_cells(ws = worksheet,
                             merge_column = BATCH_NUM_COL,
                             merge_value = BATCH_TEXT,
                             start_row = start_row,
                             end_row = last_row)
+                    logger.debug("Merged cells in worksheet %s", worksheet.title)
+                except:
+                    logger.warning("Cannot merge cells in worksheet %s", worksheet.title)
                 
                 if treatment is not None:
+                    logger.debug("Also merge treatment column")
                     merge_cells(ws = worksheet,
                                 merge_column = TREATMENT_COL,
                                 merge_value = treatment,
@@ -679,11 +694,15 @@ def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=T
 
                 # Check if the cell in last_row+1 is "Separator"?
                 if worksheet.cell(row=last_row+1, column=fish_id_col).value == "Separator":
-                    print("Already had a separator")
+                    logger.debug("Already had a separator at row %d", last_row+1)
                     break
                 # insert a blank row with fish_id = "Separator" at the end of the last update
-                worksheet.insert_rows(last_row+1)
-                worksheet.cell(row=last_row+1, column=fish_id_col).value = "Separator"
+                try:
+                    worksheet.insert_rows(last_row+1)
+                    worksheet.cell(row=last_row+1, column=fish_id_col).value = "Separator"
+                    logger.debug("Inserted a separator row at row %d", last_row+1)
+                except:
+                    logger.warning("Cannot insert a separator row at row %d", last_row+1)
                 break
 
         print(f"In worksheet {worksheet.title}, last update has {last_row-start_row+1} fish, start from row {start_row} to row {last_row}")
