@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+# Just a line to check for merge conflict
+
 # Input and Output
 Input/
 Output/
