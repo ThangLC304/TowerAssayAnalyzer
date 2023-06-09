@@ -6,13 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
-# Just a line to check for merge conflict
-
 # Input and Output
-Input/
-Output/
-# History/
-Log/
+Input/*
+Output/*
+History/*
+Log/*
 
 #all file start with test
 test*
