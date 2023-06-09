@@ -42,11 +42,11 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] Hyperparamater sets for Batch/TreatmentGroup                                # DONE
 #[TODO] Import video feature                                                        # DONE
 #[TODO] Put units for each parameters                                               # DONE
-#[TODO] Change the dropdown menu of ppm/ppb to manual input                         #
+#[TODO] Change the dropdown menu of ppm/ppb to manual input                         # 
 #[TODO] Batch menu moved next Loaded Project, ADD / DELETE buttons                  # DONE
 #[TODO] Change to InDetail checkbox to a button that copy the current treatment     # DONE
 #[TODO] Import Project from other directory                                         # 
-#[TODO] In Tests that has 2 nested params, just 1 add&remove pair of button is ok   #
+#[TODO] In Tests that has 2 nested params, just 1 add&remove pair of button is ok   # DONE
 #[TODO] CREATE PROJECT AUTO LOAD                                                    # DONE
 #[TODO] CHANGE PROJECT AUTO SET DEFAULT< IF CAN"T< SEARCH FOR THEM                  # DONE
 #[TODO] ALERT BEFORE DELETE PROJECT                                                 # DONE  
@@ -1037,24 +1037,24 @@ class App(customtkinter.CTk):
         self.nested_key_1_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 1)
         self.nested_key_1_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(10, 20), sticky="nsew")
 
-        self.nk1_add_button = NK_button(container_3, text="Add", width = 20,
+        self.nk_add_button = NK_button(container_3, text="Add", width = 20,
                                         row = 2, column = 0,
-                                        command=self.nk1_add)
-        self.nk1_remove_button = NK_button(container_3, text="Remove", width = 20,
+                                        command=self.nk_add)
+        self.nk_remove_button = NK_button(container_3, text="Remove", width = 20,
                                         row = 2, column = 1,
-                                        command=self.nk1_remove)
+                                        command=self.nk_remove)
 
         self.nested_key_2_header = customtkinter.CTkLabel(container_3, text="None", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.nested_key_2_header.grid(row=0, column=2, padx=20, pady=(20, 10), sticky="nsew")
         self.nested_key_2_frame = Parameters(container_3, self.CURRENT_PROJECT, self.TESTLIST[0], 2)
         self.nested_key_2_frame.grid(row=1, column=2, columnspan = 2, padx=20, pady=(10, 20), sticky="nsew")
 
-        self.nk2_add_button = NK_button(container_3, text="Add", width = 20,
-                                        row = 2, column = 2,
-                                        command=self.nk2_add)
-        self.nk2_remove_button = NK_button(container_3, text="Remove", width = 20,
-                                        row = 2, column = 3,
-                                        command=self.nk2_remove)
+        # self.nk2_add_button = NK_button(container_3, text="Add", width = 20,
+        #                                 row = 2, column = 2,
+        #                                 command=self.nk2_add)
+        # self.nk2_remove_button = NK_button(container_3, text="Remove", width = 20,
+        #                                 row = 2, column = 3,
+        #                                 command=self.nk2_remove)
 
         # Config
         self.BatchOptions.configure(command=self.update_param_display)
@@ -1188,25 +1188,39 @@ class App(customtkinter.CTk):
                                  modify_history=False)
 
 
-    def nk1_add(self):
-        logger.debug("nk1_add_button pressed")
+    def nk_add(self):
+        logger.debug("nk_add_button pressed")
         target_amount = self.nested_key_1_frame.add_entry()
+        if self.nested_key_2_frame.null_label == None:
+            self.nested_key_2_frame.add_entry()
         self.folder_changer(target_amount)
 
-    def nk2_add(self):
-        logger.debug("nk2_add_button pressed")
-        target_amount = self.nested_key_2_frame.add_entry()
-        self.folder_changer(target_amount)
-
-    def nk1_remove(self):
-        logger.debug("nk1_remove_button pressed")
+    def nk_remove(self):
+        logger.debug("nk_remove_button pressed")
         target_amount = self.nested_key_1_frame.remove_entry()
+        if self.nested_key_2_frame.null_label == None:
+            self.nested_key_2_frame.remove_entry()
         self.folder_changer(target_amount)
 
-    def nk2_remove(self):
-        logger.debug("nk2_remove_button pressed")
-        target_amount = self.nested_key_2_frame.remove_entry()
-        self.folder_changer(target_amount)
+    # def nk1_add(self):
+    #     logger.debug("nk1_add_button pressed")
+    #     target_amount = self.nested_key_1_frame.add_entry()
+    #     self.folder_changer(target_amount)
+
+    # def nk2_add(self):
+    #     logger.debug("nk2_add_button pressed")
+    #     target_amount = self.nested_key_2_frame.add_entry()
+    #     self.folder_changer(target_amount)
+
+    # def nk1_remove(self):
+    #     logger.debug("nk1_remove_button pressed")
+    #     target_amount = self.nested_key_1_frame.remove_entry()
+    #     self.folder_changer(target_amount)
+
+    # def nk2_remove(self):
+    #     logger.debug("nk2_remove_button pressed")
+    #     target_amount = self.nested_key_2_frame.remove_entry()
+    #     self.folder_changer(target_amount)
         
         
     def import_video(self):
@@ -1404,19 +1418,19 @@ class App(customtkinter.CTk):
 
         if self.nested_key_1_frame.null_label != None:
             # hide add & remove button
-            self.nk1_add_button.hide()
-            self.nk1_remove_button.hide()
+            self.nk_add_button.hide()
+            self.nk_remove_button.hide()
         else:
-            self.nk1_add_button.show()
-            self.nk1_remove_button.show()
+            self.nk_add_button.show()
+            self.nk_remove_button.show()
 
-        if self.nested_key_2_frame.null_label != None:
-            # hide add & remove button
-            self.nk2_add_button.hide()
-            self.nk2_remove_button.hide()
-        else:
-            self.nk2_add_button.show()
-            self.nk2_remove_button.show()
+        # if self.nested_key_2_frame.null_label != None:
+        #     # hide add & remove button
+        #     self.nk2_add_button.hide()
+        #     self.nk2_remove_button.hide()
+        # else:
+        #     self.nk2_add_button.show()
+        #     self.nk2_remove_button.show()
 
         self.LoadedProject.configure(text=self.CURRENT_PROJECT)
         self.nested_key_1_header.configure(text=nested_key_1)

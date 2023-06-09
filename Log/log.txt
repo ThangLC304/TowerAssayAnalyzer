@@ -18035,3 +18035,231 @@
 2023-06-08 16:07:43,013 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
 2023-06-08 16:07:43,078 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
 2023-06-08 16:07:43,081 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:02:29,193 DEBUG    [main.py] Refresh projects
+2023-06-09 10:02:29,281 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-09 10:02:29,281 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-09 10:02:29,315 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-09 10:02:29,369 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-09 10:02:51,779 DEBUG    [main.py] Refresh projects
+2023-06-09 10:02:51,854 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-09 10:02:51,854 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-09 10:02:51,883 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-09 10:02:51,937 DEBUG    [main.py] Loading parameters for project_name = , selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-09 10:02:55,751 DEBUG    [main.py] Load project button pressed
+2023-06-09 10:02:55,765 DEBUG    [main.py] Accessing history file
+2023-06-09 10:02:55,765 DEBUG    [main.py] Command = load batch list
+2023-06-09 10:02:55,766 DEBUG    [main.py] Accessing history file
+2023-06-09 10:02:55,766 DEBUG    [main.py] Command = load treatment list
+2023-06-09 10:02:55,766 DEBUG    [main.py] CP: DifNum ,Batch name: Batch 1
+2023-06-09 10:02:55,768 DEBUG    [main.py] Loaded condition list
+2023-06-09 10:02:55,771 DEBUG    [main.py] Refresh projects detail
+2023-06-09 10:02:55,775 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-09 10:02:55,783 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-09 10:02:55,784 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-09 10:02:55,806 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:02:55,836 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-09 10:02:55,872 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:02:55,940 DEBUG    [main.py] Loading parameters for project_name = DifNum, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-09 10:02:55,978 DEBUG    [main.py] Retrieved hyp from D:/TestSave/DifNum\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:02:57,719 DEBUG    [main.py] nk_remove_button pressed
+2023-06-09 10:02:57,722 INFO     [main.py] Removed entry TOP_12
+2023-06-09 10:02:57,724 INFO     [main.py] Removed entry CENTER_11
+2023-06-09 10:02:57,724 DEBUG    [main.py] folder_changer called with target_amount = 11
+2023-06-09 10:02:57,725 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:02:57,725 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:02:57,725 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:02:57,725 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:02:57,725 DEBUG    [main.py] add_fish is called
+2023-06-09 10:02:57,725 DEBUG    [main.py] variables: project_name = DifNum, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 11, modify_history = False
+2023-06-09 10:02:57,740 DEBUG    [main.py] Current number of fish is more than target amount
+2023-06-09 10:02:57,743 DEBUG    [main.py] Fish directory 'D:\TestSave\DifNum\01 - Novel Tank Test\A - Control (1st Batch)\12' has been removed
+2023-06-09 10:03:07,060 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:07,065 INFO     [main.py] Added entry TOP_12
+2023-06-09 10:03:07,071 INFO     [main.py] Added entry CENTER_11
+2023-06-09 10:03:07,071 DEBUG    [main.py] folder_changer called with target_amount = 12
+2023-06-09 10:03:07,071 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:07,072 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:07,072 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:07,072 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:07,072 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:07,072 DEBUG    [main.py] variables: project_name = DifNum, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 12, modify_history = False
+2023-06-09 10:03:07,084 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:07,088 DEBUG    [main.py] New fish directory 'D:\TestSave\DifNum\01 - Novel Tank Test\A - Control (1st Batch)\12' in D:\TestSave\DifNum\01 - Novel Tank Test/D:\TestSave\DifNum\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:20,054 DEBUG    [main.py] Load project button pressed
+2023-06-09 10:03:20,057 DEBUG    [main.py] Accessing history file
+2023-06-09 10:03:20,057 DEBUG    [main.py] Command = load batch list
+2023-06-09 10:03:20,058 DEBUG    [main.py] Accessing history file
+2023-06-09 10:03:20,058 DEBUG    [main.py] Command = load treatment list
+2023-06-09 10:03:20,058 DEBUG    [main.py] CP: Melamine ,Batch name: Batch 1
+2023-06-09 10:03:20,059 DEBUG    [main.py] Loaded condition list
+2023-06-09 10:03:20,062 DEBUG    [main.py] Refresh projects detail
+2023-06-09 10:03:20,084 INFO     [main.py] {'Treatment A': ['Control', 0, '', 10, ''], 'Treatment B': ['Mel', 0.1, 'ppm', 10, ''], 'Treatment C': ['Mel', 10.0, 'ppm', 10, '']}
+2023-06-09 10:03:20,092 INFO     [main.py] Loading the abitrary numbers used for initial display
+2023-06-09 10:03:20,092 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-09 10:03:20,115 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:20,145 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-09 10:03:20,199 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:20,270 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-09 10:03:20,320 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:21,920 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:21,926 INFO     [main.py] Added entry TOP_11
+2023-06-09 10:03:21,931 INFO     [main.py] Added entry CENTER_11
+2023-06-09 10:03:21,932 DEBUG    [main.py] folder_changer called with target_amount = 11
+2023-06-09 10:03:21,932 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:21,932 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:21,932 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:21,932 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:21,932 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:21,933 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 11, modify_history = False
+2023-06-09 10:03:21,947 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:21,949 DEBUG    [main.py] New fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\11' in D:\TestSave\Melamine\01 - Novel Tank Test/D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:22,931 DEBUG    [main.py] nk_remove_button pressed
+2023-06-09 10:03:22,934 INFO     [main.py] Removed entry TOP_11
+2023-06-09 10:03:22,937 INFO     [main.py] Removed entry CENTER_11
+2023-06-09 10:03:22,937 DEBUG    [main.py] folder_changer called with target_amount = 10
+2023-06-09 10:03:22,937 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:22,937 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:22,937 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:22,937 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:22,937 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:22,938 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 10, modify_history = False
+2023-06-09 10:03:22,949 DEBUG    [main.py] Current number of fish is more than target amount
+2023-06-09 10:03:22,952 DEBUG    [main.py] Fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\11' has been removed
+2023-06-09 10:03:24,051 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:24,057 INFO     [main.py] Added entry TOP_11
+2023-06-09 10:03:24,061 INFO     [main.py] Added entry CENTER_11
+2023-06-09 10:03:24,062 DEBUG    [main.py] folder_changer called with target_amount = 11
+2023-06-09 10:03:24,062 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:24,062 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:24,062 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:24,062 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:24,062 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:24,063 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 11, modify_history = False
+2023-06-09 10:03:24,074 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:24,077 DEBUG    [main.py] New fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\11' in D:\TestSave\Melamine\01 - Novel Tank Test/D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:24,539 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:24,545 INFO     [main.py] Added entry TOP_12
+2023-06-09 10:03:24,550 INFO     [main.py] Added entry CENTER_12
+2023-06-09 10:03:24,550 DEBUG    [main.py] folder_changer called with target_amount = 12
+2023-06-09 10:03:24,550 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:24,551 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:24,551 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:24,551 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:24,551 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:24,551 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 12, modify_history = False
+2023-06-09 10:03:24,563 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:24,566 DEBUG    [main.py] New fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\12' in D:\TestSave\Melamine\01 - Novel Tank Test/D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:25,059 DEBUG    [main.py] nk_remove_button pressed
+2023-06-09 10:03:25,062 INFO     [main.py] Removed entry TOP_12
+2023-06-09 10:03:25,064 INFO     [main.py] Removed entry CENTER_12
+2023-06-09 10:03:25,065 DEBUG    [main.py] folder_changer called with target_amount = 11
+2023-06-09 10:03:25,065 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:25,065 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:25,065 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:25,065 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:25,065 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:25,065 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 11, modify_history = False
+2023-06-09 10:03:25,078 DEBUG    [main.py] Current number of fish is more than target amount
+2023-06-09 10:03:25,081 DEBUG    [main.py] Fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\12' has been removed
+2023-06-09 10:03:25,601 DEBUG    [main.py] nk_remove_button pressed
+2023-06-09 10:03:25,604 INFO     [main.py] Removed entry TOP_11
+2023-06-09 10:03:25,607 INFO     [main.py] Removed entry CENTER_11
+2023-06-09 10:03:25,607 DEBUG    [main.py] folder_changer called with target_amount = 10
+2023-06-09 10:03:25,607 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:25,607 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:25,607 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:25,608 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:25,608 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:25,608 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 10, modify_history = False
+2023-06-09 10:03:25,619 DEBUG    [main.py] Current number of fish is more than target amount
+2023-06-09 10:03:25,621 DEBUG    [main.py] Fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\11' has been removed
+2023-06-09 10:03:26,111 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:26,116 INFO     [main.py] Added entry TOP_11
+2023-06-09 10:03:26,122 INFO     [main.py] Added entry CENTER_11
+2023-06-09 10:03:26,122 DEBUG    [main.py] folder_changer called with target_amount = 11
+2023-06-09 10:03:26,122 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:26,122 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:26,123 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:26,123 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:26,123 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:26,123 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 11, modify_history = False
+2023-06-09 10:03:26,134 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:26,137 DEBUG    [main.py] New fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\11' in D:\TestSave\Melamine\01 - Novel Tank Test/D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:26,488 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:26,493 INFO     [main.py] Added entry TOP_12
+2023-06-09 10:03:26,497 INFO     [main.py] Added entry CENTER_12
+2023-06-09 10:03:26,499 DEBUG    [main.py] folder_changer called with target_amount = 12
+2023-06-09 10:03:26,499 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:26,499 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:26,499 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:26,500 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:26,500 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:26,500 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 12, modify_history = False
+2023-06-09 10:03:26,511 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:26,514 DEBUG    [main.py] New fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\12' in D:\TestSave\Melamine\01 - Novel Tank Test/D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:27,598 DEBUG    [main.py] nk_remove_button pressed
+2023-06-09 10:03:27,602 INFO     [main.py] Removed entry TOP_12
+2023-06-09 10:03:27,604 INFO     [main.py] Removed entry CENTER_12
+2023-06-09 10:03:27,604 DEBUG    [main.py] folder_changer called with target_amount = 11
+2023-06-09 10:03:27,604 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:27,605 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:27,605 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:27,605 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:27,605 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:27,605 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 11, modify_history = False
+2023-06-09 10:03:27,617 DEBUG    [main.py] Current number of fish is more than target amount
+2023-06-09 10:03:27,619 DEBUG    [main.py] Fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\12' has been removed
+2023-06-09 10:03:28,317 DEBUG    [main.py] nk_add_button pressed
+2023-06-09 10:03:28,323 INFO     [main.py] Added entry TOP_12
+2023-06-09 10:03:28,328 INFO     [main.py] Added entry CENTER_12
+2023-06-09 10:03:28,328 DEBUG    [main.py] folder_changer called with target_amount = 12
+2023-06-09 10:03:28,328 DEBUG    [main.py] current_test_index = 0
+2023-06-09 10:03:28,328 DEBUG    [main.py] current_batch_index = 1
+2023-06-09 10:03:28,328 DEBUG    [main.py] Modify folders for current treatment: Control
+2023-06-09 10:03:28,328 DEBUG    [main.py] current_treatment_index = A
+2023-06-09 10:03:28,329 DEBUG    [main.py] add_fish is called
+2023-06-09 10:03:28,329 DEBUG    [main.py] variables: project_name = Melamine, test_num = 0, batch_num = 1, treatment_num = A, target_amount = 12, modify_history = False
+2023-06-09 10:03:28,340 DEBUG    [main.py] Current number of fish is less than target amount
+2023-06-09 10:03:28,343 DEBUG    [main.py] New fish directory 'D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)\12' in D:\TestSave\Melamine\01 - Novel Tank Test/D:\TestSave\Melamine\01 - Novel Tank Test\A - Control (1st Batch)
+2023-06-09 10:03:29,592 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-09 10:03:29,593 DEBUG    [main.py] Condition: A
+2023-06-09 10:03:29,593 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-09 10:03:29,593 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:29,594 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-09 10:03:29,594 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-09 10:03:29,594 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:29,597 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-09 10:03:29,597 DEBUG    [main.py] Saving parameters for Melamine.Novel Tank Test.A.1 in mode current
+2023-06-09 10:03:29,597 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:29,601 INFO     [main.py] Parameters of novel saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json.
+2023-06-09 10:03:29,601 DEBUG    [main.py] Saved the previous parameters
+2023-06-09 10:03:29,601 DEBUG    [main.py] Batch DropDown: 1 -> 1
+2023-06-09 10:03:29,602 DEBUG    [main.py] Test DropDown: Novel Tank Test -> Shoaling Test
+2023-06-09 10:03:29,602 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-09 10:03:29,602 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Shoaling Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-09 10:03:29,624 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-09 10:03:29,652 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Shoaling Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-09 10:03:29,693 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-09 10:03:29,711 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Shoaling Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-09 10:03:29,752 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-09 10:03:30,963 DEBUG    [main.py] Other option selected, save the previous parameters
+2023-06-09 10:03:30,964 DEBUG    [main.py] Condition: A
+2023-06-09 10:03:30,964 DEBUG    [main.py] Saving parameters for Melamine.Shoaling Test.A.1 in mode current
+2023-06-09 10:03:30,964 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-09 10:03:30,965 INFO     [main.py] Parameters of shoaling saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json.
+2023-06-09 10:03:30,965 DEBUG    [main.py] Saving parameters for Melamine.Shoaling Test.A.1 in mode current
+2023-06-09 10:03:30,966 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-09 10:03:30,967 INFO     [main.py] Parameters of shoaling saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json.
+2023-06-09 10:03:30,967 DEBUG    [main.py] Saving parameters for Melamine.Shoaling Test.A.1 in mode current
+2023-06-09 10:03:30,967 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json, mode = current
+2023-06-09 10:03:30,968 INFO     [main.py] Parameters of shoaling saved to D:/TestSave/Melamine\static\Batch 1\A\hyp_shoaling.json.
+2023-06-09 10:03:30,968 DEBUG    [main.py] Saved the previous parameters
+2023-06-09 10:03:30,969 DEBUG    [main.py] Batch DropDown: 1 -> 1
+2023-06-09 10:03:30,969 DEBUG    [main.py] Test DropDown: Shoaling Test -> Novel Tank Test
+2023-06-09 10:03:30,969 DEBUG    [main.py] Condition DropDown: A -> Control
+2023-06-09 10:03:30,969 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 0
+2023-06-09 10:03:30,985 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:31,017 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 1
+2023-06-09 10:03:31,029 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
+2023-06-09 10:03:31,097 DEBUG    [main.py] Loading parameters for project_name = Melamine, selected_task = Novel Tank Test, condition = A, batch_num = 1, nested_key = 2
+2023-06-09 10:03:31,110 DEBUG    [main.py] Retrieved hyp from D:/TestSave/Melamine\static\Batch 1\A\hyp_novel.json, mode = current
