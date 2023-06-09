@@ -9,7 +9,8 @@ __pycache__/
 # Input and Output
 Input/
 Output/
-History/projects.json
+History/
+Log/
 
 #all file start with test
 test*
