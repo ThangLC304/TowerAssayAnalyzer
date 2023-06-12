@@ -50,6 +50,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] CREATE PROJECT AUTO LOAD                                                    # DONE
 #[TODO] CHANGE PROJECT AUTO SET DEFAULT< IF CAN"T< SEARCH FOR THEM                  # DONE
 #[TODO] ALERT BEFORE DELETE PROJECT                                                 # DONE  
+#[TODO] Add button don't remove directory if the current number is > target number  #
 
 
 ROOT = Path(__file__).parent
@@ -184,7 +185,7 @@ class HISTORY():
 
         return project_dir
 
-    def update_blank_folders(self, project_name, test_num, batch_num, treatment_num, target_amount):
+    def update_blank_folders(self, project_name, test_num, batch_num, treatment_num, target_amount, task):
         project_path = Path(self.get_project_dir(project_name))
 
         # find children directory of project_path
@@ -225,13 +226,18 @@ class HISTORY():
                     logger.debug(f"New fish directory '{new_fish_dir}' in {test_dir}/{treatment_dir}")
             elif max_fish_num > target_amount:
                 logger.debug("Current number of fish is more than target amount")
-                for i in range(max_fish_num, target_amount, -1):
-                    fish_dir = treatment_dir / f"{i}"
-                    logger.debug("Try removing fish directory: ", fish_dir)
-                    shutil.rmtree(fish_dir)
-                    logger.debug(f"Fish directory '{fish_dir}' has been removed")
+                if task == "add":
+                    logger.debug("Task is 'add', so do nothing")
+                    pass
+                elif task == "remove":
+                    logger.debug("Task is 'remove', so remove fish directories")
+                    for i in range(max_fish_num, target_amount, -1):
+                        fish_dir = treatment_dir / f"{i}"
+                        logger.debug("Try removing fish directory: ", fish_dir)
+                        shutil.rmtree(fish_dir)
+                        logger.debug(f"Fish directory '{fish_dir}' has been removed")
 
-    def fish_adder(self, project_name, test_num, batch_num, treatment_num, target_amount, modify_history=False):
+    def fish_adder(self, project_name, test_num, batch_num, treatment_num, target_amount, task, modify_history=False):
         if treatment_num == "all":
             # get list of treatments in batch_num
             project_detail = self.projects_data[project_name]
@@ -239,12 +245,12 @@ class HISTORY():
             treatments_count = len(project_detail[batch_name].keys())
             treatment_nums = [chr(i) for i in range(65, 65+treatments_count)]
             for treatment_num in treatment_nums:
-                self.add_fish(project_name, test_num, batch_num, treatment_num, target_amount, modify_history)
+                self.add_fish(project_name, test_num, batch_num, treatment_num, target_amount, task, modify_history)
         else:
-            self.add_fish(project_name, test_num, batch_num, treatment_num, target_amount, modify_history)
+            self.add_fish(project_name, test_num, batch_num, treatment_num, target_amount, task, modify_history)
 
 
-    def add_fish(self, project_name, test_num, batch_num, treatment_num, target_amount, modify_history=False):
+    def add_fish(self, project_name, test_num, batch_num, treatment_num, target_amount, task, modify_history=False):
         logger.debug("add_fish is called")
         logger.debug(f"variables: project_name = {project_name}, test_num = {test_num}, batch_num = {batch_num}, treatment_num = {treatment_num}, target_amount = {target_amount}, modify_history = {modify_history}")
         project_detail = self.projects_data[project_name]
@@ -285,7 +291,7 @@ class HISTORY():
             self.saver()
 
         # Add blank folder to project directory
-        self.update_blank_folders(project_name, test_num, batch_num, treatment_num, target_amount)
+        self.update_blank_folders(project_name, test_num, batch_num, treatment_num, target_amount, task)
 
     def saver(self):
         with open(HISTORY_PATH, "w") as file:
@@ -1157,7 +1163,7 @@ class App(customtkinter.CTk):
         logger.debug(message_)
 
 
-    def folder_changer(self, target_amount, treatment_mode="current"):
+    def folder_changer(self, target_amount, task="add", treatment_mode="current"):
         logger.debug(f"folder_changer called with target_amount = {target_amount}")
         current_test = self.TestOptions.get()
         current_test_index = self.TESTLIST.index(current_test)
@@ -1177,6 +1183,7 @@ class App(customtkinter.CTk):
                                  batch_num=current_batch_index, 
                                  treatment_num=current_condition_char, 
                                  target_amount=target_amount, 
+                                 task=task,
                                  modify_history=False)
         elif treatment_mode == "all":
             logger.debug("Modify folders for all treatment")
@@ -1185,6 +1192,7 @@ class App(customtkinter.CTk):
                                  batch_num=current_batch_index, 
                                  treatment_num=treatment_mode,
                                  target_amount=target_amount, 
+                                 task=task,
                                  modify_history=False)
 
 
@@ -1193,14 +1201,14 @@ class App(customtkinter.CTk):
         target_amount = self.nested_key_1_frame.add_entry()
         if self.nested_key_2_frame.null_label == None:
             self.nested_key_2_frame.add_entry()
-        self.folder_changer(target_amount)
+        self.folder_changer(target_amount, task="add")
 
     def nk_remove(self):
         logger.debug("nk_remove_button pressed")
         target_amount = self.nested_key_1_frame.remove_entry()
         if self.nested_key_2_frame.null_label == None:
             self.nested_key_2_frame.remove_entry()
-        self.folder_changer(target_amount)
+        self.folder_changer(target_amount, task="remove")
 
     # def nk1_add(self):
     #     logger.debug("nk1_add_button pressed")

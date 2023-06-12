@@ -1,1 +1,198 @@
-{}
+{
+    "Mel": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Melamine",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Melamine",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "DIRECTORY": "D:\\TestSave\\Mel",
+        "Batch 2": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Melamine",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Melamine",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "Batch 3": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Melamine",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Melamine",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        }
+    },
+    "DifNum": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "DIRECTORY": "D:/TestSave/DifNum"
+    },
+    "Melamine": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "Batch 2": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "Batch 3": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                10,
+                ""
+            ],
+            "Treatment B": [
+                "Mel",
+                0.1,
+                "ppm",
+                10,
+                ""
+            ],
+            "Treatment C": [
+                "Mel",
+                10.0,
+                "ppm",
+                10,
+                ""
+            ]
+        },
+        "DIRECTORY": "D:/TestSave/Melamine"
+    },
+    "testest": {
+        "Batch 1": {
+            "Treatment A": [
+                "Control",
+                0,
+                "",
+                12,
+                "aset"
+            ],
+            "Treatment B": [
+                "bset",
+                10.0,
+                "ppm",
+                12,
+                "aset"
+            ],
+            "Treatment C": [
+                "cset",
+                1.0,
+                "ppm",
+                10,
+                "aset"
+            ]
+        },
+        "DIRECTORY": "D:\\TestSave\\testest"
+    }
+}
