@@ -75,28 +75,6 @@ Path('Log').mkdir(parents=True, exist_ok=True)
 # Configure the logging module
 log_file = 'Log/log.txt'
 
-# # Define the log format with colors
-# log_format = "%(asctime)s %(log_color)s%(levelname)-8s%(reset)s %(message)s"
-
-# # Create a formatter with colored output
-# formatter = ColoredFormatter(log_format)
-
-# # Create a file handler to save logs to the file
-# file_handler = logging.FileHandler(log_file, mode='a')  # Set the mode to 'a' for append
-# file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(message)s"))
-
-# # Create a stream handler to display logs on the console with colored output
-# stream_handler = logging.StreamHandler()
-# stream_handler.setFormatter(formatter)
-
-# # Get the root logger
-# logger = logging.getLogger()
-# logger.setLevel(logging.DEBUG)
-
-# # Add the handlers to the logger
-# logger.addHandler(file_handler)
-# logger.addHandler(stream_handler)
-
 class ContextFilter(logging.Filter):
     """
     This is a filter which injects contextual information into the log.
@@ -127,7 +105,7 @@ stream_handler.addFilter(f)  # Add the filter to the stream handler
 
 # Get the root logger
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # Add the handlers to the logger
 logger.addHandler(file_handler)
