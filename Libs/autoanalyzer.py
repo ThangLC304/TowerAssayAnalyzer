@@ -79,6 +79,7 @@ def find_treatments(mother_dir, batch_num):
 
     return substance_dict, parameters_required_dict
 
+
 def get_current_params_count(project_dir='a path', batch_num=1, task='a task', treatment_index='A'):
     static_path = project_dir / 'static'
     static_batch_path = static_path / f'Batch {batch_num}'
@@ -99,6 +100,7 @@ def get_current_params_count(project_dir='a path', batch_num=1, task='a task', t
 
     return params_count
 
+
 def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False, skip_list = {}):
 
     TREATMENTS, PARAMS_REQUIRED = find_treatments(PROJECT_DIR, BATCHNUM)
@@ -110,7 +112,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False, s
         logger.debug(f"Required params for {treatment_index} is {required_params}")
         current_params = get_current_params_count(project_dir=PROJECT_DIR, batch_num=BATCHNUM, task=TASK, treatment_index=treatment_index)
         logger.debug(f"Current params for {treatment_index} is {current_params}")
-        if required_params != current_params:
+        if required_params > current_params:
             notification = f"{treatment_index};{required_params};{current_params}"
             total_time = 0
             ERROR = "Mismatched"

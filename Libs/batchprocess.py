@@ -79,6 +79,9 @@ class MY_CONDITION():
 
         trajectories = condition_path.glob(f'**/{self.trajectory_format}')
         valid_dirs = [x.parent for x in trajectories]
+        if len(valid_dirs) == 0:
+            logger.warning(f'No trajectories found in {condition_path}')
+            return {}
 
         pseudo_trajectories = []
         for d in all_dirs:
@@ -87,7 +90,7 @@ class MY_CONDITION():
             else:
                 pseudo_trajectories.append(d / 'pseudo.txt')
 
-        pseudo_trajectores = sort_paths_by_parent(pseudo_trajectories)
+        pseudo_trajectories = sort_paths_by_parent(pseudo_trajectories)
         logger.info(f'Found {len(valid_dirs)} existed trajectories in {condition_path}')
         logger.debug(f'Existed trajectories: {len(valid_dirs)}, pseudo trajectories: {len(all_dirs)-len(valid_dirs)}')
 

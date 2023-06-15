@@ -76,7 +76,6 @@ TESTS_LIST = ['Novel Tank Test',
               'Social Interaction Test',
               'Predator Test']
 
-# EXCEL_NAMES = [f"0{i+1} - {TESTS_LIST[i]} (Summary).xlsx" for i in range(len(TESTS_LIST))]
 
 # SETUP LOGGING CONFIGURATION
 logger = logging.getLogger(__name__)
@@ -2198,7 +2197,7 @@ class App(customtkinter.CTk):
         # create a box to input X and Y coordinates
         input_window = tkinter.Toplevel(self)
         input_window.title("Input Filler Coordinates")
-        input_window.geometry("420x160")
+        input_window.geometry("440x120")
         #move the window to the center of the screen, bring it to front
         input_window.lift()
         input_window.geometry(f"420x160+{int(input_window.winfo_screenwidth()/2 - 420/2)}+{int(input_window.winfo_screenheight()/2 - 160/2)}")
@@ -2207,13 +2206,13 @@ class App(customtkinter.CTk):
         top_canvas = customtkinter.CTkFrame(input_window)
         top_canvas.grid(row=0, column=0, sticky="nsew")
 
-        ref_df_length = len(ref_df)
+        # ref_df_length = len(ref_df)
 
-        df_len_label = customtkinter.CTkLabel(top_canvas, text=f"Total number of frames")
-        df_len_label.grid(row=0, column=0, columnspan=2, padx=5, pady=10)
-        df_len_entry = customtkinter.CTkEntry(top_canvas)
-        df_len_entry.grid(row=0, column=2, columnspan=2, padx=5, pady=10)
-        df_len_entry.insert(0, ref_df_length)
+        # df_len_label = customtkinter.CTkLabel(top_canvas, text=f"Total number of frames")
+        # df_len_label.grid(row=0, column=0, columnspan=2, padx=5, pady=10)
+        # df_len_entry = customtkinter.CTkEntry(top_canvas)
+        # df_len_entry.grid(row=0, column=2, columnspan=2, padx=5, pady=10)
+        # df_len_entry.insert(0, ref_df_length)
 
         x_labels = {}
         y_labels = {}
@@ -2322,9 +2321,10 @@ class App(customtkinter.CTk):
             skip_list = []
             for key in false_keys:
                 _message = f"Trajectory {key} is invalid."
-                _message += f"\n Press YES if this is a non-moving fish case, which means we would fill its coordinates with the coordinates of the first frame."
-                _message += f"\n Press NO if this is a dead fish case, which means we would skip its analysis."
-                choice = tkinter.messagebox.askyesno("Warning", _message)
+                _message += f"\n Press YES, in the case of FREEZING fish, you are required to input a valid coordinate for it"
+                _message += f"\n Press NO, in the case of DEAD/NO fish, which means its end-points would be left blank in the final result."
+                _message += f"\n Press CANCEL, if there is supposed to be a valid trajectory for this fish/tank."
+                choice = tkinter.messagebox.askyesnocancel("Warning", _message)
                 if choice == True:
                     logger.debug(f"User chose to fill coordinates for {key}")
                     if "Shoaling" in key:
@@ -2338,11 +2338,14 @@ class App(customtkinter.CTk):
                         skip_num = Path(key).stem
                         skip_list.append(skip_num)
                         continue
-                else:
+                elif choice == False:
                     logger.debug(f"User chose to skip {key}")
                     skip_num = Path(key).stem
                     skip_list.append(skip_num)
                     continue
+                else:
+                    logger.debug(f"User chose to cancel")
+                    return False
             
             return skip_list
 
