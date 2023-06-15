@@ -306,9 +306,9 @@ def load_threshold(threshold_path, *args):
 
     return return_result
 
-def remove_first_row_if_nan(input_df):
+def remove_first_row_if_nan(input_df, limitation):
     # if the first row of the dataframe has nan values, remove the entire first row
-    while True:
+    while len(input_df) > limitation:
         row_0 = input_df.iloc[0, :]
         if row_0.isnull().values.any():
             input_df = input_df.iloc[1:, :]
@@ -330,10 +330,11 @@ def split_array(my_array, sep = 1):
 
 
 
-def clean_df(input_df, fill = False, frames = 0, DEBUG = False): 
+def clean_df(input_df, fill = False, frames = 0, DEBUG = False, remove_nan = True, limitation = 15000): 
 
     # Remove the initial rows with nan values
-    input_df = remove_first_row_if_nan(input_df)
+    if remove_nan:
+        input_df = remove_first_row_if_nan(input_df, limitation)
 
     # Only take the first frames rows
     if frames == 0:
@@ -342,43 +343,50 @@ def clean_df(input_df, fill = False, frames = 0, DEBUG = False):
         input_df = input_df.iloc[:frames, :]
 
 
-    filled_history = {} # {[filled_value]: [nan_coords]}
-    if fill == True:
-        # fill nan values with the previous value
-        for col in input_df.columns:
-            # initialize the filled_history of each column
-            filled_history[col] = {}
+    # filled_history = {} # {[filled_value]: [nan_coords]}
+    # if fill == True:
+    #     # fill nan values with the previous value
+    #     for col in input_df.columns:
+    #         # initialize the filled_history of each column
+    #         filled_history[col] = {}
 
-            if DEBUG:
-                print('In column: ', col, '...')
-            # find the nan values
-            nan_coords = np.where(input_df[col].isnull())[0]    # e.g. array([3, 5], dtype=int64)
-            if DEBUG:
-                print('Current NaN coordinates: ', nan_coords)
-            # if there are nan values
-            if len(nan_coords) == 0:
-                continue
+    #         if DEBUG:
+    #             print('In column: ', col, '...')
+    #         # find the nan values
+    #         nan_coords = np.where(input_df[col].isnull())[0]    # e.g. array([3, 5], dtype=int64)
+    #         if DEBUG:
+    #             print('Current NaN coordinates: ', nan_coords)
+    #         # if there are nan values
+    #         if len(nan_coords) == 0:
+    #             continue
             
-            # split nan_coords into groups of continuous numbers (sep = 1)
-            nan_coords_groups = split_array(nan_coords)
+    #         # split nan_coords into groups of continuous numbers (sep = 1)
+    #         nan_coords_groups = split_array(nan_coords)
 
-            for nan_coords_group in nan_coords_groups:
-                # find the previous value
-                prev_value = input_df[col][nan_coords_group[0] - 1]
-                # # fill the nan values with the previous value
-                # input_df[col][nan_coords_group] = prev_value
-                # record the filled values
-                if prev_value not in filled_history:
-                    filled_history[col][prev_value] = nan_coords_group
-                else:
-                    filled_history[col][prev_value] = np.concatenate((filled_history[col][prev_value], nan_coords_group))
-                # change the value in filled_history from np.array to list
-                filled_history[col][prev_value] = filled_history[col][prev_value].tolist()
+    #         for nan_coords_group in nan_coords_groups:
+    #             # find the previous value
+    #             prev_value = input_df[col][nan_coords_group[0] - 1]
+    #             # # fill the nan values with the previous value
+    #             # input_df[col][nan_coords_group] = prev_value
+    #             # record the filled values
+    #             if prev_value not in filled_history:
+    #                 filled_history[col][prev_value] = nan_coords_group
+    #             else:
+    #                 filled_history[col][prev_value] = np.concatenate((filled_history[col][prev_value], nan_coords_group))
+    #             # change the value in filled_history from np.array to list
+    #             filled_history[col][prev_value] = filled_history[col][prev_value].tolist()
         
-        # fill the nan values with the previous value
-        input_df = input_df.fillna(method='ffill')
+    #     # fill the nan values with the previous value
+    #     input_df = input_df.fillna(method='ffill')
 
-    return input_df, filled_history
+    if fill == False:
+        return input_df
+    
+    # Fill the nan values using forward fill and backward fill
+    output_df = input_df.fillna(method='ffill')
+    output_df = output_df.fillna(method='bfill')
+
+    return output_df
 
 
 def append_df_to_excel(filename, df, sheet_name='Sheet1', startcol=None, startrow=None, col_sep = 0, row_sep = 0,
@@ -604,6 +612,9 @@ def excel_polish(file_path, batch_num, cell_step=10, treatment = None, inplace=T
     # Adjust the column widths
     # Loop through each sheet in the workbook
     for sheet_name in workbook.sheetnames:
+
+        if "analysis" in sheet_name.lower():
+            continue
         # Select the sheet
         sheet = workbook[sheet_name]
         
@@ -852,7 +863,28 @@ def check_trajectories_dir(project_dir, current_test, current_treatment, current
     return checker_dict
 
     
+def nanlize(input_dict, test_index):
+    if test_index == 0:
+        for time_period, end_points in input_dict.items():
+            for end_point in end_points.keys():
+                input_dict[time_period][end_point][1] = np.nan 
+        
+    else:
+        for end_point in input_dict.keys():
+            input_dict[end_point][1] = np.nan
 
+    return input_dict
+
+def get_treatment_name_from_index(treatment_index, treatment_name_list):
+    # turn treatment_index = A to number = 0
+    treatment_index = ord(treatment_index) - ord('A')
+    return treatment_name_list[treatment_index]
+
+def get_treatment_index_from_name(treatment_name, treatment_name_list):
+    # get number from treatment_name_list
+    treatment_name_list.index(treatment_name)
+    # turn it to char
+    return chr(ord('A') + treatment_name_list.index(treatment_name))
 
 
     

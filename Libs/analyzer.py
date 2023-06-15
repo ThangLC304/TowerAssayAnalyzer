@@ -19,18 +19,23 @@ ROUND_UP = 4
 
 class NovelTankTest(Loader): # 3000 * 7
 
-    def __init__(self, input_df, project_hyp, fish_num, segment = -1):
+    def __init__(self, 
+                 input_df, 
+                 project_hyp, 
+                 fish_num, 
+                #  segment = -1
+                 ):
 
         super().__init__(testtype='novel', project_hyp=project_hyp)
 
         total_frames = self.hyp["FRAME RATE"] * self.hyp["DURATION"]
         input_df = input_df[:total_frames]
 
-        if segment == -1:
-            self.df = input_df
-        else:
-            self.df = self.segmentate(input_df, segment)
-            # print(f"With segment = {segment}, df length is: {len(self.df)}")
+        # if segment == -1:
+        #     self.df = input_df
+        # else:
+        #     self.df = self.segmentate(input_df, segment)
+        self.df = input_df
 
         self.cols = self.df.columns
         self.basic, self.units = self.BasicCalculation(self.df, fish_num)
@@ -62,21 +67,21 @@ class NovelTankTest(Loader): # 3000 * 7
             self.others['average entry'] = 0
 
 
-    def segmentate(self, input_df, segment):
+    # def segmentate(self, input_df, segment):
 
-        try:
-            segment_duration = int(self.hyp["SEGMENT DURATION"])
-        except:
-            segment_duration = 0
+    #     try:
+    #         segment_duration = int(self.hyp["SEGMENT DURATION"])
+    #     except:
+    #         segment_duration = 0
 
-        if segment_duration == 0:
-            return input_df
+    #     if segment_duration == 0:
+    #         return input_df
         
-        start_frame = segment * segment_duration * self.hyp["FRAME RATE"]
-        end_frame = (segment + 1) * segment_duration * self.hyp["FRAME RATE"]
-        # print(f"DF segmented from {start_frame} to {end_frame}")
+    #     start_frame = segment * segment_duration * self.hyp["FRAME RATE"]
+    #     end_frame = (segment + 1) * segment_duration * self.hyp["FRAME RATE"]
+    #     # print(f"DF segmented from {start_frame} to {end_frame}")
         
-        return input_df[start_frame:end_frame]
+    #     return input_df[start_frame:end_frame]
         
 
     def distance_in_top(self):

@@ -11,11 +11,30 @@ import logging
 # Get a logger
 logger = logging.getLogger(__name__)
 
-tests = ['Novel Tank', 'Shoaling', 'Mirror Biting', 'Social Interaction', 'Predator Avoidance']
+tests = ['Novel Tank', 
+         'Shoaling', 
+         'Mirror Biting', 
+         'Social Interaction', 
+         'Predator Avoidance']
+
+TESTLIST = ['Novel Tank Test', 
+                'Shoaling Test', 
+                'Mirror Biting Test',
+                'Social Interaction Test',
+                'Predator Test']
+
+hyp_names = ['hyp_novel.json',
+            'hyp_shoaling.json',
+            'hyp_mirror.json',
+            'hyp_social.json',
+            'hyp_predator.json']
+
+ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
+
 keywords = [x.split(' ')[0].lower() for x in tests]
 EXCEL_NAMES = [f"0{i+1} - {tests[i]} Test (Summary).xlsx" for i in range(len(tests))]
 
-def find_treatments(mother_dir):
+def find_treatments(mother_dir, batch_num):
 
     control_dirs = [path for path in mother_dir.glob("**/*Control*") if path.is_dir()]
 
@@ -26,19 +45,76 @@ def find_treatments(mother_dir):
 
     control_dir = Path(control_dirs[0])
     parent_dir = control_dir.parent
-    same_level_dirs = [path for path in parent_dir.iterdir() if path.is_dir()]
-
-    result_dict = {}
+    batch_ord = f"{ORDINALS[int(batch_num)-1]} Batch"
+    same_level_dirs = [path for path in parent_dir.iterdir() if path.is_dir() and batch_ord in path.name]
+    logger.debug(f"Same level dirs with batch ord {batch_ord}: {same_level_dirs}")
+    substance_dict = {}
+    parameters_required_dict = {}
     for dir_path in same_level_dirs:
         key = dir_path.name.split('-')[0].strip()
+
         substance = dir_path.name.split('-')[1].split('(')[0].strip()
-        result_dict[key] = substance
+        substance_dict[key] = substance
 
-    return result_dict
+        fish_count = len([x for x in dir_path.iterdir() if x.is_dir()])
+        logger.debug(f"Found {fish_count} fish in {dir_path.name}")
+        parameters_required = 0
+        if fish_count == 0:
+            parameters_required = 0
+        else:
+            valid = 0
+            #for all subfolders in dir_path, check how many of them has a .txt file inside
+            for subfolder in dir_path.iterdir():
+                txt_files = [x for x in subfolder.iterdir() if x.is_file() and x.suffix == '.txt']
+                if txt_files != []:
+                    logger.debug(f"Found {len(txt_files)} txt files in {subfolder.name}")
+                    valid += 1
+                    logger.debug(f"Valid is now {valid}")
+            if valid == 0:
+                parameters_required = 0
+            else:
+                parameters_required = fish_count
 
-def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
+        parameters_required_dict[key] = parameters_required
 
-    TREATMENTS = find_treatments(PROJECT_DIR)
+    return substance_dict, parameters_required_dict
+
+def get_current_params_count(project_dir='a path', batch_num=1, task='a task', treatment_index='A'):
+    static_path = project_dir / 'static'
+    static_batch_path = static_path / f'Batch {batch_num}'
+    static_treatment_path = static_batch_path / treatment_index
+    task_index = TESTLIST.index(task)
+    hyp_name = hyp_names[task_index]
+    hyp_path = static_treatment_path / hyp_name
+
+    logger.debug("Loading hyp file from {}".format(hyp_path))
+    with open(hyp_path, 'r') as f:
+        hyp = json.load(f)
+
+    params_count = 0
+    for k, v in hyp.items():
+        if isinstance(v, dict):
+            params_count = len(v.keys())
+            logger.debug(f"Found {params_count} parameters in {k}")
+
+    return params_count
+
+def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False, skip_list = {}):
+
+    TREATMENTS, PARAMS_REQUIRED = find_treatments(PROJECT_DIR, BATCHNUM)
+
+    # PROJECT_DIR, BATCHNUM, TASK, TREATMENTS
+    for treatment_index in TREATMENTS.keys():
+        # Find the number of fish in each condition
+        required_params = PARAMS_REQUIRED[treatment_index]
+        logger.debug(f"Required params for {treatment_index} is {required_params}")
+        current_params = get_current_params_count(project_dir=PROJECT_DIR, batch_num=BATCHNUM, task=TASK, treatment_index=treatment_index)
+        logger.debug(f"Current params for {treatment_index} is {current_params}")
+        if required_params != current_params:
+            notification = f"{treatment_index};{required_params};{current_params}"
+            total_time = 0
+            ERROR = "Mismatched"
+            return total_time, notification, ERROR
 
     # PARAMETERS_PATH = PROJECT_DIR / 'static'
 
@@ -58,14 +134,18 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
             TESTS[4] = MY_DIR(name=tests[4], dir_path=subdirectory)
 
     # CHECK POINT 1
-    if len(TESTS) == 5:
-        print('TESTS data structure loaded successfully.')
+    logger.info(f'Loaded {len(TESTS)} tests: {[TESTLIST[int(t)] for t in list(TESTS.keys())]}')
 
     def extract_data(test_num, batch_num, cond):
         fishes = {}
         fish_ids = [k for k in TESTS[test_num].batch[batch_num].condition[cond].targets.keys()]    
         PARAMETERS_PATH = TESTS[test_num].batch[batch_num].condition[cond].hyp_path
-        print(fish_ids)
+        # logger.info(f"Skip list: {skip_list[cond]}")
+        # merge fish_ids and skip_list, then remove duplicates
+        # fish_ids = list(set(fish_ids + skip_list[cond]))
+        # sort in numerical value order: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+        fish_ids = sorted(fish_ids, key=lambda x: int(x))
+        logger.info(f"Fish IDs: {fish_ids}")
         SEGMENTED_DATA = False    
         if test_num == 0:
             # json_name = f"hyp_{keywords[test_num]}.json"
@@ -85,6 +165,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
             for fish_id in tqdm(fish_ids, desc="Analyzing Fish"):       
                 tqdm.write(f'Fish {fish_id}...')
                 fishes[fish_id] = TESTS[test_num].batch[batch_num].condition[cond].analyze(str(fish_id), seg_num)
+                # fishes[fish_id] = *executor.*exec.result_dict[f"{segment*wait}-{segment*wait+1} MIN"] = test.rows
 
         if SEGMENTED_DATA == False:
             for fish_id in tqdm(fish_ids, desc="Analyzing Fish"):       
@@ -113,8 +194,10 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         def analyze(self):
 
             # Extract data according to input
-            print(f"Extracting data {self.batch_num} - {self.condition}...")
+            logger.info(f"Extracting data {self.batch_num} - {self.condition}...")
             self.test_result = extract_data(self.test_num, self.batch_num, self.condition)
+            logger.info(f"Extracted {len(self.test_result)} fishes data")
+            logger.info(f"Fish list: {list(self.test_result.keys())}")
 
             if self.test_result == {}:
                 logger.warning(f"No data found for test {self.test_num} batch {self.batch_num} condition {self.condition}.")
@@ -127,9 +210,10 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
             for segment in self.test_result[example_key].keys():
                 self.dfs[segment] = pd.DataFrame()
 
-            print("Rearrange into dataframe...")
+            logger.info("Rearrange into dataframe...")
             for segment in self.test_result[example_key].keys():
                 for fish in self.test_result.keys():
+                    logger.debug(f"Organizing data of fish {fish}...")
                     df = self.get_case_df(fish, segment)
                     # if self.df is empty, then just assign df to self.df
                     if self.dfs[segment].empty:
@@ -145,20 +229,24 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
                 self.dfs[segment].set_index('Fish ID', inplace=True)
 
 
-
-            print("Exporting to excel...")
+            logger.info("Exporting to excel...")
             self.export_to_excel()
 
 
         def get_case_df(self, key, subkey): # key = fish id, subkey = timestamp
             
+            logger.debug(f"Dealing with key: {key}, key type = {type(key)}")
+            logger.debug(f"and subkey: {subkey}, subkey type = {type(subkey)}")
             # Normalize the input
             key = str(key)
-
+            
             case_dict = self.test_result[key][subkey]
 
             # Create df based on extracted data
-            columns = [x[0] for x in case_dict.values()]
+            try:
+                columns = [x[0] for x in case_dict.values()]
+            except:
+                logger.debug(f"Case dict: {case_dict}")
             units = [x[2] for x in case_dict.values()]
             for i in range(len(columns)):
                 if units[i] != '':
@@ -193,9 +281,9 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
                     continue
                 # open the excel file to adjust the column width
                 # use openpyxl to open excel_path, go to each sheet to change columns width to fit content
-                print("Sheet name " + segment + " exported to excel successfully.")
+                logger.info("Sheet name " + segment + " exported to excel successfully.")
 
-            print(f"All sheets exported to {self.excel_name} successfully.")
+            logger.info(f"All sheets exported to {self.excel_name} successfully.")
             logger.info("Polishing excel file...")
             try:
                 excel_polish(self.excel_path, 
@@ -451,6 +539,15 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         else:
             existed_batch = {}
 
+        if excel_path.exists():
+            try:
+                #rename to same name to check if the file is opened
+                os.rename(excel_path, excel_path)
+            except OSError:
+                total_time = time.time() - time00
+                notification = f'Please close the excel file {excel_name} before running the program.'
+                ERROR = "File Opened"
+                return total_time, notification, ERROR
 
         if f"Batch {BATCHNUM}" in existed_batch.keys():
             if OVERWRITE == False:
@@ -471,8 +568,10 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
                     return total_time, notification, ERROR
                 
                 return None, None, None
-                
-        return None, None, None            
+            
+        return None, None, None    
+
+    
 
     ERROR = None
 
@@ -484,11 +583,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
     time00 = time.time()
 
     # =========================================================
-    TESTLIST = ['Novel Tank Test', 
-                'Shoaling Test', 
-                'Mirror Biting Test',
-                'Social Interaction Test',
-                'Predator Test']
+    
 
 
     if TASK == TESTLIST[0]:
@@ -500,7 +595,7 @@ def autoanalyzer(PROJECT_DIR, BATCHNUM, TASK, PROGRESS_BAR, OVERWRITE = False):
         if first_check(test_num) != (None, None, None):
             total_time, notification, ERROR = first_check(test_num)
             return total_time, notification, ERROR
-
+        
         time0 = time.time()
 
         i = 0

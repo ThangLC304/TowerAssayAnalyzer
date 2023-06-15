@@ -26,9 +26,18 @@ def get_fish_num(txt_path):
 
 class NovelTank_Display(NovelTankTest):
 
-    def __init__(self, input_df, project_hyp, fish_num, segment = -1):
+    def __init__(self, 
+                 input_df, 
+                 project_hyp, 
+                 fish_num, 
+                #  segment = -1
+                 ):
 
-        super().__init__(input_df, project_hyp, fish_num, segment)
+        super().__init__(input_df, 
+                         project_hyp, 
+                         fish_num, 
+                        #  segment
+                         )
 
         self.rows = {}
         for i, req in enumerate(basic_requirements):
@@ -65,16 +74,41 @@ def noveltank_exec(txt_path, project_hyp, seg_num = 1, wait = 5):
     # FISH_NUM IS NEWLY ADDED TO THE FUNCTION TO BE USED AS KEY FOR HYPERPARAMETER DICT
     fish_num = get_fish_num(txt_path)
 
+    
     df, _ = load_raw_df(txt_path)
-    df, _ = clean_df(df, fill=True)
+    # df, _ = clean_df(df, fill=True)
     result_dict = {}
+
+    def segmentate(input_df, segment, project_hyp):
+
+        try:
+            segment_duration = int(project_hyp["SEGMENT DURATION"])
+        except:
+            segment_duration = 0
+
+        if segment_duration == 0:
+            return input_df
+        
+        start_frame = segment * segment_duration * project_hyp["FRAME RATE"]
+        end_frame = (segment + 1) * segment_duration * project_hyp["FRAME RATE"]
+        # print(f"DF segmented from {start_frame} to {end_frame}")
+
+        return input_df[start_frame:end_frame]
     
 
-    result_dict['whole'] = NovelTank_Display(df, project_hyp = project_hyp, fish_num=fish_num, segment = -1).rows
+    # result_dict['whole'] = NovelTank_Display(df, project_hyp = project_hyp, fish_num=fish_num, segment = -1).rows
 
     if seg_num > 1:
         for segment in range(seg_num):
-            test = NovelTank_Display(df, project_hyp = project_hyp, fish_num=fish_num, segment = segment)
+            segment_df = segmentate(df, segment, project_hyp)
+            segment_df = clean_df(segment_df, 
+                                  fill=True, 
+                                  remove_nan=False)
+            test = NovelTank_Display(segment_df, 
+                                     project_hyp = project_hyp, 
+                                     fish_num=fish_num, 
+                                    #  segment = segment
+                                     )
             result_dict[f"{segment*wait}-{segment*wait+1} MIN"] = test.rows
 
     return result_dict
@@ -124,7 +158,10 @@ def shoaling_exec(txt_path, project_hyp):
     fish_num = get_fish_num(txt_path)
 
     whole_df, _ = load_raw_df(txt_path)
-    whole_df, _ = clean_df(whole_df, fill=True)
+
+    minimum_frames = int(float(project_hyp["FRAME RATE"])) * int(float(project_hyp["DURATION"]))
+    whole_df, _ = clean_df(whole_df, fill=True, limitation=minimum_frames)
+
     df1, df2, df3 = whole_df.iloc[:, :2], whole_df.iloc[:, 2:4], whole_df.iloc[:, 4:]
     # print('Splitted into 3 dataframes', df1.shape, df2.shape, df3.shape, '')
     test = Shoaling_Display(df1, df2, df3, project_hyp, fish_num)
@@ -165,7 +202,10 @@ def mirrorbiting_exec(txt_path, project_hyp):
     fish_num = get_fish_num(txt_path)
 
     df, _ = load_raw_df(txt_path)
-    df, _ = clean_df(df, fill=True)
+
+    minimum_frames = int(float(project_hyp["FRAME RATE"])) * int(float(project_hyp["DURATION"]))
+    df, _ = clean_df(df, fill=True, limitation=minimum_frames)
+
     test = MirrorBiting_Display(df, project_hyp, fish_num)
     return test.rows
 
@@ -199,7 +239,10 @@ def socialinteraction_exec(txt_path, project_hyp):
     fish_num = get_fish_num(txt_path)
 
     df, _ = load_raw_df(txt_path)
-    df, _ = clean_df(df, fill=True)
+
+    minimum_frames = int(float(project_hyp["FRAME RATE"])) * int(float(project_hyp["DURATION"]))
+    df, _ = clean_df(df, fill=True, limitation=minimum_frames)
+
     test = SocialInteraction_Display(df, project_hyp, fish_num)
     return test.rows
 
@@ -235,6 +278,9 @@ def predatoravoidance_exec(txt_path, project_hyp):
     fish_num = get_fish_num(txt_path)
 
     df, _ = load_raw_df(txt_path)
-    df, _ = clean_df(df, fill=True)
+
+    minimum_frames = int(float(project_hyp["FRAME RATE"])) * int(float(project_hyp["DURATION"]))
+    df, _ = clean_df(df, fill=True, limitation=minimum_frames)
+    
     test = PredatorAvoidance_Display(df, project_hyp, fish_num)
     return test.rows

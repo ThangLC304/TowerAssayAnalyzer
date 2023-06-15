@@ -8,13 +8,14 @@ from pathlib import Path
 import shutil
 import os
 import logging
+import pandas as pd
 from colorlog import ColoredFormatter
 
 import threading
 
 from Libs.autoanalyzer import autoanalyzer
 from Libs.importvideos import VideoAdd
-from Libs.misc import get_static_dir, check_trajectories_dir
+from Libs.misc import get_static_dir, check_trajectories_dir, load_raw_df, get_treatment_name_from_index, get_treatment_index_from_name
 from Libs.params import TestParams
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -50,7 +51,16 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 #[TODO] CREATE PROJECT AUTO LOAD                                                    # DONE
 #[TODO] CHANGE PROJECT AUTO SET DEFAULT< IF CAN"T< SEARCH FOR THEM                  # DONE
 #[TODO] ALERT BEFORE DELETE PROJECT                                                 # DONE  
-#[TODO] Add button don't remove directory if the current number is > target number  #
+#[TODO] Add button don't remove directory if the current number is > target number  # DONE
+#[TODO] Parameters used also summarized in a sheet named "Analysis Info"            # 
+#[TODO] Change the word "Separator" to something more informative                   # DONE
+#[TODO] When the number of fish in sheets are different, there would be issue !     # DONE
+#[TODO] Add limitation for misc.clean_df so it does not remove all NaN              # DONE
+#[TODO] For NovelTankTest, fill method should have 2 options: "ffill" and "bfill"   # DONE
+# -> split the 21000 into 7 x 3000 first, then clean_df
+#[TODO] Right before analyzing, check if all trajectories are available, if empty,
+# then ask user if the fish there just not moving? If Yes -> ask User to input a X,Y
+# If No -> put a blank line in the excel file.                                      # DONE
 
 
 ROOT = Path(__file__).parent
@@ -65,6 +75,8 @@ TESTS_LIST = ['Novel Tank Test',
               'Mirror Biting Test',
               'Social Interaction Test',
               'Predator Test']
+
+# EXCEL_NAMES = [f"0{i+1} - {TESTS_LIST[i]} (Summary).xlsx" for i in range(len(TESTS_LIST))]
 
 # SETUP LOGGING CONFIGURATION
 logger = logging.getLogger(__name__)
@@ -90,6 +102,10 @@ log_format = "%(asctime)s %(log_color)s%(levelname)-8s%(reset)s [%(pathname)s] %
 # Create a formatter with colored output
 formatter = ColoredFormatter(log_format)
 
+# Get the root logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
 # Create a filter
 f = ContextFilter()
 
@@ -97,15 +113,13 @@ f = ContextFilter()
 file_handler = logging.FileHandler(log_file, mode='a')  # Set the mode to 'a' for append
 file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s [%(pathname)s] %(message)s"))
 file_handler.addFilter(f)  # Add the filter to the file handler
+file_handler.setLevel(logging.DEBUG)
 
 # Create a stream handler to display logs on the console with colored output
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 stream_handler.addFilter(f)  # Add the filter to the stream handler
-
-# Get the root logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+stream_handler.setLevel(logging.DEBUG)
 
 # Add the handlers to the logger
 logger.addHandler(file_handler)
@@ -162,6 +176,19 @@ class HISTORY():
                 return None
 
         return project_dir
+    
+    def get_treatment_dir(self, project_name, test_name, batch_num, treatment_index):
+        project_path = Path(self.get_project_dir(project_name))
+
+        test_path = [child for child in project_path.iterdir() if child.is_dir() and test_name.lower() in child.name.lower()][0]
+
+        batch_ord = f"{ORDINALS[int(batch_num)-1]} Batch"
+
+        treatment_index = f"{treatment_index} - "
+        treatment_path = [child for child in test_path.iterdir() if child.is_dir() and batch_ord in child.name and treatment_index in child.name][0]
+
+        return treatment_path
+
 
     def update_blank_folders(self, project_name, test_num, batch_num, treatment_num, target_amount, task):
         project_path = Path(self.get_project_dir(project_name))
@@ -276,6 +303,26 @@ class HISTORY():
             json.dump(self.projects_data, file, indent=4)
 
 THE_HISTORY = HISTORY()
+
+class CustomDialog(tkinter.Toplevel):
+    def __init__(self, master, title=None, message=None, button_text=None, button_command=None):
+        tkinter.Toplevel.__init__(self, master)
+        self.title(title)
+
+        self.label = tkinter.Label(self, text=message)
+        self.label.pack(padx=10, pady=10)
+
+        self.button_command = button_command
+        self.button = tkinter.Button(self, text=button_text, command=self.ok)
+        self.button.pack(pady=10)
+
+        self.geometry("+%d+%d" % (master.winfo_rootx(), master.winfo_rooty()))
+
+    def ok(self):
+        if self.button_command is not None:
+            self.button_command()
+        self.destroy()
+
 
 class ToolTip(object):
 
@@ -394,7 +441,7 @@ class ProjectDetailFrame(customtkinter.CTkFrame):
 
     def load_project_details(self, project_name=None, batch_name="Batch 1"):
 
-        logger.info('Loading.. project name = ', project_name)
+        logger.info(f"Loading.. project name = {project_name}")
 
         if project_name == "":
             label = customtkinter.CTkLabel(self, text="No project selected")
@@ -981,10 +1028,9 @@ class App(customtkinter.CTk):
                                                    command=self.save_parameters)
         self.save_button.grid(row=1, column=2, padx=20, pady=20, sticky="nsew")
 
-        self.ConditionOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False,
+        self.TreatmentOptions = customtkinter.CTkOptionMenu(self.container_2_mid, dynamic_resizing=False,
                                                                 width=210, values=self.CONDITIONLIST)
-        self.ConditionOptions.grid(row=2, column=0, columnspan=3, padx=20, pady=(20, 10), sticky="nsew")
-        self.ConditionOptions.configure(command=self.update_param_display)
+        self.TreatmentOptions.grid(row=2, column=0, columnspan=3, padx=20, pady=(20, 10), sticky="nsew")
 
         self.parameters_frame = Parameters(self.container_2_mid, self.CURRENT_PROJECT, self.TESTLIST[0], 0)
         self.parameters_frame.grid(row=3, columnspan=3, padx=20, pady=20, sticky="nsew")
@@ -1043,13 +1089,14 @@ class App(customtkinter.CTk):
         # Config
         self.BatchOptions.configure(command=self.update_param_display)
         self.TestOptions.configure(command=self.update_param_display)
+        self.TreatmentOptions.configure(command=self.update_param_display)
 
         # Load the first test by default
         self.update_param_display(load_type = "first_load")
 
     def get_treatment_char(self, current_condition = None):
         if current_condition == None:
-            current_condition = self.ConditionOptions.get()
+            current_condition = self.TreatmentOptions.get()
         condition_index = self.CONDITIONLIST.index(current_condition)
         condition_char = CHARS[condition_index]
         return condition_char
@@ -1078,6 +1125,8 @@ class App(customtkinter.CTk):
         checker_window.minsize(400, 400)
         checker_window.geometry("+%d+%d" % (self.winfo_screenwidth()/2 - 400, self.winfo_screenheight()/2 - 300))
         checker_window.rowconfigure(0, weight=1)
+        #bring it to front
+        checker_window.lift()
 
         # Create a Canvas widget with a Scrollbar
         checker_container = tkinter.Canvas(checker_window)
@@ -1094,6 +1143,7 @@ class App(customtkinter.CTk):
         checker_container.create_window((0,0), window=checker_frame, anchor='nw')
 
         row = 0
+        false_keys = []
         for key, value in checker_dict.items():
             # Create a label for the key
             key_label = tkinter.Label(checker_frame, text=key)
@@ -1104,6 +1154,7 @@ class App(customtkinter.CTk):
                 value_label = tkinter.Label(checker_frame, text="✓")
             else:
                 value_label = tkinter.Label(checker_frame, text="✗")
+                false_keys.append(key)
 
             value_label.grid(row=row, column=1)
 
@@ -1113,9 +1164,19 @@ class App(customtkinter.CTk):
         checker_container.update_idletasks()
         checker_container.configure(scrollregion=checker_container.bbox('all'))
 
+        if len(false_keys) == 0:
+            _status = "All True"
+            return _status, None, None
+        elif len(false_keys) == len(checker_dict):
+            _status = "All False"
+            return _status, None, None
+        else:
+            _status = "Some False"
+            return _status, false_keys, checker_dict
+
 
     def copy_to_other_treatment(self):
-        current_treatment = self.ConditionOptions.get() #OK - just for display
+        current_treatment = self.TreatmentOptions.get() #OK - just for display
 
         message_ = f"You are going to copy current treatment parameters to other treatments'"
         message_ += f"\nThis is an irreversible action, do you want to continue?"
@@ -1153,7 +1214,7 @@ class App(customtkinter.CTk):
 
         if treatment_mode == "current":
             current_condition_char = self.get_treatment_char()
-            logger.debug(f"Modify folders for current treatment: {self.ConditionOptions.get()}") #OK - just for log
+            logger.debug(f"Modify folders for current treatment: {self.TreatmentOptions.get()}") #OK - just for log
             # current_treatment_index = current_treatment.split(" ")[1]
             logger.debug(f"current_treatment_index = {current_condition_char}")
             THE_HISTORY.fish_adder(project_name=self.CURRENT_PROJECT, 
@@ -1436,8 +1497,8 @@ class App(customtkinter.CTk):
 
             #set TestOptions to the first test
             self.TestOptions.set(selected_test)
-            #set ConditionOptions to the first condition
-            self.ConditionOptions.set(self.CONDITIONLIST[0])
+            #set TreatmentOptions to the first condition
+            self.TreatmentOptions.set(self.CONDITIONLIST[0])
             #set BatchOptions to the first batch
             self.BatchOptions.set(self.BATCHLIST[0])
 
@@ -1452,7 +1513,7 @@ class App(customtkinter.CTk):
         selected_test = self.TestOptions.get()
         logger.debug(f"Test DropDown: {self.PREVIOUS_TEST} -> {selected_test}")
         
-        condition = self.ConditionOptions.get() #OK - just for log
+        condition = self.TreatmentOptions.get() #OK - just for log
         logger.debug(f"Condition DropDown: {self.PREVIOUS_CONDITION} -> {condition}")
         # convert condition_index to letter 1 -> A
         current_condition_char = self.get_treatment_char()
@@ -1484,8 +1545,8 @@ class App(customtkinter.CTk):
         self.nested_key_1_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, treatment_mode = treatment_mode)
         self.nested_key_2_frame.save_parameters(project_name = self.CURRENT_PROJECT, selected_task = selected_test, condition=condition, batch_num=batch_num, treatment_mode = treatment_mode)
 
-    ### DELETE PROJECT BUTTON FUNCTION ###
 
+    ### DELETE PROJECT BUTTON FUNCTION ###
     def delete_project(self):
 
         # create confirmation box
@@ -1569,7 +1630,7 @@ class App(customtkinter.CTk):
             try:
                 self.CONDITIONLIST, ErrorType = self.access_history("load treatment list", batch_name = self.BatchOptions.get())
                 logger.debug("Loaded condition list")
-                logger.debug("Possible warning: ", ErrorType)
+                logger.debug(f"Possible warning: {ErrorType}")
                 break
             except:
                 logger.warning(f"Batch {self.BatchOptions.get()} does not exist in this project, try another batch")
@@ -1585,10 +1646,10 @@ class App(customtkinter.CTk):
             tkinter.messagebox.showerror("Error", ErrorType)
             return
         
-        #set values of ConditionOptions
-        self.ConditionOptions.configure(values=self.CONDITIONLIST)
+        #set values of TreatmentOptions
+        self.TreatmentOptions.configure(values=self.CONDITIONLIST)
         #set current value to first choice
-        self.ConditionOptions.set(self.CONDITIONLIST[0])
+        self.TreatmentOptions.set(self.CONDITIONLIST[0])
 
         self.refresh_projects_detail()
 
@@ -2000,7 +2061,55 @@ class App(customtkinter.CTk):
 
         input_window.wait_window()
 
-    
+
+    def set_state(self, event=None, set_project=None, set_batch=None, set_test=None, set_treatment=None):
+        if set_project != None:
+            try:
+                self.PROJECT.set(set_project)
+                self.load_project()
+            except:
+                logger.warning("Failed to load Project {}".format(set_project))
+
+        if set_batch != None:
+            try:
+                self.BatchOptions.set(set_batch)
+                self.update_param_display()
+            except:
+                logger.warning("Failed to load Batch {}".format(set_batch))
+
+        if set_test != None:
+            try:
+                self.TestOptions.set(set_test)
+                self.update_param_display()
+            except:
+                logger.warning("Failed to load Test {}".format(set_test))
+
+        if set_treatment != None:
+            try:
+                self.TreatmentOptions.set(set_treatment)
+                self.update_param_display()
+            except:
+                logger.warning("Failed to load Treatment {}".format(set_treatment))        
+
+    def mismatch_show(self, treatment_name):
+        self.set_state(set_treatment=treatment_name)
+
+        test_name = self.TestOptions.get()
+        batch_num = self.BatchOptions.get() # Batch 1
+        batch_num = int(batch_num.split(" ")[1]) # 1
+        treatment_index = get_treatment_index_from_name(treatment_name, self.CONDITIONLIST)
+
+        treatment_path = Path(THE_HISTORY.get_treatment_dir(self.CURRENT_PROJECT, 
+                                                            test_name, 
+                                                            batch_num, 
+                                                            treatment_index))
+        # use window explorer to open the folder
+        logger.debug("Open folder: {}".format(treatment_path))
+        try:
+            os.startfile(treatment_path)
+        except:
+            logger.warning("Failed to open folder: {}".format(treatment_path))
+
     ### ANALYZE BUTTON ###
 
     def create_progress_window(self):
@@ -2041,7 +2150,12 @@ class App(customtkinter.CTk):
         while True:
 
             progress_bar = self.create_progress_window()
-            total_time, notification, ERROR = autoanalyzer(project_dir, BATCH_NUMBER, task, progress_bar, overwrite)
+            total_time, notification, ERROR = autoanalyzer(PROJECT_DIR = project_dir, 
+                                                           BATCHNUM = BATCH_NUMBER, 
+                                                           TASK = task, 
+                                                           PROGRESS_BAR = progress_bar, 
+                                                           OVERWRITE = overwrite, 
+                                                           skip_list = self.SKIP_LIST)
 
             if ERROR == None:
                 progress_bar.master.destroy()  # Close the progress window
@@ -2071,9 +2185,180 @@ class App(customtkinter.CTk):
                 else:
                     progress_bar.master.destroy()
                     break
+            elif ERROR == "Mismatched":
+                logger.debug("Mismatched")
+                treatment_index, required_params, current_params = notification.split(";")
+                treatment_name = get_treatment_name_from_index(treatment_index, self.CONDITIONLIST)
+                message = f"In {treatment_name}, current parameters = {current_params} mismatched with fish numbers of {required_params}. \n Press 'Go' to go to change the parameters"
+                progress_bar.master.destroy()
+                _ = CustomDialog(self, title="Mismatched", message=message, button_text="Go", button_command= lambda : self.mismatch_show(treatment_name=treatment_name))
+                break
+
+    def trajectories_filler(self, filler_path, ref_df, ref_tanks, input=True):
+        # create a box to input X and Y coordinates
+        input_window = tkinter.Toplevel(self)
+        input_window.title("Input Filler Coordinates")
+        input_window.geometry("420x160")
+        #move the window to the center of the screen, bring it to front
+        input_window.lift()
+        input_window.geometry(f"420x160+{int(input_window.winfo_screenwidth()/2 - 420/2)}+{int(input_window.winfo_screenheight()/2 - 160/2)}")
+
+        # Top Canvas
+        top_canvas = customtkinter.CTkFrame(input_window)
+        top_canvas.grid(row=0, column=0, sticky="nsew")
+
+        ref_df_length = len(ref_df)
+
+        df_len_label = customtkinter.CTkLabel(top_canvas, text=f"Total number of frames")
+        df_len_label.grid(row=0, column=0, columnspan=2, padx=5, pady=10)
+        df_len_entry = customtkinter.CTkEntry(top_canvas)
+        df_len_entry.grid(row=0, column=2, columnspan=2, padx=5, pady=10)
+        df_len_entry.insert(0, ref_df_length)
+
+        x_labels = {}
+        y_labels = {}
+        x_entries = {}
+        y_entries = {}
+        for i in ref_tanks:
+            x_labels[i] = customtkinter.CTkLabel(top_canvas, text=f"Tank {i} X:")
+            x_labels[i].grid(row=i, column=0, padx=5, pady=5)
+            x_entries[i] = customtkinter.CTkEntry(top_canvas)
+            x_entries[i].grid(row=i, column=1, padx=5, pady=5)
+
+            y_labels[i] = customtkinter.CTkLabel(top_canvas, text=f"Tank {i} Y:")
+            y_labels[i].grid(row=i, column=2, padx=5, pady=5)
+            y_entries[i] = customtkinter.CTkEntry(top_canvas)
+            y_entries[i].grid(row=i, column=3, padx=5, pady=5)
+        
+
+        def make_filler_coordinates():
+            output_df = pd.DataFrame()
+            try:
+                current_df_length = int(float(df_len_entry.get()))
+            except ValueError:
+                tkinter.messagebox.showerror("Error", "Please enter a valid number in the Total number of frames box")
+                return
+            
+            for i in ref_tanks:
+                try:
+                    x = float(x_entries[i].get())
+                    y = float(y_entries[i].get())
+                except ValueError:
+                    tkinter.messagebox.showerror("Error", "Please enter valid numbers")
+                    return
+                output_df[f"X{i}"] = [x] * current_df_length
+                output_df[f"Y{i}"] = [y] * current_df_length
+
+            separator = "\t"
+            output_df.to_csv(filler_path, index=False, sep=separator)
+
+            #create a message box saying that the coordinates have been saved
+            tkinter.messagebox.showinfo("Success", f"Filler coordinates have been saved to: \n{filler_path}")
+
+            # close the window
+            input_window.destroy()
+            return True
+        
+        def canceling():
+            input_window.destroy()
+            return False
+
+        # Bottom Canvas
+        bottom_canvas = customtkinter.CTkFrame(input_window)
+        bottom_canvas.grid(row=1, column=0, sticky="nsew")
+
+
+        confirm_button = customtkinter.CTkButton(bottom_canvas, text="CONFIRM",
+                                                    command=make_filler_coordinates)
+        confirm_button.grid(row=0, column=0, padx=15, pady=20)
+
+        cancel_button = customtkinter.CTkButton(bottom_canvas, text="CANCEL",
+                                                command=canceling)
+        cancel_button.grid(row=0, column=1, padx=15, pady=20)
+
+        self.wait_window(input_window)
+
+
+
+    def pre_analyze_check(self):
+        logger.debug("Start pre-analyze check")
+
+        if self.CURRENT_PROJECT == "":
+            tkinter.messagebox.showerror("Error", "Please select a project")
+            return False
+
+        if self.TestOptions.get() == "":
+            tkinter.messagebox.showerror("Error", "Please select a task")
+            return False
+
+        if self.BatchOptions.get() == "":
+            tkinter.messagebox.showerror("Error", "Please select a batch")
+            return False
+        
+        # CHECK TRAJECTORIES VALIDITY
+        status, false_keys, checker_dict = self.trajectories_check()
+
+        if status == "All True":
+            logger.debug("All trajectories are valid")
+            pass
+        elif status == "All False":
+            logger.warning("Tried to analyze project with no valid trajectories")
+            tkinter.messagebox.showerror("Error", "Current task has no valid trajectories")
+            return False
+        else:
+            logger.warning("Some trajectories are invalid")
+            logger.warning(f"{len(false_keys)} out of {len(checker_dict.keys())} trajectories are invalid")
+
+            true_keys = [key for key in checker_dict.keys() if key not in false_keys]
+            logger.debug(f"Open a true key for reference: {true_keys[0]}")
+            project_dir = Path(THE_HISTORY.get_project_dir(self.CURRENT_PROJECT))
+            if "Shoaling" in true_keys[0]:
+                ref_path = project_dir / true_keys[0] / "trajectories_nogaps.txt"
+            else:
+                ref_path = project_dir / true_keys[0] / "trajectories.txt"
+            ref_df, ref_tanks = load_raw_df(ref_path)
+
+
+            skip_list = []
+            for key in false_keys:
+                _message = f"Trajectory {key} is invalid."
+                _message += f"\n Press YES if this is a non-moving fish case, which means we would fill its coordinates with the coordinates of the first frame."
+                _message += f"\n Press NO if this is a dead fish case, which means we would skip its analysis."
+                choice = tkinter.messagebox.askyesno("Warning", _message)
+                if choice == True:
+                    logger.debug(f"User chose to fill coordinates for {key}")
+                    if "Shoaling" in key:
+                        filler_path = project_dir / key / "trajectories_nogaps.txt"
+                    else:
+                        filler_path = project_dir / key / "trajectories.txt"
+
+                    inputted = self.trajectories_filler(filler_path, ref_df, ref_tanks)
+
+                    if inputted == False:
+                        skip_num = Path(key).stem
+                        skip_list.append(skip_num)
+                        continue
+                else:
+                    logger.debug(f"User chose to skip {key}")
+                    skip_num = Path(key).stem
+                    skip_list.append(skip_num)
+                    continue
+            
+            return skip_list
+
+        return True
 
     def analyze_project_THREADED(self):
         logger.debug("Open a new thread to analyze project")
+
+        status = self.pre_analyze_check()
+        if status == False:
+            return
+        elif status == True:
+            self.SKIP_LIST = []
+        else:
+            self.SKIP_LIST = status
+
         analyze_thread = threading.Thread(target=self.analyze_project)
         analyze_thread.start()
 

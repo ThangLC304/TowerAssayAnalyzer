@@ -1,6 +1,6 @@
 from pathlib import Path
 from Libs.executor import *
-from Libs.misc import sort_paths_by_parent, hyploader
+from Libs.misc import sort_paths_by_parent, hyploader, nanlize
 import pandas as pd
 import json
 import time
@@ -55,22 +55,49 @@ class MY_CONDITION():
         return data
 
 
-    def find_targets(self, condition_path):
+    # def find_targets(self, condition_path):
         
+    #     trajectories = condition_path.glob(f'**/{self.trajectory_format}')
+    #     trajectories = sort_paths_by_parent(trajectories)
+    #     logger.info(f'Found {len(trajectories)} existed trajectories in {condition_path}')
+    #     logger.debug(f'Existed trajectories: {trajectories}')
+    #     if len(trajectories) == 0:
+    #         logger.warning(f'No trajectories found in {condition_path}')
+    #     targets = {trajectory.parent.name: trajectory for trajectory in trajectories}
+    #     # if any key of targets is not int, logger.warning
+    #     if any([not x.isdigit() for x in targets.keys()]):
+    #         logger.error(f'Found non-integer fish group in {condition_path}')
+    #     targets = self.priotize_data(targets, mode = 'last')
+        
+    #     return targets
+
+    def find_targets(self, condition_path):
+
+        # find all directories under condition_path
+        all_dirs = [x for x in condition_path.iterdir() if x.is_dir()]
+        logger.debug(f'Found {len(all_dirs)} directories under {condition_path}')
+
         trajectories = condition_path.glob(f'**/{self.trajectory_format}')
-        trajectories = sort_paths_by_parent(trajectories)
-        logger.info(f'Found {len(trajectories)} existed trajectories in {condition_path}')
-        logger.debug(f'Existed trajectories: {trajectories}')
-        if len(trajectories) == 0:
-            logger.warning(f'No trajectories found in {condition_path}')
-        targets = {trajectory.parent.name: trajectory for trajectory in trajectories}
+        valid_dirs = [x.parent for x in trajectories]
+
+        pseudo_trajectories = []
+        for d in all_dirs:
+            if d in valid_dirs:
+                pseudo_trajectories.append(d / self.trajectory_format)
+            else:
+                pseudo_trajectories.append(d / 'pseudo.txt')
+
+        pseudo_trajectores = sort_paths_by_parent(pseudo_trajectories)
+        logger.info(f'Found {len(valid_dirs)} existed trajectories in {condition_path}')
+        logger.debug(f'Existed trajectories: {len(valid_dirs)}, pseudo trajectories: {len(all_dirs)-len(valid_dirs)}')
+
+        targets = {trajectory.parent.name: trajectory for trajectory in pseudo_trajectories}
         # if any key of targets is not int, logger.warning
         if any([not x.isdigit() for x in targets.keys()]):
             logger.error(f'Found non-integer fish group in {condition_path}')
         targets = self.priotize_data(targets, mode = 'last')
         
-        return targets
-
+        return targets       
 
 
     def priotize_data(self, input_dict, mode = 'last'):
@@ -150,11 +177,27 @@ class MY_CONDITION():
             logger.debug(f'Scanning {target} if == {target_name}')
             if target == target_name:
                 logger.debug(' Matched !')
+
+                if target_path.name == 'pseudo.txt':
+                    pseudo = True
+                    logger.debug(f"Target {target} is pseudo result")
+                    # change target_path to any non-pseudo path in self.targets.values()
+                    target_path = [x for x in self.targets.values() if x.name != 'pseudo.txt'][0]
+                else:
+                    pseudo = False
+                    logger.debug(f"Target {target} is real result")
+
                 if test_index == 0:
                     results = test_exec(target_path, project_hyp = self.hyp, seg_num = seg_num)
                     # test_exec("1", "../PROJECT/{num} - Test/{char} - Treatment ({ordinal} Batch)/{target}/.txt")
                 else:
                     results = test_exec(target_path, project_hyp = self.hyp)
+
+                if pseudo:
+                    # NaN-lize the results
+                    results = nanlize(results, test_index)
+                    logger.debug(f"NaN-lized results of {target}")
+
                 return results # in format [key, value], not {key: value} for easy retrieval
 
 
