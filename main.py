@@ -2206,7 +2206,7 @@ class App(customtkinter.CTk):
         top_canvas = customtkinter.CTkFrame(input_window)
         top_canvas.grid(row=0, column=0, sticky="nsew")
 
-        # ref_df_length = len(ref_df)
+        ref_df_length = len(ref_df)
 
         # df_len_label = customtkinter.CTkLabel(top_canvas, text=f"Total number of frames")
         # df_len_label.grid(row=0, column=0, columnspan=2, padx=5, pady=10)
@@ -2233,7 +2233,8 @@ class App(customtkinter.CTk):
         def make_filler_coordinates():
             output_df = pd.DataFrame()
             try:
-                current_df_length = int(float(df_len_entry.get()))
+                # current_df_length = int(float(df_len_entry.get()))
+                current_df_length = ref_df_length
             except ValueError:
                 tkinter.messagebox.showerror("Error", "Please enter a valid number in the Total number of frames box")
                 return
