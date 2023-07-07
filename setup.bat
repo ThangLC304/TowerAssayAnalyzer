@@ -74,11 +74,16 @@ if exist "%conda_path%\envs\%venv_name%" (
     echo Creating virtual environment with Python %python_version%...
     if "%OS%"=="Windows_NT" (
         call %conda_path%\Scripts\conda create -n %venv_name% python==%python_version% -y
-        set "activate_cmd=call %conda_path%\Scripts\activate.bat %venv_name%"
     ) else (
         $conda_path/bin/conda create -n %venv_name% python=%python_version% -y
-        set "activate_cmd=source $conda_path/bin/activate %venv_name%"
     )
+)
+
+
+if "%OS%"=="Windows_NT" (
+    set "activate_cmd=call %conda_path%\Scripts\activate.bat %venv_name%"
+) else (
+    set "activate_cmd=source $conda_path/bin/activate %venv_name%"
 )
 
 

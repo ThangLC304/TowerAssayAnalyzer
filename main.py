@@ -66,6 +66,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 ROOT = Path(__file__).parent
 ORI_HYP_PATH = ROOT / "Bin"
 HISTORY_PATH = "History/projects.json"
+Path('History').mkdir(parents=True, exist_ok=True)
 
 
 ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th']
@@ -136,7 +137,7 @@ logger.addHandler(stream_handler)
 
 class HISTORY():
 
-    def __init(self, history_path = HISTORY_PATH):
+    def __init__(self, history_path = HISTORY_PATH):
         self.history_path = history_path
 
         with open(HISTORY_PATH, "r") as file:
@@ -1613,7 +1614,7 @@ class App(customtkinter.CTk):
 
         self.CURRENT_PROJECT = selected_project
 
-        logger.info("Current project: ", self.CURRENT_PROJECT)
+        logger.info(f"Current project: {self.CURRENT_PROJECT}")
 
         # Update the batch options
         self.BATCHLIST, ErrorType = self.access_history("load batch list")
@@ -2064,8 +2065,7 @@ class App(customtkinter.CTk):
     def set_state(self, event=None, set_project=None, set_batch=None, set_test=None, set_treatment=None):
         if set_project != None:
             try:
-                self.PROJECT.set(set_project)
-                self.load_project()
+                self.load_project(custom_project=set_project)
             except:
                 logger.warning("Failed to load Project {}".format(set_project))
 

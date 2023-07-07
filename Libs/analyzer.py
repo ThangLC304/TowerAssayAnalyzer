@@ -47,7 +47,7 @@ class NovelTankTest(Loader): # 3000 * 7
         # self.others['distance in top'], self.others['top/bottom ratio'] = self.distance_in_top()
         self.others['distance in top'] = self.distance_in_top()
         
-        infinite_ratio = 999
+        infinite_ratio = 999999
 
         try:
             self.others['top/bottom ratio'] = self.time.duration / self.time.not_duration

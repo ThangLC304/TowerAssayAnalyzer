@@ -10,3 +10,4 @@ num2words
 shutil
 pathlib
 customtkinter
+colorlog
